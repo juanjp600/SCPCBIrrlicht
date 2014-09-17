@@ -1,0 +1,83 @@
+/*struct itemTempConstructParams {
+    std::string name; itemTempIDs id;
+    float scale; irr::video::SColor color;
+    irr::scene::IMesh* mesh;// irr::video::ITexture* texture;
+};
+
+class itemtemplate {
+    private:
+        irr::scene::IMesh* irrMesh;
+        btConvexHullShape* dynShape;
+        irr::core::vector3df mOffset;
+        std::string name;
+        itemTempIDs id;
+        float scale;
+        float ccdThreshold;
+        irr::video::SColor color;
+        //class world* owner;
+    public:
+        std::string getName() {
+            return name;
+        }
+        itemTempIDs getTempID() {
+            return id;
+        }
+        irr::scene::IMesh* getMesh() {
+            return irrMesh;
+        }
+        btConvexHullShape* getDynShape() {
+            return dynShape;
+        }
+        float getScale() {
+            return scale;
+        }
+        irr::video::SColor getColor() {
+            return color;
+        }
+        irr::core::vector3df getOffset() {
+            return mOffset;
+        }
+
+        //use the itemtemplate functions of the world class instead of using new/delete directly
+        itemtemplate(const itemTempConstructParams &params);
+        ~itemtemplate();
+};*/
+
+...
+
+/*struct itemConstructParams { //pointers to functions the items need
+    /\*itemtemplate* temp; std::string name;
+    irr::scene::IMeshSceneNode* node; btRigidBody* rbody;*\/
+    //irr::scene::IMeshSceneNode* (*getNode)(irr::scene::IMesh*,irr::scene::ISceneNode*,irr::s32,const irr::core::vector3df&,const irr::core::vector3df&,const irr::core::vector3df&,bool); //world's irrSmgr->getNode
+    irr::scene::IMeshSceneNode* (world::*getNode)(itemTempIDs id); //world's getItemNode
+    //irr::scene::IMesh* (*getMesh)(const irr::io::path&); //world's irrSmgr->getMesh
+    btRigidBody* (world::*getRBody)(itemTempIDs id); //world's getItemRBody
+    irr::core::vector3df (world::*getOffset)(itemTempIDs id); //world's getItemOffset
+    void (irrDynamics::*registerRBody)(irr::scene::ISceneNode*,btRigidBody*,float,short,short,irr::core::vector3df); //irrDynamics->registerRBody
+    void (irrDynamics::*unregisterRBody)(btRigidBody*); //irrDynamics->unregisterRBody
+};*/
+
+...
+
+//std::string name;
+        //const itemTempIDs id = itemTempIDs::ITEM_INVALID;
+        //itemtemplate* Template;
+
+        //function pointers
+        /*void (*registerRBody)(irr::scene::ISceneNode*,btRigidBody*,float,short,short,irr::core::vector3df);
+        void (*unregisterRBody)(btRigidBody*);*/
+
+/*virtual btRigidBody* getRBody() {
+            return rbody;
+        }
+        virtual irr::scene::IMeshSceneNode* getIrrNode() {
+            return irrObj;
+        }
+        virtual irr::core::vector3df getOffset() {
+            return offset;
+        }*/
+
+...
+
+/*virtual void Pick();
+        virtual void Unpick(irr::core::vector3df position);*/

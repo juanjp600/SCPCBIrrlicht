@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="SCPCBIrrlicht" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/SCPCBIrrlicht" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-std=c++11" />
+					<Add option="-g" />
+					<Add directory="Irrlicht/include" />
+					<Add directory="FreeType/include" />
+					<Add directory="Bullet/include" />
+					<Add directory="ALURE/include" />
+					<Add directory="OpenAL-Soft/include/AL" />
+				</Compiler>
+				<Linker>
+					<Add library="Irrlicht\lib\Win32-gcc\libIrrlicht.a" />
+					<Add library="FreeType\lib\libfreetype.dll.a" />
+					<Add library="Bullet\lib\libBullet.a" />
+					<Add library="ALURE\libALURE32.dll.a" />
+					<Add library="OpenAL-Soft\libOpenAL32.dll.a" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/SCPCBIrrlicht" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="Bullet/include" />
+					<Add directory="FreeType/include" />
+					<Add directory="Irrlicht/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="Bullet\lib\libBullet.a" />
+					<Add library="FreeType\lib\libfreetype.dll.a" />
+					<Add library="Irrlicht\lib\Win32-gcc\libIrrlicht.a" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="3dworld/3dworld.cpp" />
+		<Unit filename="3dworld/3dworld.h" />
+		<Unit filename="3dworld/items/itemEyedrops/itemEyedrops.cpp" />
+		<Unit filename="3dworld/items/itemEyedrops/itemEyedrops.h" />
+		<Unit filename="3dworld/items/itemGasMask/itemGasMask.cpp" />
+		<Unit filename="3dworld/items/itemGasMask/itemGasMask.h" />
+		<Unit filename="3dworld/items/items.cpp" />
+		<Unit filename="3dworld/items/items.h" />
+		<Unit filename="3dworld/rooms/rmesh.cpp" />
+		<Unit filename="3dworld/rooms/rmesh.h" />
+		<Unit filename="Irrlicht/CGUITTFont.cpp" />
+		<Unit filename="Irrlicht/irrDynamics.cpp" />
+		<Unit filename="main.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

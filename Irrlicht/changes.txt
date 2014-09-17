@@ -1,0 +1,5 @@
+- Changes made to CGUITTFont Class ( http://irrlicht.sourceforge.net/forum/viewtopic.php?t=37296 )
+	- None
+- Changes made to Bullet Physics wrapper ( http://irrlicht.sourceforge.net/forum/viewtopic.php?f=6&t=49846 )
+	- Replaced static members, several irrDynamics objects can be created now
+	- Added support for trimeshes
