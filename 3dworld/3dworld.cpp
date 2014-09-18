@@ -76,18 +76,10 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     }
 
     RMesh* rme = loadRMesh(std::string("test/173bright_opt.rmesh"),irrFileSystem,irrDriver);
-	node = irrSmgr->addMeshSceneNode(rme->mesh);//irrSmgr->getMesh("test/room939.b3d"));
+	node = irrSmgr->addMeshSceneNode(rme->mesh);
 
     std::vector<irr::video::SLight> lightList;
     for (unsigned int i=0;i<rme->pointlights.size();i++) {
-        /*irr::scene::ILightSceneNode* light1 =
-            irrSmgr->addLightSceneNode(0, irr::core::vector3df(0,0,0),
-            rme->pointlights[i].color,rme->pointlights[i].radius*0.05f*RoomScale);
-
-        light1->setPosition(rme->pointlights[i].position*0.1f*RoomScale);
-        std::cout<<"Light "<<i<<": "<<rme->pointlights[i].position.X<<" "<<rme->pointlights[i].position.Y<<" "<<rme->pointlights[i].position.Z<<"\n";
-
-        */
         irr::video::SLight newLight;
         newLight.Position = rme->pointlights[i].position*0.1f*RoomScale;
         newLight.DiffuseColor = rme->pointlights[i].color;
@@ -97,9 +89,6 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
         irrSmgr->addCubeSceneNode(1.0f,nullptr,-1,rme->pointlights[i].position*0.1f*RoomScale)->getMaterial(0).DiffuseColor = irr::video::SColor(255,255,0,0);
     }
     NormalsCallback->setLights(lightList);
-
-    //PerNodeLightManager* lightMgr = new PerNodeLightManager(irrSmgr);
-    //irrSmgr->setLightManager(lightMgr);
 
 	node->setScale(irr::core::vector3df(0.1f*RoomScale));
 
@@ -121,102 +110,24 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
     dynamics->addTriMesh_static(node);
 
-    //itemTemplates.push_back(new itemtemplate(this,"ReVision Eyedrops",ITEM_EYEDROPS,"test/eyedrops.b3d"));
-
-    /*for (int i=0;i<3;i++) {
-        irr::video::SColorf lightColor=irr::video::SColorf(1.0f, 1.0f, 1.0f, 1.0f);
-        switch (i) {
-            case 0:
-                lightColor=irr::video::SColorf(1.0f, 0.0f, 0.0f, 1.0f);
-            break;
-            case 1:
-                lightColor=irr::video::SColorf(0.0f, 0.0f, 1.0f, 1.0f);
-            break;
-            case 2:
-                lightColor=irr::video::SColorf(0.0f, 1.0f, 0.0f, 1.0f);
-            break;
-            case 3:
-                lightColor=irr::video::SColorf(0.0f, 0.8f, 0.0f, 1.0f);
-            break;
-        }
-        irr::scene::ILightSceneNode* light1 =
-            irrSmgr->addLightSceneNode(0, irr::core::vector3df(0,0,0),
-            lightColor,40.0f*RoomScale);
-
-        light1->setPosition(irr::core::vector3df(-0*RoomScale+cos(i*90.0)*50.0,0*RoomScale,10*RoomScale+sin(i*90.0)*50.0-20.0*RoomScale));
-
-        //dynamics->addSphericalObject(light1,10.f,10.f);
-    }*/
-
-    //createItemTemplate("Eyedrops",itemTempIDs::ITEM_EYEDROPS,"test/eyedrops.b3d","",0.06*RoomScale);
-
-	for (int i = 0;i<1;i++) {
-        irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/173_2.b3d");
-        //irr::scene::IMesh* mesh2 = irrSmgr->getMeshManipulator()->createMeshWithTangents(mesh1);
-        node = irrSmgr->addMeshSceneNode(mesh1);
-
-        node->setScale(irr::core::vector3df(1.3*RoomScale));
-        node->setPosition(irr::core::vector3df(0*RoomScale,10*RoomScale,-10*RoomScale));
-        node->setMaterialFlag(irr::video::EMF_LIGHTING, true);
-        node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
-        /*node->getMaterial(0).AmbientColor = irr::video::SColor(0,0,0,0);
-        node->getMaterial(0).DiffuseColor = irr::video::SColor(0,0,0,0);*/
-        node->getMaterial(0).Lighting = true;
-        node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
-        /*node->getMaterial(1).Lighting = false;
-        node->getMaterial(2).Lighting = false;
-        node->getMaterial(3).Lighting = false;
-        node->getMaterial(4).Lighting = false;
-        node->getMaterial(5).Lighting = false;*/
-        btRigidBody* rbody = dynamics->addTriMesh_moving(node,16.f/*000*/,20,1,1);
-        rbody->setAngularFactor(btVector3(0,0.1,0));
-        rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
-
-        //node->getMaterial(0).DiffuseColor = irr::video::SColor(0, 0, 0, 0);
-
-        node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/173_norm.jpg"));
-        node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/173_Spec.jpg"));
-        //node->getMaterial(0).MaterialType = irr::video::EMT_NORMAL_MAP_SOLID;
-
-        /*node->getMaterial(0).SpecularColor.set(100,100,100,100);
-        node->getMaterial(0).Shininess = 0.3f;
-
-        node->getMaterial(0).AmbientColor = irr::video::SColor(255, 0, 0, 100);*/
-
-        /*node->getMaterial(1).setTexture(1, irrDriver->getTexture("test/173_norm.jpg"));
-        node->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;//irr::video::EMT_NORMAL_MAP_SOLID;*/
-
-        node->getMaterial(0).EmissiveColor = irr::video::SColor(100,100,100,100);
-
-        //node->setDebugDataVisible(irr::scene::EDS_NORMALS);
-	}
-
 	for (int i = 0;i<10;i++) {
         irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/scp-066.b3d");
-        irr::scene::IMesh* mesh2 = irrSmgr->getMeshManipulator()->createMeshWithTangents(mesh1);
-        node = irrSmgr->addMeshSceneNode(mesh2);
+
+        node = irrSmgr->addMeshSceneNode(mesh1);
 
 
         node->setScale(irr::core::vector3df(2.1*RoomScale));
         node->setPosition(irr::core::vector3df(-0*RoomScale,10*RoomScale,0*RoomScale));
-        /*node->getMaterial(0).Lighting = false;
-        node->getMaterial(1).Lighting = false;*/
+
         dynamics->addTriMesh_moving(node,5.0f,5,1,1);
         node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
         node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
         node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/scp-066_specular.png"));
-        node->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;//irr::video::EMT_NORMAL_MAP_SOLID;
+        node->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
         node->getMaterial(1).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
         node->getMaterial(1).setTexture(2, irrDriver->getTexture("test/scp-066_specular.png"));
         node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
-
-        //irr::video::EMT_TRANSPARENT_ADD_COLOR
-        //node->setMaterialType(irr::video::EMT_NORMAL_MAP_SOLID);
-
-        //node->setMaterialTexture(2, irrDriver->getTexture("test/scp-066_normal.jpg"));
-        /*node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/scp-066_normal.jpg"));
-        node->getMaterial(0).MaterialType = irr::video::EMT_NORMAL_MAP_SOLID;*/
 
         node->getMaterial(0).SpecularColor.set(0,0,0,0);
         node->getMaterial(0).Shininess = 0.f;
@@ -226,24 +137,30 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	mainPlayer = new player(this,irrSmgr,dynamics,irrReceiver);
 
+    //test node
+    irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/173_2.b3d");
 
+    node = irrSmgr->addMeshSceneNode(mesh1);
 
-	for (int i = 0;i<10000;i++) {
-        //item* it = createItem(itemTempIDs::ITEM_EYEDROPS);
-        //disableItem(it);//it->Pick();
+    node->setScale(irr::core::vector3df(1.3*RoomScale));
+    node->setPosition(irr::core::vector3df(0*RoomScale,10*RoomScale,-10*RoomScale));
+    node->setMaterialFlag(irr::video::EMF_LIGHTING, true);
+    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
-        //it->Unpick(irr::core::vector3df(20*RoomScale,10*RoomScale,0));
-        /*node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/eyedrops.b3d"));
+    node->getMaterial(0).Lighting = true;
+    node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
 
-        node->setScale(irr::core::vector3df(0.06*RoomScale));
-        node->setPosition(irr::core::vector3df(-0*RoomScale,10*RoomScale,0*RoomScale));
-        /\*node->getMaterial(0).Lighting = false;
-        node->getMaterial(1).Lighting = false;*\/
-        dynamics->addTriMesh_moving(node,10.0f,10,2,2);
+    btRigidBody* rbody = dynamics->addTriMesh_moving(node,16.f/*000*/,20,1,1);
+    rbody->setAngularFactor(btVector3(0,0.1,0));
+    rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
 
-        node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);*/
+    node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/173_norm.jpg"));
+    node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/173_Spec.jpg"));
 
-	}
+    node->getMaterial(0).EmissiveColor = irr::video::SColor(100,100,100,100);
+
+    mainPlayer->testNode = node;
+    //------------
 
 	irrDevice->getCursorControl()->setVisible(false);
 }
@@ -450,6 +367,8 @@ void player::update() {
     } else {
         Capsule->setLinearVelocity(btVector3(0,speed.y()-addVSpeed,0));
     }
+
+    std::cout<<"seesNode: "<<seesMeshNode(testNode)<<"\n";
 }
 
 void player::addToInventory(item* it) {
@@ -466,21 +385,36 @@ void player::takeFromInventory(unsigned char slot) {
 }
 
 bool player::seesMeshNode(irr::scene::IMeshSceneNode* node) {
-    float xzdist;
-    float deltapitch;//,deltayaw;
+    irr::scene::SViewFrustum frust = *Camera->getViewFrustum();
 
-    float tx,ty,tz;
-    Camera->updateAbsolutePosition();
-    node->updateAbsolutePosition();
-    tx = Camera->getAbsolutePosition().X-node->getAbsolutePosition().X;
-    ty = Camera->getAbsolutePosition().Y-node->getAbsolutePosition().Y;
-    tz = Camera->getAbsolutePosition().Z-node->getAbsolutePosition().Z;
-    xzdist = std::sqrt((tx*tx)+(tz*tz));
+    //transform the frustum to the node's current absolute transformation
+    irr::core::matrix4 invTrans(node->getAbsoluteTransformation(), irr::core::matrix4::EM4CONST_INVERSE);
+    //invTrans.makeInverse();
+    frust.transform(invTrans);
 
-    deltapitch = std::atan2(xzdist,ty);
-    deltapitch*=irr::core::RADTODEG;
+    irr::core::vector3df edges[8];
+    node->getBoundingBox().getEdges(edges);
 
-    return false;
+    bool result = false;
+
+    for (irr::s32 i=0; i<irr::scene::SViewFrustum::VF_PLANE_COUNT; ++i) {
+        bool boxInFrustum=false;
+        for (irr::u32 j=0; j<8; ++j)
+        {
+            if (frust.planes[i].classifyPointRelation(edges[j]) != irr::core::ISREL3D_FRONT)
+            {
+                boxInFrustum=true;
+                break;
+            }
+        }
+
+        if (!boxInFrustum)
+        {
+            result = true;
+            break;
+        }
+    }
+    return !result;
 }
 
 bool getNodeTriangleTextureName //taken from here: http://irrlicht.sourceforge.net/forum/viewtopic.php?f=9&t=45212

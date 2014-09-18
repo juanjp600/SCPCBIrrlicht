@@ -272,6 +272,8 @@ class player {
 
         bool seesMeshNode(irr::scene::IMeshSceneNode* node);
 
+        irr::scene::IMeshSceneNode* testNode;
+
         irr::core::vector3df getPosition() {
             return Camera->getPosition();
         }
