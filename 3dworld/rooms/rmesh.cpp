@@ -1,8 +1,7 @@
 #include "rmesh.h"
+#include "../3dworld.h"
 
-RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver) {
-    //
-    //
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver) {
 
     irr::io::IReadFile* file = fs->createAndOpenFile(path.c_str());
 
@@ -14,6 +13,7 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
     float fu1,fv1,fu2,fv2;
 
     std::string readString1,readString2,readString3;
+
     readString1 = "";
     //int = 4 octets
     //char = 1 octet
@@ -27,9 +27,22 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
     if (readString1=="RoomMesh") { //this is a valid RMesh
         std::cout<<"Loading \""<<path<<"\"\n";
         RMesh* retRMesh = new RMesh;
+
+        retRMesh->path = path;
+        int initialSize = path.size()-1;
+        for (int i=initialSize;i>=0;i--) {
+            if (path[i]!='\\' && path[i]!='/') {
+                path.erase(i);
+            } else {
+                break;
+            }
+        }
+        std::cout<<path<<"\n";
         irr::scene::SMesh* mesh = new irr::scene::SMesh();
         irr::scene::SMeshBufferLightMap* bufLM = nullptr;
         irr::scene::SMeshBuffer* buf = nullptr;
+
+        btTriangleMesh *pTriMesh = new btTriangleMesh();
 
         file->read(&readInt1,sizeof(int)); //drawn mesh
 
@@ -50,7 +63,7 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
                         file->read(&readChar2,sizeof(char));
                         readString1+=readChar2;
                     }
-                    textureRead[j] = "test/"+readString1;
+                    textureRead[j] = path+readString1;
                     std::cout<<readString1<<"\n";
 
                     if (blendType!=1) { //alpha blending is final
@@ -74,6 +87,7 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
                 file->read(&cr,sizeof(unsigned char));
                 file->read(&cg,sizeof(unsigned char));
                 file->read(&cb,sizeof(unsigned char));
+                fx*=RoomScale*0.1; fy*=RoomScale*0.1; fz*=RoomScale*0.1;
                 vertices.push_back(irr::video::S3DVertex2TCoords(fx,fy,fz,0,0,0,irr::video::SColor(255,cr,cg,cb),fu1,fv1,fu2,fv2));
             }
 
@@ -84,12 +98,18 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
                 file->read(&i3,sizeof(int));
 
                 indices.push_back(irr::core::vector3di(i1,i2,i3));
+
+                btVector3 btVertices[3];
+                btVertices[0] = btVector3(vertices[i1].Pos.X,vertices[i1].Pos.Y,vertices[i1].Pos.Z);
+                btVertices[1] = btVector3(vertices[i2].Pos.X,vertices[i2].Pos.Y,vertices[i2].Pos.Z);
+                btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i3].Pos.Y,vertices[i3].Pos.Z);
+                pTriMesh->addTriangle(btVertices[0], btVertices[1], btVertices[2]);
             }
 
             if (indices.size()!=0) {
                 switch (blendType) {
                     case 2: //opaque
-                        if (textureRead[0]!="test/" && textureRead[1]!="test/") { //lightmapped
+                        if (textureRead[0]!=path && textureRead[1]!=path) { //lightmapped
                             bufLM = new irr::scene::SMeshBufferLightMap();
 
                             mesh->addMeshBuffer(bufLM);
@@ -141,12 +161,11 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
                                 buf->Indices[(j*3)+2]=indices[j].Z;
                             }
 
-                            if (textureRead[1]!="test/") {
+                            if (textureRead[1]!=path) {
                                 buf->getMaterial().setTexture(0,driver->getTexture(textureRead[1].c_str()));
                             } else {
                                 buf->getMaterial().setTexture(0,driver->getTexture(textureRead[0].c_str()));
                             }
-                            //buf->getMaterial().setTexture(1,driver->getTexture(textureRead[0].c_str()));
 
                             buf->getMaterial().Lighting = false;
 
@@ -177,7 +196,7 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
                             buf->Indices[(j*3)+2]=indices[j].Z;
                         }
 
-                        if (textureRead[1]!="") {
+                        if (textureRead[1]!=path) {
                             buf->getMaterial().setTexture(0,driver->getTexture(textureRead[1].c_str()));
                         } else {
                             buf->getMaterial().setTexture(0,driver->getTexture(textureRead[0].c_str()));
@@ -201,10 +220,15 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
         for (int i=0;i<readInt1;i++) {
             file->read(&readInt2,sizeof(int)); //vertices
 
+			std::vector<btVector3> vertices;
+
             for (int j=0;j<readInt2;j++) {
                 file->read(&fx,sizeof(float));
                 file->read(&fy,sizeof(float));
                 file->read(&fz,sizeof(float));
+
+				fx*=RoomScale*0.1; fy*=RoomScale*0.1; fz*=RoomScale*0.1;
+                vertices.push_back(btVector3(fx,fy,fz));
                 //now do something with that
             }
 
@@ -213,6 +237,8 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
                 file->read(&i1,sizeof(int));
                 file->read(&i2,sizeof(int));
                 file->read(&i3,sizeof(int));
+
+                pTriMesh->addTriangle(vertices[i1], vertices[i2], vertices[i3]);
                 //now do something with that
             }
         }
@@ -287,10 +313,10 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
                 file->read(&fv1,sizeof(float)); //intensity
 
                 irr::video::SColorf lightColor = irr::video::SColorf(float(cr)/255.0*fv1,float(cg)/255.0*fv1,float(cb)/255.0*fv1);
-                pointlight newLight;
-                newLight.color = lightColor;
-                newLight.radius = fu1;
-                newLight.position = irr::core::vector3df(fx,fy,fz);
+                irr::video::SLight newLight;
+                newLight.DiffuseColor = lightColor;
+                newLight.Radius = fu1;
+                newLight.Position = irr::core::vector3df(fx,fy,fz);
 
                 retRMesh->pointlights.push_back(newLight);
             } else if (readString1=="spotlight") { //TODO: add spotlights to the lighting shader
@@ -336,6 +362,7 @@ RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IV
         mesh->recalculateBoundingBox();
         //mesh->setDirty();
         retRMesh->mesh = mesh;
+        retRMesh->shape = new btBvhTriangleMeshShape(pTriMesh, true);
         file->drop();
         return retRMesh;
 

@@ -81,16 +81,22 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     std::vector<irr::video::SLight> lightList;
     for (unsigned int i=0;i<rme->pointlights.size();i++) {
         irr::video::SLight newLight;
-        newLight.Position = rme->pointlights[i].position*0.1f*RoomScale;
-        newLight.DiffuseColor = rme->pointlights[i].color;
-        newLight.Radius = rme->pointlights[i].radius*0.05f*RoomScale;
+        newLight.Position = rme->pointlights[i].Position*0.1f*RoomScale;
+        newLight.DiffuseColor = rme->pointlights[i].DiffuseColor;
+        newLight.Radius = rme->pointlights[i].Radius*0.05f*RoomScale;
         lightList.push_back(newLight);
 
-        irrSmgr->addCubeSceneNode(1.0f,nullptr,-1,rme->pointlights[i].position*0.1f*RoomScale)->getMaterial(0).DiffuseColor = irr::video::SColor(255,255,0,0);
+        irrSmgr->addCubeSceneNode(1.0f,nullptr,-1,rme->pointlights[i].Position*0.1f*RoomScale)->getMaterial(0).DiffuseColor = irr::video::SColor(255,255,0,0);
     }
     NormalsCallback->setLights(lightList);
 
-	node->setScale(irr::core::vector3df(0.1f*RoomScale));
+	btTransform Transform;
+	Transform.setIdentity();
+	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
+	btRigidBody* rbody = new btRigidBody(0.f, MotionState, rme->shape);
+	dynamics->registerNewRBody(node,rbody,0);
+
+	//node->setScale(irr::core::vector3df(0.1f*RoomScale));
 
     for (irr::u32 ui=0; ui<node->getMaterialCount(); ++ui) {
         if (node->getMaterial(ui).MaterialType == irr::video::EMT_LIGHTMAP) { //lightmapped surfaces are suitable for the RoomShader
@@ -150,7 +156,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     node->getMaterial(0).Lighting = true;
     node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
 
-    btRigidBody* rbody = dynamics->addTriMesh_moving(node,16.f/*000*/,20,1,1);
+    rbody = dynamics->addTriMesh_moving(node,16.f/*000*/,20,1,1);
     rbody->setAngularFactor(btVector3(0,0.1,0));
     rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
 

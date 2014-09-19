@@ -14,20 +14,14 @@
 #include <vector>
 #include <string>
 
-struct pointlight {
-    irr::core::vector3df position;
-    float radius;
-    irr::video::SColorf color;
-};
-
 struct RMesh {
     std::string path;
     irr::scene::IMesh* mesh;
     btBvhTriangleMeshShape* shape;
-    std::vector<pointlight> pointlights;
+    std::vector<irr::video::SLight> pointlights;
     std::vector<irr::core::vector3df> waypoints;
 };
 
-RMesh* loadRMesh(const std::string &path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver);
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver);
 
 #endif // RMESH_H_INCLUDED
