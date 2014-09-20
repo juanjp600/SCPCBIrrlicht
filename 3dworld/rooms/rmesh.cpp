@@ -87,8 +87,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                 file->read(&cr,sizeof(unsigned char));
                 file->read(&cg,sizeof(unsigned char));
                 file->read(&cb,sizeof(unsigned char));
-                fx*=RoomScale*0.1; fy*=RoomScale*0.1; fz*=RoomScale*0.1;
-                vertices.push_back(irr::video::S3DVertex2TCoords(fx,fy,fz,0,0,0,irr::video::SColor(255,cr,cg,cb),fu1,fv1,fu2,fv2));
+                vertices.push_back(irr::video::S3DVertex2TCoords(fx*RoomScale*0.1,fy*RoomScale*0.1,fz*RoomScale*0.1,0,0,0,irr::video::SColor(255,cr,cg,cb),fu1,fv1,fu2,fv2));
             }
 
             file->read(&readInt2,sizeof(int));
@@ -100,9 +99,10 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                 indices.push_back(irr::core::vector3di(i1,i2,i3));
 
                 btVector3 btVertices[3];
-                btVertices[0] = btVector3(vertices[i1].Pos.X,vertices[i1].Pos.Y,vertices[i1].Pos.Z);
-                btVertices[1] = btVector3(vertices[i2].Pos.X,vertices[i2].Pos.Y,vertices[i2].Pos.Z);
-                btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i3].Pos.Y,vertices[i3].Pos.Z);
+                //round the values to hide seams
+                btVertices[0] = btVector3((float)(int)vertices[i1].Pos.X,(float)(int)vertices[i1].Pos.Y,(float)(int)vertices[i1].Pos.Z);
+                btVertices[1] = btVector3((float)(int)vertices[i2].Pos.X,(float)(int)vertices[i2].Pos.Y,(float)(int)vertices[i2].Pos.Z);
+                btVertices[2] = btVector3((float)(int)vertices[i3].Pos.X,(float)(int)vertices[i3].Pos.Y,(float)(int)vertices[i3].Pos.Z);
                 pTriMesh->addTriangle(btVertices[0], btVertices[1], btVertices[2]);
             }
 
@@ -227,6 +227,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                 file->read(&fy,sizeof(float));
                 file->read(&fz,sizeof(float));
 
+				fx=(float)(int)fx;fy=(float)(int)fy;fz=(float)(int)fz; //round the values to hide seams
 				fx*=RoomScale*0.1; fy*=RoomScale*0.1; fz*=RoomScale*0.1;
                 vertices.push_back(btVector3(fx,fy,fz));
                 //now do something with that
@@ -363,6 +364,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
         //mesh->setDirty();
         retRMesh->mesh = mesh;
         retRMesh->shape = new btBvhTriangleMeshShape(pTriMesh, true);
+        retRMesh->shape->setMargin(0.0f);
         file->drop();
         return retRMesh;
 

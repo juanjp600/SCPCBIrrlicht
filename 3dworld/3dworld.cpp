@@ -50,7 +50,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	//Add test model
 
     dynamics = new irrDynamics();//irrDynamics::getInstance();
-    dynamics->setGravity(-100*RoomScale);
+    dynamics->setGravity(-200*RoomScale);
 
 	irr::scene::IMeshSceneNode* node = nullptr;
     dynRegister* itemDyn = new dynRegister(dynamics);
@@ -288,6 +288,7 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     Capsule = dynamics->addPlayerColliderObject(Camera,height*RoomScale,radius*RoomScale,mass,1,1);
     Capsule->setAngularFactor(btVector3(0,0,0)); //don't let the capsule rotate until the player dies
     Capsule->setSleepingThresholds (0.0, 0.0);
+    Capsule->setGravity(btVector3(0.f,-600.0f*RoomScale,0.f));
 
     //clear inventory
     for (irr::u32 i=0;i<inventory_size;i++) {
@@ -357,7 +358,7 @@ void player::update() {
         Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
     }
 
-    float addVSpeed = (speed.y()>=0.0)*0.75;
+    float addVSpeed = 0.0f;//(speed.y()>=0.0)*0.75;
     if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
         btVector3 newSpeed(sin(irr::core::degToRad(yaw))*walkSpeed*RoomScale,speed.y()-addVSpeed,cos(irr::core::degToRad(yaw))*walkSpeed*RoomScale);
         Capsule->setLinearVelocity(newSpeed);
@@ -374,7 +375,7 @@ void player::update() {
         Capsule->setLinearVelocity(btVector3(0,speed.y()-addVSpeed,0));
     }
 
-    std::cout<<"seesNode: "<<seesMeshNode(testNode)<<"\n";
+    //std::cout<<"seesNode: "<<seesMeshNode(testNode)<<"\n";
 }
 
 void player::addToInventory(item* it) {

@@ -27,6 +27,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 using namespace irr;
 
@@ -527,16 +528,24 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     btDefaultMotionState *motionState = new btDefaultMotionState(Transform);
 
     // Create the shape
-    btVector3 spos = btVector3(0,0,0);
-    btCollisionShape *shape = new btMultiSphereShape(&spos,&radius,1);//(radius);
-    shape->setLocalScaling(btVector3(1,(height/radius)/2.0,1));
+    btConvexHullShape *mShape = new btConvexHullShape();
+
+	for (int i=0;i<90;i++) {
+		float fi = (float)i*4.f*irr::core::DEGTORAD;
+		mShape->addPoint(btVector3(std::cos(fi)*0.5f*radius,-height*0.5f,std::sin(fi)*0.5f*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.35f,std::sin(fi)*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
+	}
+	mShape->setMargin(0.7f); //default margin is incorrect with our world scale
 
     // Add mass
     btVector3 localInertia;
-    shape->calculateLocalInertia(mass, localInertia);
+    mShape->calculateLocalInertia(mass, localInertia);
 
     // Create the rigid body object
-    btRigidBody *rigidBody = new btRigidBody(mass, motionState, shape, localInertia);
+    btRigidBody *rigidBody = new btRigidBody(mass, motionState, mShape, localInertia);
+    //rigidBody->setRestitution(0.0f);
+    //rigidBody->setContactProcessingThreshold(btScalar(1.0f));
 
     // Add it to the world
     inst->world->addRigidBody(rigidBody,group,mask);
