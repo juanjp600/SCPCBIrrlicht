@@ -49,9 +49,9 @@ void irrDynamics::simStep(u32 curTimeStamp,float prec)
         inst->lastStep = curTimeStamp;
 
     if ((curTimeStamp - inst->lastStep)<=0) return;
-    inst->world->stepSimulation((curTimeStamp - inst->lastStep) * 0.001f, 14.f*(float)prec/60.f, 1.0/(float)prec);
+    inst->world->stepSimulation((curTimeStamp - inst->lastStep) * 0.001f, 14.f*prec/60.f, 1.0/prec);
 
-    inst->updateObjects(prec);
+    inst->updateObjects();
     inst->lastStep = curTimeStamp;
 }
 
@@ -194,6 +194,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 	// Add mass
 	btVector3 localInertia;
 	mShape->calculateLocalInertia(mass, localInertia);
+	mShape->setMargin(0.1f);
 
 	btRigidBody* rbody = new btRigidBody(mass, MotionState, mShape, localInertia);
 	inst->world->addRigidBody(rbody,group,mask);
@@ -356,49 +357,32 @@ void irrDynamics::setGravity(f32 newGravity)
     world->setGravity(btVector3(0.f, newGravity, 0.f));
 }
 
-void irrDynamics::updateObjects(float prec)
+void irrDynamics::updateObjects()
 {
-    if (prec>60.f) prec = 60.f;
-    prec /= 60.0;
     std::map<scene::ISceneNode*, core::vector3df*>::iterator iter2 = offset.begin();
     for (std::map<scene::ISceneNode*, btRigidBody*>::iterator iter = objects.begin(); iter != objects.end() && iter2 != offset.end(); iter++)
     {
+		btTransform Transform;
         if (iter->second->getLinearVelocity()!=btVector3(0,0,0) || iter->second->getAngularVelocity()!=btVector3(0,0,0)) {
-            btVector3 Point = iter->second->getCenterOfMassPosition();
-            //Point -= btVector3(iter2->second->X,iter2->second->Y,iter2->second->Z);
+            iter->second->getMotionState()->getWorldTransform(Transform);
+			btVector3 Point = Transform.getOrigin();
 
             // Set rotation
             core::vector3df euler;
-            const btQuaternion& quat = iter->second->getOrientation();
+            const btQuaternion& quat = Transform.getRotation();
             core::quaternion q(quat.getX(), quat.getY(), quat.getZ(), quat.getW());
             q.toEuler(euler);
 
             euler *= core::RADTODEG;
 
-            core::vector3df newEuler = euler-iter->first->getRotation();
-
-            while (newEuler.X < -180.f) newEuler.X+=360.f;
-            while (newEuler.X > 180.f) newEuler.X-=360.f;
-
-            while (newEuler.Y < -180.f) newEuler.Y+=360.f;
-            while (newEuler.Y > 180.f) newEuler.Y-=360.f;
-
-            while (newEuler.Z < -180.f) newEuler.Z+=360.f;
-            while (newEuler.Z > 180.f) newEuler.Z-=360.f;
-
-            newEuler*=prec;
-
-            newEuler+=iter->first->getRotation();
-
-            iter->first->setRotation(newEuler);
+            iter->first->setRotation(euler);
 
             core::vector3df dir = *iter2->second;
             core::matrix4 rotMatrix;
-            rotMatrix.setRotationDegrees(newEuler);
+            rotMatrix.setRotationDegrees(euler);
             rotMatrix.transformVect(dir);
-            //iter->first->getAbsoluteTransformation().rotateVect(newvec);
             Point -= btVector3(dir.X,dir.Y,dir.Z);
-            iter->first->setPosition((core::vector3df((f32)Point[0], (f32)Point[1], (f32)Point[2])*prec)+(iter->first->getPosition()*(1.0-prec)));
+            iter->first->setPosition(core::vector3df((f32)Point[0], (f32)Point[1], (f32)Point[2]));
         }
         iter2++;
     }
@@ -530,13 +514,15 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     // Create the shape
     btConvexHullShape *mShape = new btConvexHullShape();
 
+	radius-=5.f;
+	height-=10.f;
 	for (int i=0;i<90;i++) {
 		float fi = (float)i*4.f*irr::core::DEGTORAD;
-		mShape->addPoint(btVector3(std::cos(fi)*0.5f*radius,-height*0.5f,std::sin(fi)*0.5f*radius));
-		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.35f,std::sin(fi)*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*0.95f*radius,-height*0.5f,std::sin(fi)*0.95f*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.1f,std::sin(fi)*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
 	}
-	mShape->setMargin(0.7f); //default margin is incorrect with our world scale
+	mShape->setMargin(5.f); //bigger margin = less twitching
 
     // Add mass
     btVector3 localInertia;
@@ -545,13 +531,14 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     // Create the rigid body object
     btRigidBody *rigidBody = new btRigidBody(mass, motionState, mShape, localInertia);
     //rigidBody->setRestitution(0.0f);
-    //rigidBody->setContactProcessingThreshold(btScalar(1.0f));
+    //rigidBody->setContactProcessingThreshold(btScalar(0.0f));
 
     // Add it to the world
     inst->world->addRigidBody(rigidBody,group,mask);
 
     rigidBody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
     rigidBody->setFriction(mass*0.001);
+    rigidBody->setRollingFriction(mass*0.001);
 
     inst->objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
     inst->offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));

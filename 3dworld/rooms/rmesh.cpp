@@ -100,9 +100,9 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
                 btVector3 btVertices[3];
                 //round the values to hide seams
-                btVertices[0] = btVector3((float)(int)vertices[i1].Pos.X,(float)(int)vertices[i1].Pos.Y,(float)(int)vertices[i1].Pos.Z);
-                btVertices[1] = btVector3((float)(int)vertices[i2].Pos.X,(float)(int)vertices[i2].Pos.Y,(float)(int)vertices[i2].Pos.Z);
-                btVertices[2] = btVector3((float)(int)vertices[i3].Pos.X,(float)(int)vertices[i3].Pos.Y,(float)(int)vertices[i3].Pos.Z);
+                btVertices[0] = btVector3(vertices[i1].Pos.X,vertices[i1].Pos.Y,vertices[i1].Pos.Z);
+                btVertices[1] = btVector3(vertices[i2].Pos.X,vertices[i2].Pos.Y,vertices[i2].Pos.Z);
+                btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i3].Pos.Y,vertices[i3].Pos.Z);
                 pTriMesh->addTriangle(btVertices[0], btVertices[1], btVertices[2]);
             }
 
@@ -227,7 +227,6 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                 file->read(&fy,sizeof(float));
                 file->read(&fz,sizeof(float));
 
-				fx=(float)(int)fx;fy=(float)(int)fy;fz=(float)(int)fz; //round the values to hide seams
 				fx*=RoomScale*0.1; fy*=RoomScale*0.1; fz*=RoomScale*0.1;
                 vertices.push_back(btVector3(fx,fy,fz));
                 //now do something with that
@@ -361,10 +360,9 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
         }
 
         mesh->recalculateBoundingBox();
-        //mesh->setDirty();
         retRMesh->mesh = mesh;
         retRMesh->shape = new btBvhTriangleMeshShape(pTriMesh, true);
-        retRMesh->shape->setMargin(0.0f);
+        retRMesh->shape->setMargin(0.7f);
         file->drop();
         return retRMesh;
 
@@ -373,39 +371,6 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
     }
 
     file->drop();
-    return nullptr;//retRMesh;
+    return nullptr;
 
 }
-
-/*Reference code:
-
-SMesh* Mesh = new SMesh();
-
-SMeshBuffer *buf = 0;
-buf = new SMeshBuffer();
-Mesh->addMeshBuffer(buf);
-buf->drop();
-
-buf->Vertices.reallocate(3);
-buf->Vertices.set_used(3);
-
-buf->Vertices[0] = S3DVertex(0,0,10, 1,1,0,    video::SColor(255,0,255,255), 0, 1);
-buf->Vertices[1] = S3DVertex(10,0,-10, 1,0,0,  video::SColor(255,255,0,255), 1, 1);
-buf->Vertices[2] = S3DVertex(0,20,0, 0,1,1,    video::SColor(255,255,255,0), 1, 0);
-
-buf->Indices.reallocate(3);
-buf->Indices.set_used(3);
-
-buf->Indices[0]=0;
-buf->Indices[1]=1;
-buf->Indices[2]=2;
-
-buf->recalculateBoundingBox();
-
-
-IMeshSceneNode* myNode = irrScene -> addMeshSceneNode(Mesh);
-
-myNode->setMaterialFlag(video::EMF_BACK_FACE_CULLING, false);
-myNode->setMaterialFlag(EMF_LIGHTING, false);
-myNode->setMaterialFlag(EMF_NORMALIZE_NORMALS, true);
-myNode->setMaterialTexture(0, irrDriver->getTexture("rust0.jpg"));*/

@@ -50,7 +50,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	//Add test model
 
     dynamics = new irrDynamics();//irrDynamics::getInstance();
-    dynamics->setGravity(-200*RoomScale);
+    dynamics->setGravity(-100*RoomScale);
 
 	irr::scene::IMeshSceneNode* node = nullptr;
     dynRegister* itemDyn = new dynRegister(dynamics);
@@ -93,8 +93,13 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	btTransform Transform;
 	Transform.setIdentity();
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
-	btRigidBody* rbody = new btRigidBody(0.f, MotionState, rme->shape);
+	btVector3 localInertia(0,0,0);
+	btRigidBody* rbody = new btRigidBody(0.f, MotionState, rme->shape,localInertia);
+	//rbody->setActivationState(DISABLE_DEACTIVATION);
 	dynamics->registerNewRBody(node,rbody,0);
+	//all rigid bodies must have a friction value for friction to work
+	rbody->setFriction(1.f);
+	rbody->setRollingFriction(1.f);
 
 	//node->setScale(irr::core::vector3df(0.1f*RoomScale));
 
@@ -125,7 +130,9 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
         node->setScale(irr::core::vector3df(2.1*RoomScale));
         node->setPosition(irr::core::vector3df(-0*RoomScale,10*RoomScale,0*RoomScale));
 
-        dynamics->addTriMesh_moving(node,5.0f,5,1,1);
+        rbody = dynamics->addTriMesh_moving(node,5.0f,5,1,1);
+        rbody->setFriction(10.0f);
+        rbody->setDamping(0,0);
         node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
         node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
@@ -156,9 +163,9 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     node->getMaterial(0).Lighting = true;
     node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
 
-    rbody = dynamics->addTriMesh_moving(node,16.f/*000*/,20,1,1);
-    rbody->setAngularFactor(btVector3(0,0.1,0));
-    rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
+    rbody = dynamics->addTriMesh_moving(node,16000.f,20,1,1);
+    rbody->setAngularFactor(btVector3(0,1.0,0));
+    //rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
 
     node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/173_norm.jpg"));
     node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/173_Spec.jpg"));
@@ -186,7 +193,7 @@ bool world::run() {
     }
     prevTime = irrTimer->getRealTime();
 
-    float prec = 2.0f;
+    float prec = 0.75f;
 
     dynamics->simStep(irrTimer->getRealTime(),60.f * prec);
 
@@ -288,7 +295,7 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     Capsule = dynamics->addPlayerColliderObject(Camera,height*RoomScale,radius*RoomScale,mass,1,1);
     Capsule->setAngularFactor(btVector3(0,0,0)); //don't let the capsule rotate until the player dies
     Capsule->setSleepingThresholds (0.0, 0.0);
-    Capsule->setGravity(btVector3(0.f,-600.0f*RoomScale,0.f));
+    Capsule->setGravity(btVector3(0.f,-300.0f*RoomScale,0.f));
 
     //clear inventory
     for (irr::u32 i=0;i<inventory_size;i++) {
