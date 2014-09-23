@@ -47,7 +47,7 @@ class irrDynamics
     /*static */void addTriMesh_static(irr::scene::IMeshSceneNode* mesh,short group=~0,short mask=~0);
     /*static */class btRigidBody* addTriMesh_moving(irr::scene::IMeshSceneNode* mesh,float mass=1.0f,unsigned int precisionLoss=1,short group=~0,short mask=~0);
 
-    void registerNewRBody(irr::scene::ISceneNode* node,btRigidBody* rbody,float mass,short group=~0,short mask=~0,irr::core::vector3df nOffset=irr::core::vector3df(0,0,0));
+    void registerNewRBody(irr::scene::ISceneNode* node,btRigidBody* rbody,float mass=-1,short group=-1,short mask=~0,irr::core::vector3df nOffset=irr::core::vector3df(0,0,0));
     void unregisterRBody(btRigidBody* rbody);
 
     //! Add a scene node that is represented as spherical behavior
@@ -58,6 +58,8 @@ class irrDynamics
       * \return The corresponding btRigidBody, if addidional parameters are desired to be set. */
     /*static */class btRigidBody* addSphericalObject(irr::scene::ISceneNode* node, irr::f32 radius, irr::f32 mass,short group=~0,short mask=~0);
     class btRigidBody* addPlayerColliderObject(irr::scene::ISceneNode* node, irr::f32 height, irr::f32 radius, irr::f32 mass,short group=~0,short mask=~0);
+
+	bool rayTest(class btVector3 Start,class btVector3 End);
 
     /*static */class btRigidBody* addCapsuleObject(irr::scene::ISceneNode* node,irr::f32 height, irr::f32 radius, irr::f32 mass,short group=~0,short mask=~0);
     //! Add a scene node that is represented as a sturdy box
@@ -140,7 +142,7 @@ class irrDynamics
     irrDynamics(const irrDynamics& other);
     std::map<irr::scene::ISceneNode*, class btRigidBody*> objects;
     std::map<irr::scene::ISceneNode*, irr::core::vector3df*> offset;
-    void updateObjects(float prec = 60.f);
+    void updateObjects();
     ~irrDynamics();
     ///*static */irrDynamics* instance;
     void clearObjects();

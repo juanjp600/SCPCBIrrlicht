@@ -259,8 +259,16 @@ class player {
         irr::core::vector3df selfRotation;
 
         item* inventory[inventory_size];
+
+		float height,radius;
+
+        float crouchState = 0.f;
+        bool crouched = false;
+
+        bool dead = false;
     public:
-        player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=28.0f,float radius=6.0f,float mass=70.0f);
+        player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=28.0f,float radius=6.0f,float mass=10.0f);
+        //mass should stay low if you want the player to be able the climb up stairs
         ~player();
         void update();
         float yaw = 0.f,pitch = 0.f,roll = 0.f;

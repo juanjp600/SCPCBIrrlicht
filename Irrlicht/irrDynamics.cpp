@@ -214,9 +214,11 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 void irrDynamics::registerNewRBody(irr::scene::ISceneNode* node,btRigidBody* rbody,float mass,short group,short mask,irr::core::vector3df nOffset) {
     world->addRigidBody(rbody,group,mask);
 
-	rbody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
-	rbody->setFriction(mass*0.001);
-	rbody->setRollingFriction(mass);
+	if (mass>=0.f) {
+		rbody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
+		rbody->setFriction(mass*0.001);
+		rbody->setRollingFriction(mass);
+	}
 
     irr::core::vector3df* mOffset = new irr::core::vector3df(nOffset);
 	objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rbody));
@@ -497,6 +499,13 @@ btRigidBody* irrDynamics::addSphericalObject(scene::ISceneNode* node, f32 radius
     return rigidBody;
 }
 
+bool irrDynamics::rayTest(btVector3 Start,btVector3 End) {
+	btCollisionWorld::ClosestRayResultCallback RayCallback(Start, End);
+	world->rayTest(Start,End,RayCallback);
+
+	return RayCallback.hasHit();
+}
+
 btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 height, f32 radius, f32 mass,short group,short mask)
 {
     irrDynamics* inst = this;//getInstance();
@@ -514,15 +523,15 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     // Create the shape
     btConvexHullShape *mShape = new btConvexHullShape();
 
-	radius-=5.f;
-	height-=10.f;
+	radius-=0.f;
+	height-=0.f;
 	for (int i=0;i<90;i++) {
 		float fi = (float)i*4.f*irr::core::DEGTORAD;
-		mShape->addPoint(btVector3(std::cos(fi)*0.95f*radius,-height*0.5f,std::sin(fi)*0.95f*radius));
-		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.1f,std::sin(fi)*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*0.4f*radius,-height*0.5f,std::sin(fi)*0.4f*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.6f,std::sin(fi)*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
 	}
-	mShape->setMargin(5.f); //bigger margin = less twitching
+	mShape->setMargin(0.f); //bigger margin = less twitching
 
     // Add mass
     btVector3 localInertia;

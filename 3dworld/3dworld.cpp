@@ -1,5 +1,6 @@
 #include "3dworld.h"
-#include "rooms/rmesh.h"
+//#include "rooms/rmesh.h"
+#include "rooms/room.h"
 
 #include <iostream>
 #include <cmath>
@@ -75,7 +76,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
         itemList.push_back(it);
     }
 
-    RMesh* rme = loadRMesh(std::string("test/173bright_opt.rmesh"),irrFileSystem,irrDriver);
+    RMesh* rme = loadRMesh(std::string("test/testroom_opt.rmesh"),irrFileSystem,irrDriver);
 	node = irrSmgr->addMeshSceneNode(rme->mesh);
 
     std::vector<irr::video::SLight> lightList;
@@ -121,7 +122,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
     dynamics->addTriMesh_static(node);
 
-	for (int i = 0;i<10;i++) {
+	for (int i = 0;i<1;i++) {
         irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/scp-066.b3d");
 
         node = irrSmgr->addMeshSceneNode(mesh1);
@@ -256,7 +257,7 @@ bool world::run() {
         }
     }
 
-    blurAlpha = 0;
+    blurAlpha = 200;
 
     irrDriver->endScene();
 
@@ -274,11 +275,14 @@ float world::getFPSfactor() {
     return FPSfactor;
 }
 
-player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height,float radius,float mass) {
+player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float iheight,float iradius,float mass) {
     owner = own;
     irrSmgr = smgr;
     dynamics = dyn;
     irrReceiver = receiver;
+
+	height = iheight*RoomScale;
+	radius = iradius*RoomScale;
 
     selfRotation.X = selfRotation.Y = selfRotation.Z = 0;
 
@@ -292,10 +296,11 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     irrSmgr->setActiveCamera(Camera);
 
     //Add capsule
-    Capsule = dynamics->addPlayerColliderObject(Camera,height*RoomScale,radius*RoomScale,mass,1,1);
+    Capsule = dynamics->addPlayerColliderObject(Camera,height,radius,mass,1,1);
     Capsule->setAngularFactor(btVector3(0,0,0)); //don't let the capsule rotate until the player dies
     Capsule->setSleepingThresholds (0.0, 0.0);
     Capsule->setGravity(btVector3(0.f,-300.0f*RoomScale,0.f));
+	Capsule->setActivationState(DISABLE_DEACTIVATION);
 
     //clear inventory
     for (irr::u32 i=0;i<inventory_size;i++) {
@@ -356,16 +361,7 @@ void player::update() {
 
     btVector3 speed = Capsule->getLinearVelocity();
 
-    float walkSpeed = 40.0;
-    if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
-        if (Stamina>0) walkSpeed=80.0;
-        Stamina-=0.2*owner->getFPSfactor();
-        if (Stamina<0) Stamina = -10.0;
-    } else {
-        Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
-    }
-
-    float addVSpeed = 0.0f;//(speed.y()>=0.0)*0.75;
+    /*float addVSpeed = 0.0f;//(speed.y()>=0.0)*0.75;
     if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
         btVector3 newSpeed(sin(irr::core::degToRad(yaw))*walkSpeed*RoomScale,speed.y()-addVSpeed,cos(irr::core::degToRad(yaw))*walkSpeed*RoomScale);
         Capsule->setLinearVelocity(newSpeed);
@@ -380,7 +376,132 @@ void player::update() {
         Capsule->setLinearVelocity(newSpeed);
     } else {
         Capsule->setLinearVelocity(btVector3(0,speed.y()-addVSpeed,0));
-    }
+    }*/
+    if (!dead) {
+		if ((irrReceiver->IsKeyDown(irr::KEY_KEY_W)
+			|| irrReceiver->IsKeyDown(irr::KEY_KEY_S)
+			|| irrReceiver->IsKeyDown(irr::KEY_KEY_A)
+			|| irrReceiver->IsKeyDown(irr::KEY_KEY_D)
+			) && std::abs(speed[1]) < 20.f) {
+
+			float walkSpeed = 40.0;
+			if (!crouched) {
+				if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
+					if (Stamina>0) walkSpeed=80.0;
+					Stamina-=0.2*owner->getFPSfactor();
+					if (Stamina<0) Stamina = -10.0;
+				} else {
+					Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
+				}
+			} else {
+				walkSpeed = 20.f;
+				Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
+			}
+			float dir = 0;
+			if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
+				dir = 0;
+				if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+					dir -= 45;
+				} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+					dir += 45;
+				}
+			} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) {
+				dir = 180;
+				if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+					dir += 45;
+				} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+					dir -= 45;
+				}
+			} else {
+				if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+					dir = -90;
+				} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+					dir = 90;
+				}
+			}
+			dir-=90;
+			dir *= irr::core::DEGTORAD;
+			Capsule->setFriction(0.15f);
+			float xs,zs,nxs,nzs,d,dd;
+			xs = speed[0];
+			zs = speed[2];
+			if (irr::core::squareroot(xs*xs+zs*zs)<walkSpeed*0.75f*RoomScale) {
+				Capsule->applyCentralImpulse(btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkSpeed*2.f*RoomScale,0.f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkSpeed*2.f*RoomScale));
+			} else {
+				nxs = std::cos(dir+yaw*irr::core::DEGTORAD);
+				nzs = -std::sin(dir+yaw*irr::core::DEGTORAD);
+				d = irr::core::squareroot(xs*xs+zs*zs);
+				nxs = std::atan2(nxs,nzs);
+				nzs = std::atan2(xs,zs);
+				dd = nxs - nzs;
+				while (dd<-irr::core::PI/2.f) dd+=irr::core::PI;
+				while (dd>irr::core::PI/2.f) dd-=irr::core::PI;
+				nzs = nzs+dd * 0.5f;
+				nzs -= irr::core::PI/2.f;
+
+				Capsule->setLinearVelocity(btVector3(std::cos(nzs)*d,speed[1],-std::sin(nzs)*d));
+			}
+		} else {
+			if (std::abs(speed[1])<=4.f) Capsule->setFriction(4.0f); else Capsule->setFriction(1.0f);
+			Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
+		}
+		if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
+			crouched = true;
+		} else {
+			btVector3 start = Capsule->getCenterOfMassPosition();
+			btVector3 finish = start + btVector3(0,height,0);
+			start += btVector3(0,(height * 0.25f),0);
+			if (!dynamics->rayTest(start,finish)) crouched = false; //don't stand up if there's something above your head
+		}
+	} else {
+		Capsule->setFriction(4.0f);
+		Capsule->setRollingFriction(25.0f);
+		btVector3 start = Capsule->getCenterOfMassPosition();
+		btVector3 finish = start + btVector3(0,height,0);
+		start += btVector3(0,(height * 0.25f),0);
+		if (!dynamics->rayTest(start,finish)) crouched = false; //don't stand up if there's something above your head
+	}
+
+    if (irrReceiver->IsKeyDown(irr::KEY_KEY_Q)) {
+		Capsule->setAngularFactor(btVector3(1,1,1)); dead = true;
+	}
+    if (irrReceiver->IsKeyDown(irr::KEY_KEY_E)) {
+		dead = false;
+		Capsule->setAngularFactor(btVector3(0,0,0));
+		const btQuaternion identity(0,0,0,1);
+		btTransform Transform = Capsule->getCenterOfMassTransform();
+		Transform.setRotation(identity);
+		Capsule->setCenterOfMassTransform(Transform);
+		Capsule->setAngularVelocity(btVector3(0,0,0));
+	}
+
+	bool changed = false;
+	if (crouched) {
+		if (crouchState<0.5f) changed = true;
+
+		crouchState=std::min(0.5f,crouchState+(0.5f-crouchState)*owner->getFPSfactor()*0.2f);
+		if (crouchState>0.4998f) crouchState = 0.5f;
+
+		if (changed) { //must unregister body to perform changes to its shape
+			dynamics->unregisterRBody(Capsule);
+			Capsule->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
+			dynamics->registerNewRBody(Camera,Capsule,-1,1,1,irr::core::vector3df(0,(-(height/2.f)*(1.f-crouchState))+(radius/1.5f),0));
+			Capsule->setGravity(btVector3(0.f,-300.0f*RoomScale,0.f));
+		}
+	} else {
+		if (crouchState>0.0f) changed = true;
+
+		crouchState=std::max(0.f,crouchState+(-crouchState)*owner->getFPSfactor()*0.05f);
+		if (crouchState<0.002f) crouchState = 0.f;
+
+		if (changed) { //must unregister body to perform changes to its shape
+			dynamics->unregisterRBody(Capsule);
+			Capsule->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
+			dynamics->registerNewRBody(Camera,Capsule,-1,1,1,irr::core::vector3df(0,(-(height/2.f)*(1.f-crouchState))+(radius/1.5f),0));
+			Capsule->setGravity(btVector3(0.f,-300.0f*RoomScale,0.f));
+		}
+	}
+	//std::cout<<Capsule->getCollisionShape()->getLocalScaling()[1]<<" "<<crouchState<<"\n";
 
     //std::cout<<"seesNode: "<<seesMeshNode(testNode)<<"\n";
 }
