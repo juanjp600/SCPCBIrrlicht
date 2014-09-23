@@ -523,15 +523,15 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     // Create the shape
     btConvexHullShape *mShape = new btConvexHullShape();
 
-	radius-=0.f;
-	height-=0.f;
+	radius-=0.2f;
+	height-=0.4f;
 	for (int i=0;i<90;i++) {
 		float fi = (float)i*4.f*irr::core::DEGTORAD;
 		mShape->addPoint(btVector3(std::cos(fi)*0.4f*radius,-height*0.5f,std::sin(fi)*0.4f*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.6f,std::sin(fi)*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
 	}
-	mShape->setMargin(0.f); //bigger margin = less twitching
+	mShape->setMargin(0.2f);
 
     // Add mass
     btVector3 localInertia;
