@@ -70,3 +70,119 @@ room1* room1::createNew(irr::core::vector3df inPosition,char inAngle) {
 
     return retRoom;
 }
+
+room2* room2::createNew(irr::core::vector3df inPosition,char inAngle) {
+	room2* retRoom = new room2;
+	retRoom->node = baseNode->clone();
+	retRoom->node->setPosition(inPosition);
+	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
+	retRoom->angle = inAngle;
+
+	//Add the Bullet rigid body
+    retRoom->node->updateAbsolutePosition();
+	irr::core::vector3df irrPos = retRoom->node->getAbsolutePosition();
+	btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
+	btTransform Transform;
+	Transform.setIdentity();
+	Transform.setOrigin(btPos);
+	btQuaternion btRot;
+	irr::core::vector3df irrRot = retRoom->node->getRotation();
+	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+
+	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
+
+	btVector3 localInertia;
+	room2::baseShape->calculateLocalInertia(0.0, localInertia);
+
+    retRoom->rbody = new btRigidBody(0.0, MotionState, room2::baseShape, localInertia);
+    room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
+
+    return retRoom;
+}
+
+room2c* room2c::createNew(irr::core::vector3df inPosition,char inAngle) {
+	room2c* retRoom = new room2c;
+	retRoom->node = baseNode->clone();
+	retRoom->node->setPosition(inPosition);
+	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
+	retRoom->angle = inAngle;
+
+	//Add the Bullet rigid body
+    retRoom->node->updateAbsolutePosition();
+	irr::core::vector3df irrPos = retRoom->node->getAbsolutePosition();
+	btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
+	btTransform Transform;
+	Transform.setIdentity();
+	Transform.setOrigin(btPos);
+	btQuaternion btRot;
+	irr::core::vector3df irrRot = retRoom->node->getRotation();
+	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+
+	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
+
+	btVector3 localInertia;
+	room2c::baseShape->calculateLocalInertia(0.0, localInertia);
+
+    retRoom->rbody = new btRigidBody(0.0, MotionState, room2c::baseShape, localInertia);
+    room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
+
+    return retRoom;
+}
+
+room3* room3::createNew(irr::core::vector3df inPosition,char inAngle) {
+	room3* retRoom = new room3;
+	retRoom->node = baseNode->clone();
+	retRoom->node->setPosition(inPosition);
+	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
+	retRoom->angle = inAngle;
+
+	//Add the Bullet rigid body
+    retRoom->node->updateAbsolutePosition();
+	irr::core::vector3df irrPos = retRoom->node->getAbsolutePosition();
+	btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
+	btTransform Transform;
+	Transform.setIdentity();
+	Transform.setOrigin(btPos);
+	btQuaternion btRot;
+	irr::core::vector3df irrRot = retRoom->node->getRotation();
+	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+
+	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
+
+	btVector3 localInertia;
+	room3::baseShape->calculateLocalInertia(0.0, localInertia);
+
+    retRoom->rbody = new btRigidBody(0.0, MotionState, room3::baseShape, localInertia);
+    room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
+
+    return retRoom;
+}
+
+room4* room4::createNew(irr::core::vector3df inPosition,char inAngle) {
+	room4* retRoom = new room4;
+	retRoom->node = baseNode->clone();
+	retRoom->node->setPosition(inPosition);
+	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
+	retRoom->angle = inAngle;
+
+	//Add the Bullet rigid body
+    retRoom->node->updateAbsolutePosition();
+	irr::core::vector3df irrPos = retRoom->node->getAbsolutePosition();
+	btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
+	btTransform Transform;
+	Transform.setIdentity();
+	Transform.setOrigin(btPos);
+	btQuaternion btRot;
+	irr::core::vector3df irrRot = retRoom->node->getRotation();
+	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+
+	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
+
+	btVector3 localInertia;
+	room4::baseShape->calculateLocalInertia(0.0, localInertia);
+
+    retRoom->rbody = new btRigidBody(0.0, MotionState, room4::baseShape, localInertia);
+    room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
+
+    return retRoom;
+}
