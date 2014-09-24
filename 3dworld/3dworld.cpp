@@ -385,7 +385,7 @@ void player::update() {
 			) && std::abs(speed[1]) < 20.f) {
 
 			float walkSpeed = 40.0;
-			if (!crouched) {
+			if (crouchState<0.015f) {
 				if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
 					if (Stamina>0) walkSpeed=80.0;
 					Stamina-=0.2*owner->getFPSfactor();
@@ -394,7 +394,7 @@ void player::update() {
 					Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
 				}
 			} else {
-				walkSpeed = 20.f;
+				if (crouchState>0.5f) walkSpeed = 10.f; else walkSpeed = 20.f;
 				Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
 			}
 			float dir = 0;
@@ -442,24 +442,44 @@ void player::update() {
 				Capsule->setLinearVelocity(btVector3(std::cos(nzs)*d,speed[1],-std::sin(nzs)*d));
 			}
 		} else {
-			if (std::abs(speed[1])<=4.f) Capsule->setFriction(4.0f); else Capsule->setFriction(1.0f);
+			if (std::abs(speed[1])<=4.f) Capsule->setFriction(3.0f); else Capsule->setFriction(1.0f);
 			Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
 		}
 		if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
 			crouched = true;
 		} else {
 			btVector3 start = Capsule->getCenterOfMassPosition();
-			btVector3 finish = start + btVector3(0,height,0);
+			btVector3 finish = start + btVector3(0,height*0.85f,0);
 			start += btVector3(0,(height * 0.25f),0);
-			if (!dynamics->rayTest(start,finish)) crouched = false; //don't stand up if there's something above your head
+			if (!dynamics->rayTest(start,finish)) {
+				if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,radius*1.15f),finish+btVector3(radius*1.15f,0,radius*1.15f))) {
+					if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,radius*1.15f),finish+btVector3(-radius*1.15f,0,radius*1.15f))) {
+						if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,-radius*1.15f),finish+btVector3(radius*1.15f,0,-radius*1.15f))) {
+							if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,-radius*1.15f),finish+btVector3(-radius*1.15f,0,-radius*1.15f))) {
+								crouched = false; //don't stand up if there's something above your head
+							}
+						}
+					}
+				}
+			}
 		}
 	} else {
-		Capsule->setFriction(4.0f);
+		Capsule->setFriction(3.0f);
 		Capsule->setRollingFriction(25.0f);
 		btVector3 start = Capsule->getCenterOfMassPosition();
-		btVector3 finish = start + btVector3(0,height,0);
+		btVector3 finish = start + btVector3(0,height*0.85f,0);
 		start += btVector3(0,(height * 0.25f),0);
-		if (!dynamics->rayTest(start,finish)) crouched = false; //don't stand up if there's something above your head
+		if (!dynamics->rayTest(start,finish)) {
+			if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,radius*1.15f),finish+btVector3(radius*1.15f,0,radius*1.15f))) {
+				if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,radius*1.15f),finish+btVector3(-radius*1.15f,0,radius*1.15f))) {
+					if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,-radius*1.15f),finish+btVector3(radius*1.15f,0,-radius*1.15f))) {
+						if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,-radius*1.15f),finish+btVector3(-radius*1.15f,0,-radius*1.15f))) {
+							crouched = false; //don't stand up if there's something above your head
+						}
+					}
+				}
+			}
+		}
 	}
 
     if (irrReceiver->IsKeyDown(irr::KEY_KEY_Q)) {
@@ -491,7 +511,7 @@ void player::update() {
 	} else {
 		if (crouchState>0.0f) changed = true;
 
-		crouchState=std::max(0.f,crouchState+(-crouchState)*owner->getFPSfactor()*0.05f);
+		crouchState=std::max(0.f,crouchState+(-crouchState)*owner->getFPSfactor()*0.1f);
 		if (crouchState<0.002f) crouchState = 0.f;
 
 		if (changed) { //must unregister body to perform changes to its shape
