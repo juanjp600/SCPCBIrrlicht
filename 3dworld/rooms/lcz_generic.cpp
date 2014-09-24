@@ -59,6 +59,7 @@ room1* room1::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
 	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
@@ -88,6 +89,7 @@ room2* room2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
 	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
@@ -117,6 +119,7 @@ room2c* room2c::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
 	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
@@ -146,6 +149,7 @@ room3* room3::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
 	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
@@ -175,6 +179,7 @@ room4* room4::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
 	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
