@@ -58,8 +58,12 @@
 		<Unit filename="3dworld/items/itemGasMask/itemGasMask.h" />
 		<Unit filename="3dworld/items/items.cpp" />
 		<Unit filename="3dworld/items/items.h" />
+		<Unit filename="3dworld/rooms/lcz_generic.cpp" />
+		<Unit filename="3dworld/rooms/lcz_generic.h" />
 		<Unit filename="3dworld/rooms/rmesh.cpp" />
 		<Unit filename="3dworld/rooms/rmesh.h" />
+		<Unit filename="3dworld/rooms/room.cpp" />
+		<Unit filename="3dworld/rooms/room.h" />
 		<Unit filename="Irrlicht/CGUITTFont.cpp" />
 		<Unit filename="Irrlicht/irrDynamics.cpp" />
 		<Unit filename="main.cpp" />

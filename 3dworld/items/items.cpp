@@ -179,6 +179,13 @@
 }*/
 item::item() {}
 
+dynRegister* item::dynamics = nullptr;
+void item::setDynamics(dynRegister* dyn) {
+    if (item::dynamics == nullptr) {
+        item::dynamics = dyn;
+    }
+}
+
 /*void item::Pick() {
     if (!picked) {
         rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(0,1000000.0*RoomScale,0));

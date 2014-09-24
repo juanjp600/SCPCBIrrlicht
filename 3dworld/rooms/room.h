@@ -10,75 +10,19 @@ enum class roomTypes {
 class room {
 	protected:
 		char angle;
+		char selectedEvent;
 		float eventState[3];
-		irr::scene::IMeshSceneNode* node;
+		irr::scene::ISceneNode* node;
 		btRigidBody* rbody;
+
+		static dynRegister* dynamics;
 	public:
 		virtual roomTypes getType() =0;
 		virtual char getAngle() { return angle; };
 		virtual void updateEvent() =0;
+		void setDynamics(dynRegister* inDyn);
 };
 
-//these are for event-less rooms, they can share the same subclass
-class room1 : public room {
-	private:
-		struct assets {
-			irr::scene::IMeshSceneNode* node;
-			btBvhTriangleMeshShape* shape;
-		};
-		static std::map<std::string,assets> asset;
-	public:
-		virtual roomTypes getType() { return roomTypes::ROOM1; };
-		virtual void updateEvent() { return; };
-};
-
-class room2 : public room {
-	private:
-		struct assets {
-			irr::scene::IMeshSceneNode* node;
-			btBvhTriangleMeshShape* shape;
-		};
-		static std::map<std::string,assets> asset;
-	public:
-		virtual roomTypes getType() { return roomTypes::ROOM2; };
-		virtual void updateEvent() { return; };
-};
-
-class room2c : public room {
-	private:
-		struct assets {
-			irr::scene::IMeshSceneNode* node;
-			btBvhTriangleMeshShape* shape;
-		};
-		static std::map<std::string,assets> asset;
-	public:
-		virtual roomTypes getType() { return roomTypes::ROOM2C; };
-		virtual void updateEvent() { return; };
-};
-
-class room3 : public room {
-	private:
-		struct assets {
-			irr::scene::IMeshSceneNode* node;
-			btBvhTriangleMeshShape* shape;
-		};
-		static std::map<std::string,assets> asset;
-	public:
-		virtual roomTypes getType() { return roomTypes::ROOM3; };
-		virtual void updateEvent() { return; };
-};
-
-class room4 : public room {
-	private:
-		struct assets {
-			irr::scene::IMeshSceneNode* node;
-			btBvhTriangleMeshShape* shape;
-		};
-		static std::map<std::string,assets> asset;
-	public:
-		virtual roomTypes getType() { return roomTypes::ROOM4; };
-		virtual void updateEvent() { return; };
-};
-//-----------------
+#include "lcz_generic.h"
 
 #endif // ROOM_H_INCLUDED

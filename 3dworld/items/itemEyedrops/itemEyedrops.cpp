@@ -3,7 +3,7 @@
 irr::scene::IMeshSceneNode* itemEyedrops::baseNode = nullptr;
 btConvexHullShape* itemEyedrops::shape = nullptr;
 irr::core::vector3df itemEyedrops::offset = irr::core::vector3df(0,0,0);
-dynRegister* itemEyedrops::dynamics = nullptr;
+//dynRegister* itemEyedrops::dynamics = nullptr;
 
 itemEyedrops::itemEyedrops() {}
 
@@ -13,12 +13,6 @@ void itemEyedrops::setMeshNode(irr::scene::IMeshSceneNode* &node) {
         node->setVisible(false);
     }
     node = nullptr;
-}
-
-void itemEyedrops::setDynamics(dynRegister* dyn) {
-    if (itemEyedrops::dynamics == nullptr) {
-        itemEyedrops::dynamics = dyn;
-    }
 }
 
 itemEyedrops* itemEyedrops::createItemEyedrops() {

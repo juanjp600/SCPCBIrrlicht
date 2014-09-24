@@ -8,7 +8,6 @@ class itemEyedrops : public item {
         static irr::scene::IMeshSceneNode* baseNode; //the node that's cloned when a new item is created
         static btConvexHullShape* shape; //the collision shape used for the rigid body
         static irr::core::vector3df offset;
-        static dynRegister* dynamics;
 
         itemEyedrops();
 
@@ -33,7 +32,6 @@ class itemEyedrops : public item {
         static itemEyedrops* createItemEyedrops();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* &node);
-        static void setDynamics(dynRegister* dyn);
 
         void Pick();
         void Unpick(irr::core::vector3df position);

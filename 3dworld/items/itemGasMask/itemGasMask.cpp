@@ -3,7 +3,7 @@
 irr::scene::IMeshSceneNode* itemGasMask::baseNode = nullptr;
 btConvexHullShape* itemGasMask::shape = nullptr;
 irr::core::vector3df itemGasMask::offset = irr::core::vector3df(0,0,0);
-dynRegister* itemGasMask::dynamics = nullptr;
+//dynRegister* itemGasMask::dynamics = nullptr;
 
 itemGasMask::itemGasMask() {}
 
@@ -13,12 +13,6 @@ void itemGasMask::setMeshNode(irr::scene::IMeshSceneNode* &node) {
         node->setVisible(false);
     }
     node = nullptr;
-}
-
-void itemGasMask::setDynamics(dynRegister* dyn) {
-    if (itemGasMask::dynamics == nullptr) {
-        itemGasMask::dynamics = dyn;
-    }
 }
 
 itemGasMask* itemGasMask::createItemGasMask() {

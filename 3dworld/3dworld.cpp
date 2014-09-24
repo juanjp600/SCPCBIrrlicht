@@ -59,14 +59,16 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/eyedrops.b3d"));
     node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
+	item::setDynamics(itemDyn);
+
     node->setScale(irr::core::vector3df(0.06*RoomScale,0.06*RoomScale,0.06*RoomScale));
-    itemEyedrops::setMeshNode(node); itemEyedrops::setDynamics(itemDyn);
+    itemEyedrops::setMeshNode(node);
 
     node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/gasmask.b3d"));
     node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
     node->setScale(irr::core::vector3df(0.6*RoomScale,0.6*RoomScale,0.6*RoomScale));
-    itemGasMask::setMeshNode(node); itemGasMask::setDynamics(itemDyn);
+    itemGasMask::setMeshNode(node);
 
     for (irr::u32 ui=0;ui<10000;ui++) {
         item* it = itemEyedrops::createItemEyedrops();

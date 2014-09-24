@@ -20,6 +20,7 @@ class item {
         btRigidBody* rbody;
         bool picked = true;
         float state[3];
+        static dynRegister* dynamics;
     public:
         virtual bool updateItem() =0;
         virtual std::string getName() =0;
@@ -34,6 +35,8 @@ class item {
 
         virtual void Pick() =0;
         virtual void Unpick(irr::core::vector3df position) =0;
+
+        static void setDynamics(dynRegister* dyn);
 
         item();
         ~item();
