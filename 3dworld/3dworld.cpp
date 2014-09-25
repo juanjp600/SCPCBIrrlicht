@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 
 world::world(unsigned int width,unsigned int height,bool fullscreen) {
     mainWidth = width; mainHeight = height;
@@ -23,6 +24,8 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     irrFileSystem = irrDevice->getFileSystem();
 
     irrTimer = irrDevice->getTimer();
+
+    srand(irrTimer->getRealTime());
 
     irr::video::IGPUProgrammingServices* irrGpu = irrDriver->getGPUProgrammingServices();
     RoomShader = irr::video::EMT_LIGHTMAP; // Fallback material type
@@ -197,11 +200,12 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     }
 	room1::setBase(room1mesh,rme->shape);
 
-	room2::createNew(irr::core::vector3df(0,0,0),0);
+	createMap();
+	/*room2::createNew(irr::core::vector3df(0,0,0),0);
 	room2c::createNew(irr::core::vector3df(0,0,204.8f*RoomScale),1);
 	room3::createNew(irr::core::vector3df(0,0,-204.8f*RoomScale),2);
 	room4::createNew(irr::core::vector3df(-204.8f*RoomScale,0,-204.8f*RoomScale),2);
-	room1::createNew(irr::core::vector3df(204.8f*RoomScale,0,-204.8f*RoomScale),1);
+	room1::createNew(irr::core::vector3df(204.8f*RoomScale,0,-204.8f*RoomScale),1);*/
 
     //node->setPosition(irr::core::vector3df(0,0*RoomScale,0));
 
@@ -270,6 +274,201 @@ world::~world() {
     //smgr->drop();
     //driver->drop();
     irrDevice->drop();
+}
+
+void world::createMap() {
+	auto getZone = [] (short y) { return std::min(std::floor((float)(20-y)/60.f),2.f); };
+
+	short x,y,temp;
+	short x2,y2;
+	short width,height;
+
+	struct tempRoom {
+		roomTypes type;
+		char angle;
+	};
+
+	tempRoom roomTemp[20][20];
+	for (x=0;x<20;x++) {
+		for (y=0;y<20;y++) {
+			roomArray[x][y] = nullptr;
+			roomTemp[x][y].type = roomTypes::ROOM1;
+			roomTemp[x][y].angle = -1;
+		}
+	}
+
+	x = 10;
+	y = 18;
+
+	for (int i = y;i<20;i++) {
+		roomTemp[x][i].angle = 0;
+	}
+
+	while (y>=2) {
+		width = (rand() % 6) + 10;
+
+		if (x>12) {
+			width = -width;
+		} else if (x>8) {
+			x = x-10;
+		}
+
+		//make sure the hallway doesn't go outside the array
+		if (x+width > 17) {
+			width=17-x;
+		} else if (x+width < 2) {
+			width=-x+2;
+		}
+
+		x = std::min(x,short(x + width));
+		width = std::abs(width);
+		for (int i = x;i<=x+width;i++) {
+			roomTemp[std::min(i,19)][y].angle = 0;
+		}
+
+		height = (rand() % 2) + 3;
+		if (y - height < 1) height = y;
+
+		int yhallways = (rand() % 2) + 4;
+
+		if (getZone(y-height)!=getZone(y-height+1)) height--;
+
+		for (int i=1;i<=yhallways;i++) {
+			x2 = std::max(std::min((rand() % (width-1)) + x,18),2);
+			while (roomTemp[x2][y-1].angle>=0 || roomTemp[x2-1][y-1].angle>=0 || roomTemp[x2+1][y-1].angle>=0) {
+				x2++;
+			}
+
+			if (x2<x+width) {
+				short tempheight;
+				if (i==1) {
+					tempheight = height;
+					if (rand()%2 == 0) x2 = x; else x2 = x+width;
+				} else {
+					tempheight = (rand()%height) + 1;
+				}
+
+				for (y2 = y - tempheight;y2<=y;y2++) {
+					if (getZone(y2)!=getZone(y2+1)) { //a room leading from zone to another
+						roomTemp[x2][y2].angle = 127;
+					} else {
+						roomTemp[x2][y2].angle = 0;
+					}
+				}
+
+				if (tempheight == height) temp = x2;
+			}
+		}
+
+		x = temp;
+		y -= height;
+	}
+
+	for (x=0;x<20;x++) {
+		for (y=0;y<20;y++) {
+			std::cout<<(roomTemp[y][x].angle>-1);
+		}
+		std::cout<<"\n";
+	}
+
+	for (x=0;x<20;x++) {
+		for (y=0;y<20;y++) {
+			bool hasNorth,hasSouth,hasEast,hasWest;
+			hasNorth = hasSouth = hasEast = hasWest = false;
+			if (roomTemp[x][y].angle==0) { //this is not a checkpoint room
+				if (x>0) {
+					hasWest = (roomTemp[x-1][y].angle>-1);
+				}
+				if (x<19) {
+					hasEast = (roomTemp[x+1][y].angle>-1);
+				}
+				if (y>0) {
+					hasNorth = (roomTemp[x][y-1].angle>-1);
+				}
+				if (y<19) {
+					hasSouth = (roomTemp[x][y+1].angle>-1);
+				}
+				if (hasNorth && hasSouth) {
+					if (hasEast && hasWest) { //room4
+						roomTemp[x][y].type = roomTypes::ROOM4;
+						roomTemp[x][y].angle = rand()%4;
+					} else if (hasEast && !hasWest) { //room3, pointing east
+						roomTemp[x][y].type = roomTypes::ROOM3;
+						roomTemp[x][y].angle = 3;
+					} else if (!hasEast && hasWest) { //room3, pointing west
+						roomTemp[x][y].type = roomTypes::ROOM3;
+						roomTemp[x][y].angle = 1;
+					} else { //vertical room2
+						roomTemp[x][y].type = roomTypes::ROOM2;
+						roomTemp[x][y].angle = (rand()%2)*2;
+					}
+				} else if (hasEast && hasWest) {
+					if (hasNorth && !hasSouth) { //room3, pointing north
+						roomTemp[x][y].type = roomTypes::ROOM3;
+						roomTemp[x][y].angle = 0;
+					} else if (!hasNorth && hasSouth) { //room3, pointing south
+						roomTemp[x][y].type = roomTypes::ROOM3;
+						roomTemp[x][y].angle = 2;
+					} else { //horizontal room2
+						roomTemp[x][y].type = roomTypes::ROOM2;
+						roomTemp[x][y].angle = ((rand()%2)*2)+1;
+					}
+				} else if (hasNorth) {
+					if (hasEast) { //room2c, north-east
+						roomTemp[x][y].type = roomTypes::ROOM2C;
+						roomTemp[x][y].angle = 0;
+					} else if (hasWest) { //room2c, north-west
+						roomTemp[x][y].type = roomTypes::ROOM2C;
+						roomTemp[x][y].angle = 1;
+					} else { //room1, north
+						roomTemp[x][y].type = roomTypes::ROOM1;
+						roomTemp[x][y].angle = 0;
+					}
+				} else if (hasSouth) {
+					if (hasEast) { //room2c, south-east
+						roomTemp[x][y].type = roomTypes::ROOM2C;
+						roomTemp[x][y].angle = 3;
+					} else if (hasWest) { //room2c, south-west
+						roomTemp[x][y].type = roomTypes::ROOM2C;
+						roomTemp[x][y].angle = 2;
+					} else { //room1, south
+						roomTemp[x][y].type = roomTypes::ROOM1;
+						roomTemp[x][y].angle = 2;
+					}
+				} else if (hasEast) { //room1, east
+					roomTemp[x][y].type = roomTypes::ROOM1;
+					roomTemp[x][y].angle = 3;
+				} else { //room1, west
+					roomTemp[x][y].type = roomTypes::ROOM1;
+					roomTemp[x][y].angle = 1;
+				}
+			}
+		}
+	}
+	for (y=19;y>=0;y--) {
+		for (x=19;x>=0;x--) {
+			if (roomTemp[x][y].angle>-1) {
+				irr::core::vector3df pos(204.8*RoomScale*x,0,204.8*RoomScale*y);
+				switch (roomTemp[x][y].type) {
+					case roomTypes::ROOM1:
+						room1::createNew(pos,roomTemp[x][y].angle);
+					break;
+					case roomTypes::ROOM2:
+						room2::createNew(pos,roomTemp[x][y].angle);
+					break;
+					case roomTypes::ROOM2C:
+						room2c::createNew(pos,roomTemp[x][y].angle);
+					break;
+					case roomTypes::ROOM3:
+						room3::createNew(pos,roomTemp[x][y].angle);
+					break;
+					case roomTypes::ROOM4:
+						room4::createNew(pos,roomTemp[x][y].angle);
+					break;
+				}
+			}
+		}
+	}
 }
 
 bool world::run() {
@@ -373,7 +572,7 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
 
     // Add camera
     Camera = irrSmgr->addCameraSceneNode(0,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,-1));
-    Camera->setPosition(irr::core::vector3df(-0*RoomScale, 10*RoomScale, 0*RoomScale));
+    Camera->setPosition(irr::core::vector3df(15*204.8f*RoomScale, 10*RoomScale, 15*204.8f*RoomScale));
     Camera->setTarget(irr::core::vector3df(0, 0, 0));
     Camera->setNearValue(5.0*RoomScale);
     Camera->setFarValue(256.0*RoomScale);
@@ -510,18 +709,22 @@ void player::update() {
 			float xs,zs,nxs,nzs,d,dd;
 			xs = speed[0];
 			zs = speed[2];
+			d = irr::core::squareroot(xs*xs+zs*zs);
 			if (irr::core::squareroot(xs*xs+zs*zs)<walkSpeed*0.75f*RoomScale) {
 				Capsule->applyCentralImpulse(btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkSpeed*2.f*RoomScale,0.f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkSpeed*2.f*RoomScale));
 			} else {
 				nxs = std::cos(dir+yaw*irr::core::DEGTORAD);
 				nzs = -std::sin(dir+yaw*irr::core::DEGTORAD);
-				d = irr::core::squareroot(xs*xs+zs*zs);
 				nxs = std::atan2(nxs,nzs);
 				nzs = std::atan2(xs,zs);
+				while (nxs<-irr::core::PI) nxs+=irr::core::PI*2.f;
+				while (nxs>irr::core::PI) nxs-=irr::core::PI*2.f;
+				while (nzs<-irr::core::PI) nzs+=irr::core::PI*2.f;
+				while (nzs>irr::core::PI) nzs-=irr::core::PI*2.f;
 				dd = nxs - nzs;
-				while (dd<-irr::core::PI/2.f) dd+=irr::core::PI;
-				while (dd>irr::core::PI/2.f) dd-=irr::core::PI;
-				nzs = nzs+dd * 0.5f;
+				while (dd<-irr::core::PI) dd+=irr::core::PI*2.f;
+				while (dd>irr::core::PI) dd-=irr::core::PI*2.f;
+				nzs = nzs+dd * 0.08f;
 				nzs -= irr::core::PI/2.f;
 
 				Capsule->setLinearVelocity(btVector3(std::cos(nzs)*d,speed[1],-std::sin(nzs)*d));

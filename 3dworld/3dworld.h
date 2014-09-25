@@ -10,6 +10,7 @@
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
 #include "items/items.h"
+#include "rooms/room.h"
 
 const float RoomScale = 0.75f;
 
@@ -232,9 +233,11 @@ class world {
         RoomShaderCallBack* RoomCallback;
         NormalsShaderCallBack* NormalsCallback;
 
-        //item stuff
         std::vector<item*> itemList;
 
+		room* roomArray[20][20];
+
+        void createMap();
     public:
         //main
         world(unsigned int width,unsigned int height,bool fullscreen = false);
