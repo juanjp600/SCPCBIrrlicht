@@ -20,7 +20,7 @@ class room {
 		virtual roomTypes getType() =0;
 		virtual char getAngle() { return angle; };
 		virtual void updateEvent() =0;
-		void setDynamics(dynRegister* inDyn);
+		static void setDynamics(dynRegister* inDyn);
 };
 
 #include "lcz_generic.h"

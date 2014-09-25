@@ -78,8 +78,40 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
         itemList.push_back(it);
     }
 
-    RMesh* rme = loadRMesh(std::string("test/testroom_opt.rmesh"),irrFileSystem,irrDriver);
-	node = irrSmgr->addMeshSceneNode(rme->mesh);
+	btRigidBody* rbody;
+
+	/*btTransform Transform;
+	Transform.setIdentity();
+	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
+	btVector3 localInertia(0,0,0);
+	btRigidBody* rbody = new btRigidBody(0.f, MotionState, rme->shape,localInertia);
+	//rbody->setActivationState(DISABLE_DEACTIVATION);
+	dynamics->registerNewRBody(node,rbody,0);
+	//all rigid bodies must have a friction value for friction to work
+	rbody->setFriction(1.f);
+	rbody->setRollingFriction(1.f);*/
+
+	//node->setScale(irr::core::vector3df(0.1f*RoomScale));
+
+	room::setDynamics(itemDyn);
+
+	RMesh* rme = loadRMesh(std::string("test/room2_opt.rmesh"),irrFileSystem,irrDriver);
+	irr::scene::IMeshSceneNode* room2mesh = irrSmgr->addMeshSceneNode(rme->mesh);
+	room2mesh->setVisible(false);
+    for (irr::u32 ui=0; ui<room2mesh->getMaterialCount(); ++ui) {
+        if (room2mesh->getMaterial(ui).MaterialType == irr::video::EMT_LIGHTMAP) { //lightmapped surfaces are suitable for the RoomShader
+            room2mesh->getMaterial(ui).setTexture(2,irrDriver->getTexture("test/tilebump.jpg"));
+            room2mesh->getMaterial(ui).MaterialType = (irr::video::E_MATERIAL_TYPE)RoomShader;
+            room2mesh->getMaterial(ui).TextureLayer[0].AnisotropicFilter = 16;
+            room2mesh->getMaterial(ui).TextureLayer[1].AnisotropicFilter = 16;
+            room2mesh->getMaterial(ui).TextureLayer[2].AnisotropicFilter = 16;
+        } else if (room2mesh->getMaterial(ui).MaterialType == irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL) {
+            std::cout<<"ALPHA_CHANNEL\n";
+        } else if (room2mesh->getMaterial(ui).MaterialType == irr::video::EMT_SOLID) {
+            std::cout<<"SOLID\n";
+        }
+    }
+    room2::setBase(room2mesh,rme->shape);
 
     std::vector<irr::video::SLight> lightList;
     for (unsigned int i=0;i<rme->pointlights.size();i++) {
@@ -93,36 +125,87 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     }
     NormalsCallback->setLights(lightList);
 
-	btTransform Transform;
-	Transform.setIdentity();
-	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
-	btVector3 localInertia(0,0,0);
-	btRigidBody* rbody = new btRigidBody(0.f, MotionState, rme->shape,localInertia);
-	//rbody->setActivationState(DISABLE_DEACTIVATION);
-	dynamics->registerNewRBody(node,rbody,0);
-	//all rigid bodies must have a friction value for friction to work
-	rbody->setFriction(1.f);
-	rbody->setRollingFriction(1.f);
-
-	//node->setScale(irr::core::vector3df(0.1f*RoomScale));
-
-    for (irr::u32 ui=0; ui<node->getMaterialCount(); ++ui) {
-        if (node->getMaterial(ui).MaterialType == irr::video::EMT_LIGHTMAP) { //lightmapped surfaces are suitable for the RoomShader
-            node->getMaterial(ui).setTexture(2,irrDriver->getTexture("test/tilebump.jpg"));
-            node->getMaterial(ui).MaterialType = (irr::video::E_MATERIAL_TYPE)RoomShader;
-            node->getMaterial(ui).TextureLayer[0].AnisotropicFilter = 16;
-            node->getMaterial(ui).TextureLayer[1].AnisotropicFilter = 16;
-            node->getMaterial(ui).TextureLayer[2].AnisotropicFilter = 16;
-        } else if (node->getMaterial(ui).MaterialType == irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL) {
+    rme = loadRMesh(std::string("test/room2C_opt.rmesh"),irrFileSystem,irrDriver);
+	irr::scene::IMeshSceneNode* room2cmesh = irrSmgr->addMeshSceneNode(rme->mesh);
+	room2cmesh->setVisible(false);
+    for (irr::u32 ui=0; ui<room2cmesh->getMaterialCount(); ++ui) {
+        if (room2cmesh->getMaterial(ui).MaterialType == irr::video::EMT_LIGHTMAP) { //lightmapped surfaces are suitable for the RoomShader
+            room2cmesh->getMaterial(ui).setTexture(2,irrDriver->getTexture("test/tilebump.jpg"));
+            room2cmesh->getMaterial(ui).MaterialType = (irr::video::E_MATERIAL_TYPE)RoomShader;
+            room2cmesh->getMaterial(ui).TextureLayer[0].AnisotropicFilter = 16;
+            room2cmesh->getMaterial(ui).TextureLayer[1].AnisotropicFilter = 16;
+            room2cmesh->getMaterial(ui).TextureLayer[2].AnisotropicFilter = 16;
+        } else if (room2cmesh->getMaterial(ui).MaterialType == irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL) {
             std::cout<<"ALPHA_CHANNEL\n";
-        } else if (node->getMaterial(ui).MaterialType == irr::video::EMT_SOLID) {
+        } else if (room2cmesh->getMaterial(ui).MaterialType == irr::video::EMT_SOLID) {
             std::cout<<"SOLID\n";
         }
     }
+    room2c::setBase(room2cmesh,rme->shape);
 
-    node->setPosition(irr::core::vector3df(0,0*RoomScale,0));
+    rme = loadRMesh(std::string("test/room3_opt.rmesh"),irrFileSystem,irrDriver);
+	irr::scene::IMeshSceneNode* room3mesh = irrSmgr->addMeshSceneNode(rme->mesh);
+	room3mesh->setVisible(false);
+    for (irr::u32 ui=0; ui<room3mesh->getMaterialCount(); ++ui) {
+        if (room3mesh->getMaterial(ui).MaterialType == irr::video::EMT_LIGHTMAP) { //lightmapped surfaces are suitable for the RoomShader
+            room3mesh->getMaterial(ui).setTexture(2,irrDriver->getTexture("test/tilebump.jpg"));
+            room3mesh->getMaterial(ui).MaterialType = (irr::video::E_MATERIAL_TYPE)RoomShader;
+            room3mesh->getMaterial(ui).TextureLayer[0].AnisotropicFilter = 16;
+            room3mesh->getMaterial(ui).TextureLayer[1].AnisotropicFilter = 16;
+            room3mesh->getMaterial(ui).TextureLayer[2].AnisotropicFilter = 16;
+        } else if (room3mesh->getMaterial(ui).MaterialType == irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL) {
+            std::cout<<"ALPHA_CHANNEL\n";
+        } else if (room3mesh->getMaterial(ui).MaterialType == irr::video::EMT_SOLID) {
+            std::cout<<"SOLID\n";
+        }
+    }
+    room3::setBase(room3mesh,rme->shape);
 
-    dynamics->addTriMesh_static(node);
+    rme = loadRMesh(std::string("test/room4_opt.rmesh"),irrFileSystem,irrDriver);
+	irr::scene::IMeshSceneNode* room4mesh = irrSmgr->addMeshSceneNode(rme->mesh);
+	room4mesh->setVisible(false);
+    for (irr::u32 ui=0; ui<room4mesh->getMaterialCount(); ++ui) {
+        if (room4mesh->getMaterial(ui).MaterialType == irr::video::EMT_LIGHTMAP) { //lightmapped surfaces are suitable for the RoomShader
+            room4mesh->getMaterial(ui).setTexture(2,irrDriver->getTexture("test/tilebump.jpg"));
+            room4mesh->getMaterial(ui).MaterialType = (irr::video::E_MATERIAL_TYPE)RoomShader;
+            room4mesh->getMaterial(ui).TextureLayer[0].AnisotropicFilter = 16;
+            room4mesh->getMaterial(ui).TextureLayer[1].AnisotropicFilter = 16;
+            room4mesh->getMaterial(ui).TextureLayer[2].AnisotropicFilter = 16;
+        } else if (room4mesh->getMaterial(ui).MaterialType == irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL) {
+            std::cout<<"ALPHA_CHANNEL\n";
+        } else if (room4mesh->getMaterial(ui).MaterialType == irr::video::EMT_SOLID) {
+            std::cout<<"SOLID\n";
+        }
+    }
+    room4::setBase(room4mesh,rme->shape);
+
+    rme = loadRMesh(std::string("test/endroom_opt.rmesh"),irrFileSystem,irrDriver);
+	irr::scene::IMeshSceneNode* room1mesh = irrSmgr->addMeshSceneNode(rme->mesh);
+	room1mesh->setVisible(false);
+    for (irr::u32 ui=0; ui<room1mesh->getMaterialCount(); ++ui) {
+        if (room1mesh->getMaterial(ui).MaterialType == irr::video::EMT_LIGHTMAP) { //lightmapped surfaces are suitable for the RoomShader
+            room1mesh->getMaterial(ui).setTexture(2,irrDriver->getTexture("test/tilebump.jpg"));
+            room1mesh->getMaterial(ui).MaterialType = (irr::video::E_MATERIAL_TYPE)RoomShader;
+            room1mesh->getMaterial(ui).TextureLayer[0].AnisotropicFilter = 16;
+            room1mesh->getMaterial(ui).TextureLayer[1].AnisotropicFilter = 16;
+            room1mesh->getMaterial(ui).TextureLayer[2].AnisotropicFilter = 16;
+        } else if (room1mesh->getMaterial(ui).MaterialType == irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL) {
+            std::cout<<"ALPHA_CHANNEL\n";
+        } else if (room1mesh->getMaterial(ui).MaterialType == irr::video::EMT_SOLID) {
+            std::cout<<"SOLID\n";
+        }
+    }
+	room1::setBase(room1mesh,rme->shape);
+
+	room2::createNew(irr::core::vector3df(0,0,0),0);
+	room2c::createNew(irr::core::vector3df(0,0,204.8f*RoomScale),1);
+	room3::createNew(irr::core::vector3df(0,0,-204.8f*RoomScale),2);
+	room4::createNew(irr::core::vector3df(-204.8f*RoomScale,0,-204.8f*RoomScale),2);
+	room1::createNew(irr::core::vector3df(204.8f*RoomScale,0,-204.8f*RoomScale),1);
+
+    //node->setPosition(irr::core::vector3df(0,0*RoomScale,0));
+
+    //dynamics->addTriMesh_static(node);
 
 	for (int i = 0;i<1;i++) {
         irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/scp-066.b3d");

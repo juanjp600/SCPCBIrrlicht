@@ -44,7 +44,7 @@ void room4::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* i
 
 room1* room1::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room1* retRoom = new room1;
-	retRoom->node = baseNode->clone();
+	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;
@@ -58,7 +58,7 @@ room1* room1::createNew(irr::core::vector3df inPosition,char inAngle) {
 	Transform.setOrigin(btPos);
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
-	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	btRot.setEulerZYX(irrRot.Z*irr::core::DEGTORAD,irrRot.Y*irr::core::DEGTORAD,irrRot.X*irr::core::DEGTORAD);
 	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
@@ -69,12 +69,15 @@ room1* room1::createNew(irr::core::vector3df inPosition,char inAngle) {
     retRoom->rbody = new btRigidBody(0.0, MotionState, room1::baseShape, localInertia);
     room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
+	retRoom->rbody->setFriction(1.f);
+	retRoom->rbody->setRollingFriction(1.f);
+
     return retRoom;
 }
 
 room2* room2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room2* retRoom = new room2;
-	retRoom->node = baseNode->clone();
+	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;
@@ -88,7 +91,7 @@ room2* room2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	Transform.setOrigin(btPos);
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
-	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	btRot.setEulerZYX(irrRot.Z*irr::core::DEGTORAD,irrRot.Y*irr::core::DEGTORAD,irrRot.X*irr::core::DEGTORAD);
 	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
@@ -99,12 +102,15 @@ room2* room2::createNew(irr::core::vector3df inPosition,char inAngle) {
     retRoom->rbody = new btRigidBody(0.0, MotionState, room2::baseShape, localInertia);
     room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
+	retRoom->rbody->setFriction(1.f);
+	retRoom->rbody->setRollingFriction(1.f);
+
     return retRoom;
 }
 
 room2c* room2c::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room2c* retRoom = new room2c;
-	retRoom->node = baseNode->clone();
+	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;
@@ -118,7 +124,7 @@ room2c* room2c::createNew(irr::core::vector3df inPosition,char inAngle) {
 	Transform.setOrigin(btPos);
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
-	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	btRot.setEulerZYX(irrRot.Z*irr::core::DEGTORAD,irrRot.Y*irr::core::DEGTORAD,irrRot.X*irr::core::DEGTORAD);
 	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
@@ -129,12 +135,15 @@ room2c* room2c::createNew(irr::core::vector3df inPosition,char inAngle) {
     retRoom->rbody = new btRigidBody(0.0, MotionState, room2c::baseShape, localInertia);
     room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
+	retRoom->rbody->setFriction(1.f);
+	retRoom->rbody->setRollingFriction(1.f);
+
     return retRoom;
 }
 
 room3* room3::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room3* retRoom = new room3;
-	retRoom->node = baseNode->clone();
+	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;
@@ -148,7 +157,7 @@ room3* room3::createNew(irr::core::vector3df inPosition,char inAngle) {
 	Transform.setOrigin(btPos);
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
-	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	btRot.setEulerZYX(irrRot.Z*irr::core::DEGTORAD,irrRot.Y*irr::core::DEGTORAD,irrRot.X*irr::core::DEGTORAD);
 	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
@@ -159,12 +168,15 @@ room3* room3::createNew(irr::core::vector3df inPosition,char inAngle) {
     retRoom->rbody = new btRigidBody(0.0, MotionState, room3::baseShape, localInertia);
     room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
+	retRoom->rbody->setFriction(1.f);
+	retRoom->rbody->setRollingFriction(1.f);
+
     return retRoom;
 }
 
 room4* room4::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room4* retRoom = new room4;
-	retRoom->node = baseNode->clone();
+	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;
@@ -178,7 +190,7 @@ room4* room4::createNew(irr::core::vector3df inPosition,char inAngle) {
 	Transform.setOrigin(btPos);
 	btQuaternion btRot;
 	irr::core::vector3df irrRot = retRoom->node->getRotation();
-	btRot.setEulerZYX(irrRot.Z,irrRot.Y,irrRot.X);
+	btRot.setEulerZYX(irrRot.Z*irr::core::DEGTORAD,irrRot.Y*irr::core::DEGTORAD,irrRot.X*irr::core::DEGTORAD);
 	Transform.setRotation(btRot);
 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
@@ -188,6 +200,9 @@ room4* room4::createNew(irr::core::vector3df inPosition,char inAngle) {
 
     retRoom->rbody = new btRigidBody(0.0, MotionState, room4::baseShape, localInertia);
     room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
+
+	retRoom->rbody->setFriction(1.f);
+	retRoom->rbody->setRollingFriction(1.f);
 
     return retRoom;
 }
