@@ -6,6 +6,9 @@
 #include <iostream>
 
 #include <irrlicht.h>
+
+#include <CGUITTFont.h>
+
 #include <irrDynamics.h>
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
@@ -238,6 +241,8 @@ class world {
 		room* roomArray[20][20];
 
         void createMap();
+
+        irr::gui::CGUITTFont* font1;
     public:
         //main
         world(unsigned int width,unsigned int height,bool fullscreen = false);
