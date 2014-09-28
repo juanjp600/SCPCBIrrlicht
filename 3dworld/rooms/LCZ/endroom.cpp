@@ -2,16 +2,17 @@
 #include "endroom.h"
 
 irr::scene::IMeshSceneNode* endroom::baseNode = nullptr;
-btBvhTriangleMeshShape* endroom::baseShape = nullptr;
+RMesh* endroom::baseRMesh = nullptr;
 
-void endroom::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (endroom::baseNode==nullptr || endroom::baseShape==nullptr) {
-		endroom::baseNode = inNode; endroom::baseShape = inShape; endroom::baseNode->setVisible(false);
+void endroom::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (endroom::baseNode==nullptr || endroom::baseRMesh==nullptr) {
+		endroom::baseNode = inNode; endroom::baseRMesh = inRme; endroom::baseNode->setVisible(false);
 	}
 }
 
 endroom* endroom::createNew(irr::core::vector3df inPosition,char inAngle) {
 	endroom* retRoom = new endroom;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ endroom* endroom::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	endroom::baseShape->calculateLocalInertia(0.0, localInertia);
+	endroom::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, endroom::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, endroom::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

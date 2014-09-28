@@ -2,16 +2,17 @@
 #include "room2cafeteria.h"
 
 irr::scene::IMeshSceneNode* room2cafeteria::baseNode = nullptr;
-btBvhTriangleMeshShape* room2cafeteria::baseShape = nullptr;
+RMesh* room2cafeteria::baseRMesh = nullptr;
 
-void room2cafeteria::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (room2cafeteria::baseNode==nullptr || room2cafeteria::baseShape==nullptr) {
-		room2cafeteria::baseNode = inNode; room2cafeteria::baseShape = inShape; room2cafeteria::baseNode->setVisible(false);
+void room2cafeteria::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (room2cafeteria::baseNode==nullptr || room2cafeteria::baseRMesh==nullptr) {
+		room2cafeteria::baseNode = inNode; room2cafeteria::baseRMesh = inRme; room2cafeteria::baseNode->setVisible(false);
 	}
 }
 
 room2cafeteria* room2cafeteria::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room2cafeteria* retRoom = new room2cafeteria;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ room2cafeteria* room2cafeteria::createNew(irr::core::vector3df inPosition,char i
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	room2cafeteria::baseShape->calculateLocalInertia(0.0, localInertia);
+	room2cafeteria::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, room2cafeteria::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, room2cafeteria::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

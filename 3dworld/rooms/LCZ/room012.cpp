@@ -2,16 +2,17 @@
 #include "room012.h"
 
 irr::scene::IMeshSceneNode* room012::baseNode = nullptr;
-btBvhTriangleMeshShape* room012::baseShape = nullptr;
+RMesh* room012::baseRMesh = nullptr;
 
-void room012::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (room012::baseNode==nullptr || room012::baseShape==nullptr) {
-		room012::baseNode = inNode; room012::baseShape = inShape; room012::baseNode->setVisible(false);
+void room012::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (room012::baseNode==nullptr || room012::baseRMesh==nullptr) {
+		room012::baseNode = inNode; room012::baseRMesh = inRme; room012::baseNode->setVisible(false);
 	}
 }
 
 room012* room012::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room012* retRoom = new room012;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ room012* room012::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	room012::baseShape->calculateLocalInertia(0.0, localInertia);
+	room012::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, room012::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, room012::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

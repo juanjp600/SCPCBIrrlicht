@@ -16,15 +16,17 @@ class room {
 		btRigidBody* rbody;
 
 		static dynRegister* dynamics;
+
+		bool isActivated = true;
 	public:
 		virtual roomTypes getType() =0;
 		virtual char getAngle() { return angle; };
 		virtual void updateEvent() =0;
+		virtual void setActivation(bool s);
 		virtual bool disableDecals() { return false; }
 		static void setDynamics(dynRegister* inDyn);
 };
 
-//#include "lcz_generic.h"
 //LCZ
 #include "LCZ/lockroom.h"
 #include "LCZ/start.h"

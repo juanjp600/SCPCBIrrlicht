@@ -2,16 +2,17 @@
 #include "exit1.h"
 
 irr::scene::IMeshSceneNode* exit1::baseNode = nullptr;
-btBvhTriangleMeshShape* exit1::baseShape = nullptr;
+RMesh* exit1::baseRMesh = nullptr;
 
-void exit1::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (exit1::baseNode==nullptr || exit1::baseShape==nullptr) {
-		exit1::baseNode = inNode; exit1::baseShape = inShape; exit1::baseNode->setVisible(false);
+void exit1::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (exit1::baseNode==nullptr || exit1::baseRMesh==nullptr) {
+		exit1::baseNode = inNode; exit1::baseRMesh = inRme; exit1::baseNode->setVisible(false);
 	}
 }
 
 exit1* exit1::createNew(irr::core::vector3df inPosition,char inAngle) {
 	exit1* retRoom = new exit1;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ exit1* exit1::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	exit1::baseShape->calculateLocalInertia(0.0, localInertia);
+	exit1::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, exit1::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, exit1::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

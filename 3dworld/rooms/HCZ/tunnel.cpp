@@ -2,16 +2,17 @@
 #include "tunnel.h"
 
 irr::scene::IMeshSceneNode* tunnel::baseNode = nullptr;
-btBvhTriangleMeshShape* tunnel::baseShape = nullptr;
+RMesh* tunnel::baseRMesh = nullptr;
 
-void tunnel::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (tunnel::baseNode==nullptr || tunnel::baseShape==nullptr) {
-		tunnel::baseNode = inNode; tunnel::baseShape = inShape; tunnel::baseNode->setVisible(false);
+void tunnel::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (tunnel::baseNode==nullptr || tunnel::baseRMesh==nullptr) {
+		tunnel::baseNode = inNode; tunnel::baseRMesh = inRme; tunnel::baseNode->setVisible(false);
 	}
 }
 
 tunnel* tunnel::createNew(irr::core::vector3df inPosition,char inAngle) {
 	tunnel* retRoom = new tunnel;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ tunnel* tunnel::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	tunnel::baseShape->calculateLocalInertia(0.0, localInertia);
+	tunnel::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, tunnel::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, tunnel::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

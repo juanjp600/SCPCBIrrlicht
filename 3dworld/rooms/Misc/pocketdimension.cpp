@@ -2,16 +2,17 @@
 #include "pocketdimension.h"
 
 irr::scene::IMeshSceneNode* pocketdimension::baseNode = nullptr;
-btBvhTriangleMeshShape* pocketdimension::baseShape = nullptr;
+RMesh* pocketdimension::baseRMesh = nullptr;
 
-void pocketdimension::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (pocketdimension::baseNode==nullptr || pocketdimension::baseShape==nullptr) {
-		pocketdimension::baseNode = inNode; pocketdimension::baseShape = inShape; pocketdimension::baseNode->setVisible(false);
+void pocketdimension::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (pocketdimension::baseNode==nullptr || pocketdimension::baseRMesh==nullptr) {
+		pocketdimension::baseNode = inNode; pocketdimension::baseRMesh = inRme; pocketdimension::baseNode->setVisible(false);
 	}
 }
 
 pocketdimension* pocketdimension::createNew(irr::core::vector3df inPosition,char inAngle) {
 	pocketdimension* retRoom = new pocketdimension;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ pocketdimension* pocketdimension::createNew(irr::core::vector3df inPosition,char
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	pocketdimension::baseShape->calculateLocalInertia(0.0, localInertia);
+	pocketdimension::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, pocketdimension::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, pocketdimension::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

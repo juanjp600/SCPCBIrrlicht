@@ -2,16 +2,17 @@
 #include "lockroom2.h"
 
 irr::scene::IMeshSceneNode* lockroom2::baseNode = nullptr;
-btBvhTriangleMeshShape* lockroom2::baseShape = nullptr;
+RMesh* lockroom2::baseRMesh = nullptr;
 
-void lockroom2::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (lockroom2::baseNode==nullptr || lockroom2::baseShape==nullptr) {
-		lockroom2::baseNode = inNode; lockroom2::baseShape = inShape; lockroom2::baseNode->setVisible(false);
+void lockroom2::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (lockroom2::baseNode==nullptr || lockroom2::baseRMesh==nullptr) {
+		lockroom2::baseNode = inNode; lockroom2::baseRMesh = inRme; lockroom2::baseNode->setVisible(false);
 	}
 }
 
 lockroom2* lockroom2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	lockroom2* retRoom = new lockroom2;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ lockroom2* lockroom2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	lockroom2::baseShape->calculateLocalInertia(0.0, localInertia);
+	lockroom2::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, lockroom2::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, lockroom2::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

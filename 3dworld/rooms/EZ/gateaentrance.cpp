@@ -2,16 +2,17 @@
 #include "gateaentrance.h"
 
 irr::scene::IMeshSceneNode* gateaentrance::baseNode = nullptr;
-btBvhTriangleMeshShape* gateaentrance::baseShape = nullptr;
+RMesh* gateaentrance::baseRMesh = nullptr;
 
-void gateaentrance::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (gateaentrance::baseNode==nullptr || gateaentrance::baseShape==nullptr) {
-		gateaentrance::baseNode = inNode; gateaentrance::baseShape = inShape; gateaentrance::baseNode->setVisible(false);
+void gateaentrance::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (gateaentrance::baseNode==nullptr || gateaentrance::baseRMesh==nullptr) {
+		gateaentrance::baseNode = inNode; gateaentrance::baseRMesh = inRme; gateaentrance::baseNode->setVisible(false);
 	}
 }
 
 gateaentrance* gateaentrance::createNew(irr::core::vector3df inPosition,char inAngle) {
 	gateaentrance* retRoom = new gateaentrance;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ gateaentrance* gateaentrance::createNew(irr::core::vector3df inPosition,char inA
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	gateaentrance::baseShape->calculateLocalInertia(0.0, localInertia);
+	gateaentrance::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, gateaentrance::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, gateaentrance::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

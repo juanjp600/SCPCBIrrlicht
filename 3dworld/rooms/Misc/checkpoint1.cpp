@@ -2,16 +2,17 @@
 #include "checkpoint1.h"
 
 irr::scene::IMeshSceneNode* checkpoint1::baseNode = nullptr;
-btBvhTriangleMeshShape* checkpoint1::baseShape = nullptr;
+RMesh* checkpoint1::baseRMesh = nullptr;
 
-void checkpoint1::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (checkpoint1::baseNode==nullptr || checkpoint1::baseShape==nullptr) {
-		checkpoint1::baseNode = inNode; checkpoint1::baseShape = inShape; checkpoint1::baseNode->setVisible(false);
+void checkpoint1::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (checkpoint1::baseNode==nullptr || checkpoint1::baseRMesh==nullptr) {
+		checkpoint1::baseNode = inNode; checkpoint1::baseRMesh = inRme; checkpoint1::baseNode->setVisible(false);
 	}
 }
 
 checkpoint1* checkpoint1::createNew(irr::core::vector3df inPosition,char inAngle) {
 	checkpoint1* retRoom = new checkpoint1;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ checkpoint1* checkpoint1::createNew(irr::core::vector3df inPosition,char inAngle
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	checkpoint1::baseShape->calculateLocalInertia(0.0, localInertia);
+	checkpoint1::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, checkpoint1::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, checkpoint1::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

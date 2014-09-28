@@ -2,16 +2,17 @@
 #include "gatea.h"
 
 irr::scene::IMeshSceneNode* gatea::baseNode = nullptr;
-btBvhTriangleMeshShape* gatea::baseShape = nullptr;
+RMesh* gatea::baseRMesh = nullptr;
 
-void gatea::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (gatea::baseNode==nullptr || gatea::baseShape==nullptr) {
-		gatea::baseNode = inNode; gatea::baseShape = inShape; gatea::baseNode->setVisible(false);
+void gatea::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (gatea::baseNode==nullptr || gatea::baseRMesh==nullptr) {
+		gatea::baseNode = inNode; gatea::baseRMesh = inRme; gatea::baseNode->setVisible(false);
 	}
 }
 
 gatea* gatea::createNew(irr::core::vector3df inPosition,char inAngle) {
 	gatea* retRoom = new gatea;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ gatea* gatea::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	gatea::baseShape->calculateLocalInertia(0.0, localInertia);
+	gatea::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, gatea::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, gatea::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

@@ -241,6 +241,7 @@ class world {
 		room* roomArray[20][20];
 
         void createMap();
+        room* addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone);
 
         irr::gui::CGUITTFont* font1;
     public:
@@ -286,13 +287,17 @@ class player {
         void addToInventory(item* it);
         void takeFromInventory(unsigned char slot);
 
+        void teleport(irr::core::vector3df position);
+
         bool seesMeshNode(irr::scene::IMeshSceneNode* node);
 
         irr::scene::IMeshSceneNode* testNode;
 
         irr::core::vector3df getPosition() {
-            return Camera->getPosition();
+            return irr::core::vector3df(Capsule->getCenterOfMassPosition()[0],Capsule->getCenterOfMassPosition()[1],Capsule->getCenterOfMassPosition()[2]);
         }
 };
+
+inline int coordToRoomGrid(float coord);
 
 #endif // 3DWORLD_H_INCLUDED

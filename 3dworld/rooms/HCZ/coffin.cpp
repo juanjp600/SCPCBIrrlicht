@@ -2,16 +2,17 @@
 #include "coffin.h"
 
 irr::scene::IMeshSceneNode* coffin::baseNode = nullptr;
-btBvhTriangleMeshShape* coffin::baseShape = nullptr;
+RMesh* coffin::baseRMesh = nullptr;
 
-void coffin::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (coffin::baseNode==nullptr || coffin::baseShape==nullptr) {
-		coffin::baseNode = inNode; coffin::baseShape = inShape; coffin::baseNode->setVisible(false);
+void coffin::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (coffin::baseNode==nullptr || coffin::baseRMesh==nullptr) {
+		coffin::baseNode = inNode; coffin::baseRMesh = inRme; coffin::baseNode->setVisible(false);
 	}
 }
 
 coffin* coffin::createNew(irr::core::vector3df inPosition,char inAngle) {
 	coffin* retRoom = new coffin;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ coffin* coffin::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	coffin::baseShape->calculateLocalInertia(0.0, localInertia);
+	coffin::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, coffin::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, coffin::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

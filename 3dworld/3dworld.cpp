@@ -27,7 +27,10 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	font1 = irr::gui::CGUITTFont::createTTFont(irrEnv, "test/arial.ttf", 16, true, true);
 
-    srand(irrTimer->getRealTime());
+	int seed = irrTimer->getRealTime();
+	std::cout<<"Seed: "<<seed<<"\n";
+
+    srand(seed);
 
     irr::video::IGPUProgrammingServices* irrGpu = irrDriver->getGPUProgrammingServices();
     RoomShader = irr::video::EMT_LIGHTMAP; // Fallback material type
@@ -101,76 +104,75 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	room::setDynamics(itemDyn);
 
 	RMesh* rme;
-	//TODO: give the RMesh object to the room so it can clean it up after it's not used anymore
 	//LCZ
-	/*lockroom*/rme = loadRMesh(std::string("test/lockroom_opt.rmesh"),irrFileSystem,irrDriver); lockroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*start*/rme = loadRMesh(std::string("test/173_opt.rmesh"),irrFileSystem,irrDriver); start::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2storage*/rme = loadRMesh(std::string("test/room2storage_opt.rmesh"),irrFileSystem,irrDriver); room2storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*endroom*/rme = loadRMesh(std::string("test/endroom_opt.rmesh"),irrFileSystem,irrDriver); endroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room012*/rme = loadRMesh(std::string("test/room012_opt.rmesh"),irrFileSystem,irrDriver); room012::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2*/rme = loadRMesh(std::string("test/room2_opt.rmesh"),irrFileSystem,irrDriver); room2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2_2*/rme = loadRMesh(std::string("test/room2_2_opt.rmesh"),irrFileSystem,irrDriver); room2_2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2c*/rme = loadRMesh(std::string("test/room2C_opt.rmesh"),irrFileSystem,irrDriver); room2c::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2closets*/rme = loadRMesh(std::string("test/room2closets_opt.rmesh"),irrFileSystem,irrDriver); room2closets::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2elevator*/rme = loadRMesh(std::string("test/room2elevator_opt.rmesh"),irrFileSystem,irrDriver); room2elevator::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2doors*/rme = loadRMesh(std::string("test/room2doors_opt.rmesh"),irrFileSystem,irrDriver); room2doors::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2scps*/rme = loadRMesh(std::string("test/room2scps_opt.rmesh"),irrFileSystem,irrDriver); room2scps::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2testroom2*/rme = loadRMesh(std::string("test/room2testroom2_opt.rmesh"),irrFileSystem,irrDriver); room2testroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3*/rme = loadRMesh(std::string("test/room3_opt.rmesh"),irrFileSystem,irrDriver); room3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3_2*/rme = loadRMesh(std::string("test/room3_2_opt.rmesh"),irrFileSystem,irrDriver); room3_2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room4*/rme = loadRMesh(std::string("test/room4_opt.rmesh"),irrFileSystem,irrDriver); room4::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*roompj*/rme = loadRMesh(std::string("test/roompj_opt.rmesh"),irrFileSystem,irrDriver); roompj::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*r_914*/rme = loadRMesh(std::string("test/machineroom_opt.rmesh"),irrFileSystem,irrDriver); r_914::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
+	/*lockroom*/rme = loadRMesh(std::string("test/lockroom_opt.rmesh"),irrFileSystem,irrDriver); lockroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*start*/rme = loadRMesh(std::string("test/173_opt.rmesh"),irrFileSystem,irrDriver); start::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2storage*/rme = loadRMesh(std::string("test/room2storage_opt.rmesh"),irrFileSystem,irrDriver); room2storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*endroom*/rme = loadRMesh(std::string("test/endroom_opt.rmesh"),irrFileSystem,irrDriver); endroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room012*/rme = loadRMesh(std::string("test/room012_opt.rmesh"),irrFileSystem,irrDriver); room012::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2*/rme = loadRMesh(std::string("test/room2_opt.rmesh"),irrFileSystem,irrDriver); room2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2_2*/rme = loadRMesh(std::string("test/room2_2_opt.rmesh"),irrFileSystem,irrDriver); room2_2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2c*/rme = loadRMesh(std::string("test/room2C_opt.rmesh"),irrFileSystem,irrDriver); room2c::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2closets*/rme = loadRMesh(std::string("test/room2closets_opt.rmesh"),irrFileSystem,irrDriver); room2closets::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2elevator*/rme = loadRMesh(std::string("test/room2elevator_opt.rmesh"),irrFileSystem,irrDriver); room2elevator::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2doors*/rme = loadRMesh(std::string("test/room2doors_opt.rmesh"),irrFileSystem,irrDriver); room2doors::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2scps*/rme = loadRMesh(std::string("test/room2scps_opt.rmesh"),irrFileSystem,irrDriver); room2scps::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2testroom2*/rme = loadRMesh(std::string("test/room2testroom2_opt.rmesh"),irrFileSystem,irrDriver); room2testroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3*/rme = loadRMesh(std::string("test/room3_opt.rmesh"),irrFileSystem,irrDriver); room3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3_2*/rme = loadRMesh(std::string("test/room3_2_opt.rmesh"),irrFileSystem,irrDriver); room3_2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room4*/rme = loadRMesh(std::string("test/room4_opt.rmesh"),irrFileSystem,irrDriver); room4::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*roompj*/rme = loadRMesh(std::string("test/roompj_opt.rmesh"),irrFileSystem,irrDriver); roompj::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*r_914*/rme = loadRMesh(std::string("test/machineroom_opt.rmesh"),irrFileSystem,irrDriver); r_914::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
 	//HCZ
-	/*r_008*/rme = loadRMesh(std::string("test/008_opt.rmesh"),irrFileSystem,irrDriver); r_008::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*coffin*/rme = loadRMesh(std::string("test/coffin_opt.rmesh"),irrFileSystem,irrDriver); coffin::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*endroom2*/rme = loadRMesh(std::string("test/endroom2_opt.rmesh"),irrFileSystem,irrDriver); endroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*testroom*/rme = loadRMesh(std::string("test/testroom_opt.rmesh"),irrFileSystem,irrDriver); testroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*tunnel*/rme = loadRMesh(std::string("test/tunnel_opt.rmesh"),irrFileSystem,irrDriver); tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*tunnel2*/rme = loadRMesh(std::string("test/tunnel2_opt.rmesh"),irrFileSystem,irrDriver); tunnel2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room035*/rme = loadRMesh(std::string("test/room035_opt.rmesh"),irrFileSystem,irrDriver); room035::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room049*/rme = loadRMesh(std::string("test/room049_opt.rmesh"),irrFileSystem,irrDriver); room049::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room106*/rme = loadRMesh(std::string("test/room106_opt.rmesh"),irrFileSystem,irrDriver); room106::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2ctunnel*/rme = loadRMesh(std::string("test/room2Ctunnel_opt.rmesh"),irrFileSystem,irrDriver); room2ctunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2nuke*/rme = loadRMesh(std::string("test/room2nuke_opt.rmesh"),irrFileSystem,irrDriver); room2nuke::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2pipes*/rme = loadRMesh(std::string("test/room2pipes_opt.rmesh"),irrFileSystem,irrDriver); room2pipes::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2pit*/rme = loadRMesh(std::string("test/room2pit_opt.rmesh"),irrFileSystem,irrDriver); room2pit::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3pit*/rme = loadRMesh(std::string("test/room3pit_opt.rmesh"),irrFileSystem,irrDriver); room3pit::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2servers*/rme = loadRMesh(std::string("test/room2servers_opt.rmesh"),irrFileSystem,irrDriver); room2servers::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2tunnel*/rme = loadRMesh(std::string("test/room2tunnel_opt.rmesh"),irrFileSystem,irrDriver); room2tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3tunnel*/rme = loadRMesh(std::string("test/room3tunnel_opt.rmesh"),irrFileSystem,irrDriver); room3tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room4tunnels*/rme = loadRMesh(std::string("test/4tunnels_opt.rmesh"),irrFileSystem,irrDriver); room4tunnels::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room513*/rme = loadRMesh(std::string("test/room513_opt.rmesh"),irrFileSystem,irrDriver); room513::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
+	/*r_008*/rme = loadRMesh(std::string("test/008_opt.rmesh"),irrFileSystem,irrDriver); r_008::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*coffin*/rme = loadRMesh(std::string("test/coffin_opt.rmesh"),irrFileSystem,irrDriver); coffin::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*endroom2*/rme = loadRMesh(std::string("test/endroom2_opt.rmesh"),irrFileSystem,irrDriver); endroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*testroom*/rme = loadRMesh(std::string("test/testroom_opt.rmesh"),irrFileSystem,irrDriver); testroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*tunnel*/rme = loadRMesh(std::string("test/tunnel_opt.rmesh"),irrFileSystem,irrDriver); tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*tunnel2*/rme = loadRMesh(std::string("test/tunnel2_opt.rmesh"),irrFileSystem,irrDriver); tunnel2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room035*/rme = loadRMesh(std::string("test/room035_opt.rmesh"),irrFileSystem,irrDriver); room035::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room049*/rme = loadRMesh(std::string("test/room049_opt.rmesh"),irrFileSystem,irrDriver); room049::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room106*/rme = loadRMesh(std::string("test/room106_opt.rmesh"),irrFileSystem,irrDriver); room106::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2ctunnel*/rme = loadRMesh(std::string("test/room2Ctunnel_opt.rmesh"),irrFileSystem,irrDriver); room2ctunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2nuke*/rme = loadRMesh(std::string("test/room2nuke_opt.rmesh"),irrFileSystem,irrDriver); room2nuke::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2pipes*/rme = loadRMesh(std::string("test/room2pipes_opt.rmesh"),irrFileSystem,irrDriver); room2pipes::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2pit*/rme = loadRMesh(std::string("test/room2pit_opt.rmesh"),irrFileSystem,irrDriver); room2pit::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3pit*/rme = loadRMesh(std::string("test/room3pit_opt.rmesh"),irrFileSystem,irrDriver); room3pit::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2servers*/rme = loadRMesh(std::string("test/room2servers_opt.rmesh"),irrFileSystem,irrDriver); room2servers::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2tunnel*/rme = loadRMesh(std::string("test/room2tunnel_opt.rmesh"),irrFileSystem,irrDriver); room2tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3tunnel*/rme = loadRMesh(std::string("test/room3tunnel_opt.rmesh"),irrFileSystem,irrDriver); room3tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room4tunnels*/rme = loadRMesh(std::string("test/4tunnels_opt.rmesh"),irrFileSystem,irrDriver); room4tunnels::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room513*/rme = loadRMesh(std::string("test/room513_opt.rmesh"),irrFileSystem,irrDriver); room513::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
 	//EZ
-	/*room860*/rme = loadRMesh(std::string("test/room860_opt.rmesh"),irrFileSystem,irrDriver); room860::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*exit1*/rme = loadRMesh(std::string("test/exit1_opt.rmesh"),irrFileSystem,irrDriver); exit1::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*gateaentrance*/rme = loadRMesh(std::string("test/gateaentrance_opt.rmesh"),irrFileSystem,irrDriver); gateaentrance::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*lockroom2*/rme = loadRMesh(std::string("test/lockroom2_opt.rmesh"),irrFileSystem,irrDriver); lockroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room079*/rme = loadRMesh(std::string("test/room079_opt.rmesh"),irrFileSystem,irrDriver); room079::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2z3*/rme = loadRMesh(std::string("test/room2z3_opt.rmesh"),irrFileSystem,irrDriver); room2z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2cafeteria*/rme = loadRMesh(std::string("test/room2cafeteria_opt.rmesh"),irrFileSystem,irrDriver); room2cafeteria::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2cz3*/rme = loadRMesh(std::string("test/room2Cz3_opt.rmesh"),irrFileSystem,irrDriver); room2cz3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2ccont*/rme = loadRMesh(std::string("test/room2ccont_opt.rmesh"),irrFileSystem,irrDriver); room2ccont::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2offices*/rme = loadRMesh(std::string("test/room2offices_opt.rmesh"),irrFileSystem,irrDriver); room2offices::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2offices2*/rme = loadRMesh(std::string("test/room2offices2_opt.rmesh"),irrFileSystem,irrDriver); room2offices2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2offices3*/rme = loadRMesh(std::string("test/room2offices3_opt.rmesh"),irrFileSystem,irrDriver); room2offices3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2poffices*/rme = loadRMesh(std::string("test/room2poffices_opt.rmesh"),irrFileSystem,irrDriver); room2poffices::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2poffices2*/rme = loadRMesh(std::string("test/room2poffices2_opt.rmesh"),irrFileSystem,irrDriver); room2poffices2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2sroom*/rme = loadRMesh(std::string("test/room2sroom_opt.rmesh"),irrFileSystem,irrDriver); room2sroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2toilets*/rme = loadRMesh(std::string("test/room2toilets_opt.rmesh"),irrFileSystem,irrDriver); room2toilets::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room2tesla*/rme = loadRMesh(std::string("test/room2tesla_opt.rmesh"),irrFileSystem,irrDriver); room2tesla::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3servers*/rme = loadRMesh(std::string("test/room3servers_opt.rmesh"),irrFileSystem,irrDriver); room3servers::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3servers2*/rme = loadRMesh(std::string("test/room3servers2_opt.rmesh"),irrFileSystem,irrDriver); room3servers2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room3z3*/rme = loadRMesh(std::string("test/room3z3_opt.rmesh"),irrFileSystem,irrDriver); room3z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*room4z3*/rme = loadRMesh(std::string("test/room4z3_opt.rmesh"),irrFileSystem,irrDriver); room4z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
+	/*room860*/rme = loadRMesh(std::string("test/room860_opt.rmesh"),irrFileSystem,irrDriver); room860::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*exit1*/rme = loadRMesh(std::string("test/exit1_opt.rmesh"),irrFileSystem,irrDriver); exit1::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*gateaentrance*/rme = loadRMesh(std::string("test/gateaentrance_opt.rmesh"),irrFileSystem,irrDriver); gateaentrance::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*lockroom2*/rme = loadRMesh(std::string("test/lockroom2_opt.rmesh"),irrFileSystem,irrDriver); lockroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room079*/rme = loadRMesh(std::string("test/room079_opt.rmesh"),irrFileSystem,irrDriver); room079::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2z3*/rme = loadRMesh(std::string("test/room2z3_opt.rmesh"),irrFileSystem,irrDriver); room2z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2cafeteria*/rme = loadRMesh(std::string("test/room2cafeteria_opt.rmesh"),irrFileSystem,irrDriver); room2cafeteria::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2cz3*/rme = loadRMesh(std::string("test/room2Cz3_opt.rmesh"),irrFileSystem,irrDriver); room2cz3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2ccont*/rme = loadRMesh(std::string("test/room2ccont_opt.rmesh"),irrFileSystem,irrDriver); room2ccont::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2offices*/rme = loadRMesh(std::string("test/room2offices_opt.rmesh"),irrFileSystem,irrDriver); room2offices::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2offices2*/rme = loadRMesh(std::string("test/room2offices2_opt.rmesh"),irrFileSystem,irrDriver); room2offices2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2offices3*/rme = loadRMesh(std::string("test/room2offices3_opt.rmesh"),irrFileSystem,irrDriver); room2offices3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2poffices*/rme = loadRMesh(std::string("test/room2poffices_opt.rmesh"),irrFileSystem,irrDriver); room2poffices::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2poffices2*/rme = loadRMesh(std::string("test/room2poffices2_opt.rmesh"),irrFileSystem,irrDriver); room2poffices2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2sroom*/rme = loadRMesh(std::string("test/room2sroom_opt.rmesh"),irrFileSystem,irrDriver); room2sroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2toilets*/rme = loadRMesh(std::string("test/room2toilets_opt.rmesh"),irrFileSystem,irrDriver); room2toilets::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room2tesla*/rme = loadRMesh(std::string("test/room2tesla_opt.rmesh"),irrFileSystem,irrDriver); room2tesla::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3servers*/rme = loadRMesh(std::string("test/room3servers_opt.rmesh"),irrFileSystem,irrDriver); room3servers::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3servers2*/rme = loadRMesh(std::string("test/room3servers2_opt.rmesh"),irrFileSystem,irrDriver); room3servers2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room3z3*/rme = loadRMesh(std::string("test/room3z3_opt.rmesh"),irrFileSystem,irrDriver); room3z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room4z3*/rme = loadRMesh(std::string("test/room4z3_opt.rmesh"),irrFileSystem,irrDriver); room4z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
 	//Misc
-	/*r_173*/rme = loadRMesh(std::string("test/173bright_opt.rmesh"),irrFileSystem,irrDriver); r_173::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*checkpoint1*/rme = loadRMesh(std::string("test/checkpoint1_opt.rmesh"),irrFileSystem,irrDriver); checkpoint1::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*checkpoint2*/rme = loadRMesh(std::string("test/checkpoint2_opt.rmesh"),irrFileSystem,irrDriver); checkpoint2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*gatea*/rme = loadRMesh(std::string("test/gatea_opt.rmesh"),irrFileSystem,irrDriver); gatea::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
-	/*pocketdimension*/rme = loadRMesh(std::string("test/pocketdimension1_opt.rmesh"),irrFileSystem,irrDriver); pocketdimension::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);
+	/*r_173*/rme = loadRMesh(std::string("test/173bright_opt.rmesh"),irrFileSystem,irrDriver); r_173::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*checkpoint1*/rme = loadRMesh(std::string("test/checkpoint1_opt.rmesh"),irrFileSystem,irrDriver); checkpoint1::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*checkpoint2*/rme = loadRMesh(std::string("test/checkpoint2_opt.rmesh"),irrFileSystem,irrDriver); checkpoint2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*gatea*/rme = loadRMesh(std::string("test/gatea_opt.rmesh"),irrFileSystem,irrDriver); gatea::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*pocketdimension*/rme = loadRMesh(std::string("test/pocketdimension1_opt.rmesh"),irrFileSystem,irrDriver); pocketdimension::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
 
 	createMap();
 	/*room2::createNew(irr::core::vector3df(0,0,0),0);
@@ -238,6 +240,17 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     //------------
 
 	irrDevice->getCursorControl()->setVisible(false);
+
+	for (int y=19;y>=0;y--) {
+		for (int x=19;x>=0;x--) {
+			if (roomArray[x][y]!=nullptr) {
+				mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+				std::cout<<"Placed player at coords ["<<x<<"]["<<y<<"]\n";
+				y=-1;
+				break;
+			}
+		}
+	}
 }
 
 world::~world() {
@@ -248,8 +261,169 @@ world::~world() {
     irrDevice->drop();
 }
 
+room* world::addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone) {
+	int choice = 0;
+	room* retRoom = nullptr;
+	switch (type) {
+		case roomTypes::ROOM1:
+			switch (zone) {
+				case 0: //LCZ
+					choice = rand()%100;
+					if (choice>=0 && choice<100) {
+						retRoom = endroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 1: //HCZ
+					choice = rand()%100;
+					if (choice>=0 && choice<100) {
+						retRoom = endroom2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 2: //EZ
+					choice = rand()%100;
+					if (choice>=0 && choice<100) {
+						retRoom = endroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+			}
+		break;
+		case roomTypes::ROOM2:
+			switch (zone) {
+				case 0: //LCZ
+					choice = rand()%150;
+					if (choice>=0 && choice<50) {
+						retRoom = room2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=50 && choice<100) {
+						retRoom = room2_2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=100 && choice<120) {
+						retRoom = room2elevator::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=120 && choice<150) {
+						retRoom = room2doors::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 1: //HCZ
+					choice = rand()%295;
+					if (choice>=0 && choice<100) {
+						retRoom = tunnel::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=100 && choice<170) {
+						retRoom = tunnel2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=170 && choice<220) {
+						retRoom = room2pipes::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=220 && choice<295) {
+						retRoom = room2pit::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 2: //EZ
+					choice = rand()%300;
+					if (choice>=0 && choice<100) {
+						retRoom = room2z3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=100 && choice<130) {
+						retRoom = room2offices::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=130 && choice<150) {
+						retRoom = room2offices2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=150 && choice<170) {
+						retRoom = room2offices3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=170 && choice<200) {
+						retRoom = room2toilets::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=200 && choice<300) {
+						retRoom = room2tesla::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+			}
+		break;
+		case roomTypes::ROOM2C:
+			switch (zone) {
+				case 0: //LCZ
+					choice = rand()%70;
+					if (choice>=0 && choice<30) {
+						retRoom = lockroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=30 && choice<70) {
+						retRoom = room2c::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 1: //HCZ
+					choice = rand()%40;
+					if (choice>=0 && choice<40) {
+						retRoom = room2ctunnel::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 2: //EZ
+					choice = rand()%100;
+					if (choice>=0 && choice<100) {
+						retRoom = room2cz3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+			}
+		break;
+		case roomTypes::ROOM3:
+			switch (zone) {
+				case 0: //LCZ
+					choice = rand()%200;
+					if (choice>=0 && choice<100) {
+						retRoom = room3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=100 && choice<200) {
+						retRoom = room3_2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 1: //HCZ
+					choice = rand()%200;
+					if (choice>=0 && choice<100) {
+						retRoom = room3pit::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+					if (choice>=100 && choice<200) {
+						retRoom = room3tunnel::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 2: //EZ
+					choice = rand()%100;
+					if (choice>=0 && choice<100) {
+						retRoom = room3z3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+			}
+		break;
+		case roomTypes::ROOM4:
+			switch (zone) {
+				case 0: //LCZ
+					choice = rand()%100;
+					if (choice>=0 && choice<100) {
+						retRoom = room4::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 1: //HCZ
+					choice = rand()%100;
+					if (choice>=0 && choice<100) {
+						retRoom = room4tunnels::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+				case 2: //EZ
+					choice = rand()%100;
+					if (choice>=0 && choice<100) {
+						retRoom = room4z3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+					}
+				break;
+			}
+		break;
+	}
+	roomArray[x][y] = retRoom;
+	return retRoom;
+}
+
 void world::createMap() {
-	auto getZone = [] (short y) { return std::min(std::floor((float)(20-y)/20.f*3.f),2.f); };
+	auto getZone = [] (short y) -> int { return std::max(std::min(std::floor((float)(20-y)/20.f*3.f),2.f),0.f); };
 
 	short x,y,temp;
 	short x2,y2;
@@ -301,7 +475,6 @@ void world::createMap() {
 
 		height = (rand() % 2) + 3;
 		if (y - height < 1) height = y;
-		//if (y + height > 18) height = y;
 
 		int yhallways = (rand() % 2) + 4;
 
@@ -311,6 +484,7 @@ void world::createMap() {
 			x2 = std::max(std::min((rand() % (width-1)) + x,18),2);
 			while (roomTemp[x2][y-1].angle>=0 || roomTemp[x2-1][y-1].angle>=0 || roomTemp[x2+1][y-1].angle>=0) {
 				x2++;
+				if (x2>18) break;
 			}
 
 			if (x2<x+width) {
@@ -338,18 +512,20 @@ void world::createMap() {
 		y -= height;
 	}
 
-	for (x=0;x<20;x++) {
-		for (y=0;y<20;y++) {
-			std::cout<<(roomTemp[y][x].angle>-1);
-		}
-		std::cout<<"\n";
-	}
+	unsigned short room1amount[3];
+	unsigned short room2amount[3];
+	unsigned short room2camount[3];
+	unsigned short room3amount[3];
+	unsigned short room4amount[3];
 
 	for (x=0;x<20;x++) {
 		for (y=0;y<20;y++) {
 			bool hasNorth,hasSouth,hasEast,hasWest;
 			hasNorth = hasSouth = hasEast = hasWest = false;
-			if (roomTemp[x][y].angle==0) { //this is not a checkpoint room
+			if (roomTemp[x][y].angle==127) {
+				//get rid of this checkpoint room if it leads to nothing
+				if (roomTemp[x][y-1].angle<0) roomTemp[x][y].angle = -1;
+			} else if (roomTemp[x][y].angle==0) { //this is not a checkpoint room
 				if (x>0) {
 					hasWest = (roomTemp[x-1][y].angle>-1);
 				}
@@ -416,176 +592,363 @@ void world::createMap() {
 					roomTemp[x][y].type = roomTypes::ROOM1;
 					roomTemp[x][y].angle = 1;
 				}
+				switch (roomTemp[x][y].type) {
+					case roomTypes::ROOM1:
+						room1amount[getZone(y)]++;
+					break;
+					case roomTypes::ROOM2:
+						room2amount[getZone(y)]++;
+					break;
+					case roomTypes::ROOM2C:
+						room2camount[getZone(y)]++;
+					break;
+					case roomTypes::ROOM3:
+						room3amount[getZone(y)]++;
+					break;
+					case roomTypes::ROOM4:
+						room4amount[getZone(y)]++;
+					break;
+				}
 			}
 		}
 	}
-	for (y=19;y>=0;y--) {
-		for (x=19;x>=0;x--) {
-			if (roomTemp[x][y].angle>-1 && roomTemp[x][y].angle<127) {
-				irr::core::vector3df pos(204.8*RoomScale*x,0,204.8*RoomScale*y);
-				int choice = 0;
-				switch (roomTemp[x][y].type) {
-					case roomTypes::ROOM1:
-						switch ((int)getZone(y)) {
-							case 0: //LCZ
-								choice = rand()%100;
-								if (choice>=0 && choice<100) {
-									endroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+
+	//force some rooms in there
+	for (int i = 0;i<3;i++) {
+		if (room1amount[i]<5) {
+			std::cout<<"Forcing some ROOM1s in zone "<<i<<"\n";
+			for (y=2;y<19 && room1amount[i]<5;y++) {
+				if (getZone(y+2) == i && getZone(y-2) == i) {
+					for (x=2;x<19 && room1amount[i]<5;x++) {
+						if (roomTemp[x][y].angle<0) {
+							if (((roomTemp[x+1][y].angle>=0) != (roomTemp[x-1][y].angle>=0)) != ((roomTemp[x][y+1].angle>=0) != (roomTemp[x][y-1].angle>=0))) {
+								tempRoom* adjRoom = nullptr;
+								if (roomTemp[x+1][y].angle>=0) {
+									adjRoom = &roomTemp[x+1][y];
+									roomTemp[x][y].angle = 3;
+								} else if (roomTemp[x-1][y].angle>=0) {
+									adjRoom = &roomTemp[x-1][y];
+									roomTemp[x][y].angle = 1;
+								} else if (roomTemp[x][y+1].angle>=0) {
+									adjRoom = &roomTemp[x][y+1];
+									roomTemp[x][y].angle = 2;
+								} else {
+									adjRoom = &roomTemp[x][y-1];
+									roomTemp[x][y].angle = 0;
 								}
-							break;
-							case 1: //HCZ
-								choice = rand()%100;
-								if (choice>=0 && choice<100) {
-									endroom2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+
+								switch (adjRoom->type) {
+									case roomTypes::ROOM2:
+										roomTemp[x][y].type = roomTypes::ROOM1;
+										room1amount[i]++;
+										room2amount[i]--;
+										room3amount[i]++;
+										adjRoom->type = roomTypes::ROOM3;
+										switch (roomTemp[x][y].angle) {
+											case 0:
+												adjRoom->angle = 2;
+											break;
+											case 1:
+												adjRoom->angle = 3;
+											break;
+											case 2:
+												adjRoom->angle = 0;
+											break;
+											case 3:
+												adjRoom->angle = 1;
+											break;
+										}
+									break;
+									case roomTypes::ROOM3:
+										roomTemp[x][y].type = roomTypes::ROOM1;
+										adjRoom->type = roomTypes::ROOM4;
+										room1amount[i]++;
+										room3amount[i]--;
+										room4amount[i]++;
+									break;
+									default:
+										roomTemp[x][y].angle = -1;
+									break;
 								}
-							break;
-							case 2: //EZ
-								choice = rand()%100;
-								if (choice>=0 && choice<100) {
-									endroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
+							}
 						}
-					break;
-					case roomTypes::ROOM2:
-						switch ((int)getZone(y)) {
-							case 0: //LCZ
-								choice = rand()%150;
-								if (choice>=0 && choice<50) {
-									room2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=50 && choice<100) {
-									room2_2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=100 && choice<120) {
-									room2elevator::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=120 && choice<150) {
-									room2doors::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-							case 1: //HCZ
-								choice = rand()%295;
-								if (choice>=0 && choice<100) {
-									tunnel::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=100 && choice<170) {
-									tunnel2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=170 && choice<220) {
-									room2pipes::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=220 && choice<295) {
-									room2pit::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-							case 2: //EZ
-								choice = rand()%300;
-								if (choice>=0 && choice<100) {
-									room2z3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=100 && choice<130) {
-									room2offices::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=130 && choice<150) {
-									room2offices2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=150 && choice<170) {
-									room2offices3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=170 && choice<200) {
-									room2toilets::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=200 && choice<300) {
-									room2tesla::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-						}
-					break;
-					case roomTypes::ROOM2C:
-						switch ((int)getZone(y)) {
-							case 0: //LCZ
-								choice = rand()%70;
-								if (choice>=0 && choice<30) {
-									lockroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=30 && choice<70) {
-									room2c::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-							case 1: //HCZ
-								choice = rand()%40;
-								if (choice>=0 && choice<40) {
-									room2ctunnel::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-							case 2: //EZ
-								choice = rand()%100;
-								if (choice>=0 && choice<100) {
-									room2cz3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-						}
-					break;
-					case roomTypes::ROOM3:
-						switch ((int)getZone(y)) {
-							case 0: //LCZ
-								choice = rand()%200;
-								if (choice>=0 && choice<100) {
-									room3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=100 && choice<200) {
-									room3_2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-							case 1: //HCZ
-								choice = rand()%200;
-								if (choice>=0 && choice<100) {
-									room3pit::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-								if (choice>=100 && choice<200) {
-									room3tunnel::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-							case 2: //EZ
-								choice = rand()%100;
-								if (choice>=0 && choice<100) {
-									room3z3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-						}
-					break;
-					case roomTypes::ROOM4:
-						switch ((int)getZone(y)) {
-							case 0: //LCZ
-								choice = rand()%100;
-								if (choice>=0 && choice<100) {
-									room4::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-							case 1: //HCZ
-								choice = rand()%100;
-								if (choice>=0 && choice<100) {
-									room4tunnels::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-							case 2: //EZ
-								choice = rand()%100;
-								if (choice>=0 && choice<100) {
-									room4z3::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-								}
-							break;
-						}
-					break;
-				}
-			} else if (roomTemp[x][y].angle==127) {
-				if (getZone(y)==1) {
-					checkpoint1::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),0);
-				} else {
-					checkpoint2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),0);
+					}
 				}
 			}
 		}
+		if (room4amount[i]<3) {
+			std::cout<<"Forcing some ROOM4s in zone "<<i<<"\n";
+			for (y=2;y<19 && room4amount[i]<3;y++) {
+				if (getZone(y+2) == i && getZone(y-2) == i) {
+					for (x=2;x<19 && room4amount[i]<3;x++) {
+						if (roomTemp[x][y].angle<0) {
+							if (((roomTemp[x+1][y].angle>=0) != (roomTemp[x-1][y].angle>=0)) != ((roomTemp[x][y+1].angle>=0) != (roomTemp[x][y-1].angle>=0))) {
+								tempRoom* adjRoom = nullptr;
+
+								if (roomTemp[x+1][y].angle>=0) {
+									adjRoom = &roomTemp[x+1][y];
+									roomTemp[x][y].angle = 3;
+								} else if (roomTemp[x-1][y].angle>=0) {
+									adjRoom = &roomTemp[x-1][y];
+									roomTemp[x][y].angle = 1;
+								} else if (roomTemp[x][y+1].angle>=0) {
+									adjRoom = &roomTemp[x][y+1];
+									roomTemp[x][y].angle = 2;
+								} else {
+									adjRoom = &roomTemp[x][y-1];
+									roomTemp[x][y].angle = 0;
+								}
+
+								switch (adjRoom->type) {
+									case roomTypes::ROOM3:
+										roomTemp[x][y].type = roomTypes::ROOM1;
+										adjRoom->type = roomTypes::ROOM4;
+										room1amount[i]++;
+										room3amount[i]--;
+										room4amount[i]++;
+									break;
+									default:
+										roomTemp[x][y].angle = -1;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if (room2camount[i]<3) {
+			std::cout<<"Forcing some ROOM2Cs in zone "<<i<<"\n";
+			for (y=2;y<19 && room2camount[i]<3;y++) {
+				if (getZone(y+2) == i && getZone(y-2) == i) {
+					for (x=2;x<19 && room2camount[i]<3;x++) {
+						if (roomTemp[x][y].angle<0) {
+							if (((roomTemp[x+1][y].angle>=0) != (roomTemp[x-1][y].angle>=0)) != ((roomTemp[x][y+1].angle>=0) != (roomTemp[x][y-1].angle>=0))) {
+								tempRoom* adjRoom = nullptr;
+
+								if (roomTemp[x+1][y].angle>=0) {
+									adjRoom = &roomTemp[x+1][y];
+									roomTemp[x][y].angle = 3;
+								} else if (roomTemp[x-1][y].angle>=0) {
+									adjRoom = &roomTemp[x-1][y];
+									roomTemp[x][y].angle = 1;
+								} else if (roomTemp[x][y+1].angle>=0) {
+									adjRoom = &roomTemp[x][y+1];
+									roomTemp[x][y].angle = 2;
+								} else {
+									adjRoom = &roomTemp[x][y-1];
+									roomTemp[x][y].angle = 0;
+								}
+
+								switch (adjRoom->type) {
+									case roomTypes::ROOM1:
+										roomTemp[x][y].type = roomTypes::ROOM1;
+										adjRoom->type = roomTypes::ROOM2C;
+										switch (roomTemp[x][y].angle) {
+											case 0:
+												if (adjRoom->angle == 1) adjRoom->angle = 2; //south-west
+												//else if (adjRoom->angle == 3) adjRoom->angle = 3; //south-east
+												else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
+											break;
+											case 1:
+												if (adjRoom->angle == 0) adjRoom->angle = 1; //north-east
+												else if (adjRoom->angle == 2) adjRoom->angle = 3; //south-east
+												else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
+											break;
+											case 2:
+												if (adjRoom->angle == 1) adjRoom->angle = 1; //north-east
+												else if (adjRoom->angle == 3) adjRoom->angle = 0; //north-west
+												else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
+											break;
+											case 3:
+												if (adjRoom->angle == 0) adjRoom->angle = 0; //north-west
+												//else if (adjRoom->angle == 2) adjRoom->angle = 2; //south-west
+												else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
+											break;
+										}
+										if (roomTemp[x][y].angle > -1) {
+											room2camount[i]++;
+										}
+									break;
+									default:
+										roomTemp[x][y].angle = -1;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for (x=0;x<20;x++) {
+		for (y=0;y<20;y++) {
+			std::cout<<(roomTemp[y][x].angle>-1);
+		}
+		std::cout<<"\n";
+	}
+
+	unsigned short currentRoom1,currentRoom2,currentRoom2c,currentRoom3,currentRoom4;
+	currentRoom1 = currentRoom2 = currentRoom2c = currentRoom3 = currentRoom4 = 0;
+	short prevZone = getZone(19);
+	for (y=19;y>=0;y--) {
+		if (getZone(y)!=prevZone)
+			currentRoom1 = currentRoom2 = currentRoom2c = currentRoom3 = currentRoom4 = 0;
+		for (x=19;x>=0;x--) {
+			if (roomTemp[x][y].angle>-1 && roomTemp[x][y].angle<127) {
+				switch (roomTemp[x][y].type) {
+					case roomTypes::ROOM1:
+						switch (getZone(y)) {
+							case 0: //LCZ
+								if (currentRoom1==0) {
+									roomArray[x][y] = start::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.4f*(float)room1amount[0])) {
+									roomArray[x][y] = roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.8f*(float)room1amount[0])) {
+									roomArray[x][y] = r_914::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 1: //HCZ
+								if (currentRoom1==(int)(0.1f*(float)room1amount[1])) {
+									roomArray[x][y] = room079::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.3f*(float)room1amount[1])) {
+									roomArray[x][y] = room106::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.5f*(float)room1amount[1])) {
+									roomArray[x][y] = coffin::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.7f*(float)room1amount[1])) {
+									roomArray[x][y] = room035::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.9f*(float)room1amount[1])) {
+									roomArray[x][y] = r_008::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 2: //EZ
+								if (currentRoom1==room1amount[2]-1) {
+									roomArray[x][y] = gateaentrance::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==room1amount[2]-2) {
+									roomArray[x][y] = exit1::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+						}
+						currentRoom1++;
+					break;
+					case roomTypes::ROOM2:
+						switch (getZone(y)) {
+							case 0: //LCZ
+								if (currentRoom2==0) {
+									roomArray[x][y] = room2closets::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.2f*(float)room2amount[0])) {
+									roomArray[x][y] = room2testroom2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.4f*(float)room2amount[0])) {
+									roomArray[x][y] = room2scps::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.8f*(float)room2amount[0])) {
+									roomArray[x][y] = room2storage::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.9f*(float)room2amount[0])) {
+									roomArray[x][y] = room012::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 1: //HCZ
+								if (currentRoom2==(int)(0.2f*(float)room2amount[1])) {
+									roomArray[x][y] = room2nuke::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.25f*(float)room2amount[1])) {
+									roomArray[x][y] = room2tunnel::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.4f*(float)room2amount[1])) {
+									roomArray[x][y] = room049::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.7f*(float)room2amount[1])) {
+									roomArray[x][y] = room2servers::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.9f*(float)room2amount[1])) {
+									roomArray[x][y] = testroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 2: //EZ
+								if (currentRoom2==(int)(0.1f*(float)room2amount[2])) {
+									roomArray[x][y] = room2poffices::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.2f*(float)room2amount[2])) {
+									roomArray[x][y] = room2cafeteria::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.3f*(float)room2amount[2])) {
+									roomArray[x][y] = room2sroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.45f*(float)room2amount[2])) {
+									roomArray[x][y] = room2offices::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.6f*(float)room2amount[2])) {
+									roomArray[x][y] = room860::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.8f*(float)room2amount[2])) {
+									roomArray[x][y] = room2poffices2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.9f*(float)room2amount[2])) {
+									roomArray[x][y] = room2offices2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+						}
+						currentRoom2++;
+					break;
+					case roomTypes::ROOM2C:
+						switch (getZone(y)) {
+							case 0: //LCZ
+								if (currentRoom2c==0) {
+									roomArray[x][y] = lockroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 1: //HCZ
+
+							break;
+							case 2: //EZ
+								if (currentRoom2c==0) {
+									roomArray[x][y] = room2ccont::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2c==1) {
+									roomArray[x][y] = lockroom2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+						}
+						currentRoom2c++;
+					break;
+					case roomTypes::ROOM3:
+						switch (getZone(y)) {
+							case 0: //LCZ
+								if (currentRoom3==(int)((((rand()%1000)*0.001f)+0.2f)*(float)room3amount[0])) {
+									roomArray[x][y] = room3storage::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 1: //HCZ
+								if (currentRoom3==(int)(0.5f*(float)room3amount[1])) {
+									roomArray[x][y] = room513::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 2: //EZ
+								if (currentRoom3==(int)(0.3f*(float)room3amount[2])) {
+									roomArray[x][y] = room3servers::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom3==(int)(0.7f*(float)room3amount[2])) {
+									roomArray[x][y] = room3servers2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+						}
+						currentRoom3++;
+					break;
+					case roomTypes::ROOM4:
+						switch (getZone(y)) {
+							case 0: //LCZ
+
+							break;
+							case 1: //HCZ
+
+							break;
+							case 2: //EZ
+
+							break;
+						}
+						currentRoom4++;
+					break;
+				}
+				if (roomArray[x][y]==nullptr) {
+					addRandomRoom(x,y,roomTemp[x][y].type,roomTemp[x][y].angle,getZone(y));
+				}
+			} else if (roomTemp[x][y].angle==127) {
+				if (getZone(y)==1) {
+					roomArray[x][y] = checkpoint1::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),0);
+				} else {
+					roomArray[x][y] = checkpoint2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),0);
+				}
+			}
+		}
+		prevZone = getZone(y);
 	}
 }
 
@@ -601,6 +964,26 @@ bool world::run() {
     dynamics->simStep(irrTimer->getRealTime(),60.f * prec);
 
     mainPlayer->update();
+
+	int px,py;
+	px = coordToRoomGrid(mainPlayer->getPosition().X);
+	py = coordToRoomGrid(mainPlayer->getPosition().Z);
+	if (px>=0 && px<20 && py>=0 && py<20) {
+		if (roomArray[px][py]!=nullptr) {
+			for (int y=0;y<20;y++) {
+				for (int x=0;x<20;x++) {
+					if (roomArray[x][y]!=nullptr) {
+						if (x==px && y==py) {
+							roomArray[x][y]->setActivation(true);
+						} else {
+							roomArray[x][y]->setActivation(false);
+						}
+					}
+				}
+			}
+		}
+    }
+
     irrDriver->beginScene(true, true, irr::video::SColor(255, 255, 0, 255));
     irrDriver->setRenderTarget(blurImage2); //copy the old render
     irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
@@ -710,6 +1093,12 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     for (irr::u32 i=0;i<inventory_size;i++) {
         inventory[i]=nullptr;
     }
+}
+
+void player::teleport(irr::core::vector3df position) {
+	btTransform oTrans = Capsule->getCenterOfMassTransform();
+	oTrans.setOrigin(btVector3(position.X,position.Y,position.Z));
+	Capsule->setCenterOfMassTransform(oTrans);
 }
 
 void player::update() {
@@ -1070,4 +1459,8 @@ bool getNodeTriangleTextureName //taken from here: http://irrlicht.sourceforge.n
 		}
 
 		return false;
+}
+
+inline int coordToRoomGrid(float coord) {
+	return (int)((coord+102.4f*RoomScale)/(204.8f*RoomScale));
 }

@@ -2,16 +2,17 @@
 #include "testroom.h"
 
 irr::scene::IMeshSceneNode* testroom::baseNode = nullptr;
-btBvhTriangleMeshShape* testroom::baseShape = nullptr;
+RMesh* testroom::baseRMesh = nullptr;
 
-void testroom::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (testroom::baseNode==nullptr || testroom::baseShape==nullptr) {
-		testroom::baseNode = inNode; testroom::baseShape = inShape; testroom::baseNode->setVisible(false);
+void testroom::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (testroom::baseNode==nullptr || testroom::baseRMesh==nullptr) {
+		testroom::baseNode = inNode; testroom::baseRMesh = inRme; testroom::baseNode->setVisible(false);
 	}
 }
 
 testroom* testroom::createNew(irr::core::vector3df inPosition,char inAngle) {
 	testroom* retRoom = new testroom;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ testroom* testroom::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	testroom::baseShape->calculateLocalInertia(0.0, localInertia);
+	testroom::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, testroom::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, testroom::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

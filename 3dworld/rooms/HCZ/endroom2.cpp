@@ -2,16 +2,17 @@
 #include "endroom2.h"
 
 irr::scene::IMeshSceneNode* endroom2::baseNode = nullptr;
-btBvhTriangleMeshShape* endroom2::baseShape = nullptr;
+RMesh* endroom2::baseRMesh = nullptr;
 
-void endroom2::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (endroom2::baseNode==nullptr || endroom2::baseShape==nullptr) {
-		endroom2::baseNode = inNode; endroom2::baseShape = inShape; endroom2::baseNode->setVisible(false);
+void endroom2::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (endroom2::baseNode==nullptr || endroom2::baseRMesh==nullptr) {
+		endroom2::baseNode = inNode; endroom2::baseRMesh = inRme; endroom2::baseNode->setVisible(false);
 	}
 }
 
 endroom2* endroom2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	endroom2* retRoom = new endroom2;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ endroom2* endroom2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	endroom2::baseShape->calculateLocalInertia(0.0, localInertia);
+	endroom2::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, endroom2::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, endroom2::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

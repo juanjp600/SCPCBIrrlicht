@@ -2,16 +2,17 @@
 #include "room2pipes.h"
 
 irr::scene::IMeshSceneNode* room2pipes::baseNode = nullptr;
-btBvhTriangleMeshShape* room2pipes::baseShape = nullptr;
+RMesh* room2pipes::baseRMesh = nullptr;
 
-void room2pipes::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (room2pipes::baseNode==nullptr || room2pipes::baseShape==nullptr) {
-		room2pipes::baseNode = inNode; room2pipes::baseShape = inShape; room2pipes::baseNode->setVisible(false);
+void room2pipes::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (room2pipes::baseNode==nullptr || room2pipes::baseRMesh==nullptr) {
+		room2pipes::baseNode = inNode; room2pipes::baseRMesh = inRme; room2pipes::baseNode->setVisible(false);
 	}
 }
 
 room2pipes* room2pipes::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room2pipes* retRoom = new room2pipes;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ room2pipes* room2pipes::createNew(irr::core::vector3df inPosition,char inAngle) 
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	room2pipes::baseShape->calculateLocalInertia(0.0, localInertia);
+	room2pipes::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, room2pipes::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, room2pipes::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);

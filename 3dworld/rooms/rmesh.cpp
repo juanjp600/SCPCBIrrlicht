@@ -5,6 +5,8 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
     irr::io::IReadFile* file = fs->createAndOpenFile(path.c_str());
 
+	if (!file) { std::cout<<"Could not load \""<<path<<"\""<<"\n"; return nullptr; }
+
     int readInt1,readInt2;
     int i1,i2,i3;
     char readChar1,readChar2;
@@ -37,7 +39,6 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                 break;
             }
         }
-        std::cout<<path<<"\n";
         irr::scene::SMesh* mesh = new irr::scene::SMesh();
         irr::scene::SMeshBufferLightMap* bufLM = nullptr;
         irr::scene::SMeshBuffer* buf = nullptr;
@@ -64,7 +65,6 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                         readString1+=readChar2;
                     }
                     textureRead[j] = path+readString1;
-                    std::cout<<readString1<<"\n";
 
                     if (blendType!=1) { //alpha blending is final
                         blendType = 2;
@@ -252,7 +252,6 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                 file->read(&readChar1,sizeof(char));
                 readString1+=readChar1;
             }
-            std::cout<<readString1<<"\n";
             if (readString1=="screen") {
                 file->read(&fx,sizeof(float));
                 file->read(&fy,sizeof(float));

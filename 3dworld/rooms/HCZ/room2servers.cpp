@@ -2,16 +2,17 @@
 #include "room2servers.h"
 
 irr::scene::IMeshSceneNode* room2servers::baseNode = nullptr;
-btBvhTriangleMeshShape* room2servers::baseShape = nullptr;
+RMesh* room2servers::baseRMesh = nullptr;
 
-void room2servers::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {
-	if (room2servers::baseNode==nullptr || room2servers::baseShape==nullptr) {
-		room2servers::baseNode = inNode; room2servers::baseShape = inShape; room2servers::baseNode->setVisible(false);
+void room2servers::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
+	if (room2servers::baseNode==nullptr || room2servers::baseRMesh==nullptr) {
+		room2servers::baseNode = inNode; room2servers::baseRMesh = inRme; room2servers::baseNode->setVisible(false);
 	}
 }
 
 room2servers* room2servers::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room2servers* retRoom = new room2servers;
+
 	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
@@ -32,9 +33,9 @@ room2servers* room2servers::createNew(irr::core::vector3df inPosition,char inAng
 	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
 
 	btVector3 localInertia;
-	room2servers::baseShape->calculateLocalInertia(0.0, localInertia);
+	room2servers::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);
 
-	retRoom->rbody = new btRigidBody(0.0, MotionState, room2servers::baseShape, localInertia);
+	retRoom->rbody = new btRigidBody(0.0, MotionState, room2servers::baseRMesh->shape, localInertia);
 	room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);
 
 	retRoom->rbody->setFriction(1.f);
