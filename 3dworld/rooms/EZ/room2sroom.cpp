@@ -1,19 +1,19 @@
 #include "../room.h"
 #include "room2sroom.h"
 
-irr::scene::IMeshSceneNode* room2sroom::baseNode = nullptr;
 RMesh* room2sroom::baseRMesh = nullptr;
 
-void room2sroom::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
-	if (room2sroom::baseNode==nullptr || room2sroom::baseRMesh==nullptr) {
-		room2sroom::baseNode = inNode; room2sroom::baseRMesh = inRme; room2sroom::baseNode->setVisible(false);
+void room2sroom::setBase(RMesh* inRme) {
+	if (room2sroom::baseRMesh==nullptr) {
+		room2sroom::baseRMesh = inRme;
 	}
 }
 
 room2sroom* room2sroom::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room2sroom* retRoom = new room2sroom;
 
-	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
+	retRoom->node = room::getNewNode(room2sroom::baseRMesh->mesh); retRoom->node->setVisible(true);
+	retRoom->getSelector(room2sroom::baseRMesh->mesh);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;

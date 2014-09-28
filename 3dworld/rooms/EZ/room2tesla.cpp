@@ -1,19 +1,19 @@
 #include "../room.h"
 #include "room2tesla.h"
 
-irr::scene::IMeshSceneNode* room2tesla::baseNode = nullptr;
 RMesh* room2tesla::baseRMesh = nullptr;
 
-void room2tesla::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
-	if (room2tesla::baseNode==nullptr || room2tesla::baseRMesh==nullptr) {
-		room2tesla::baseNode = inNode; room2tesla::baseRMesh = inRme; room2tesla::baseNode->setVisible(false);
+void room2tesla::setBase(RMesh* inRme) {
+	if (room2tesla::baseRMesh==nullptr) {
+		room2tesla::baseRMesh = inRme;
 	}
 }
 
 room2tesla* room2tesla::createNew(irr::core::vector3df inPosition,char inAngle) {
 	room2tesla* retRoom = new room2tesla;
 
-	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
+	retRoom->node = room::getNewNode(room2tesla::baseRMesh->mesh); retRoom->node->setVisible(true);
+	retRoom->getSelector(room2tesla::baseRMesh->mesh);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;

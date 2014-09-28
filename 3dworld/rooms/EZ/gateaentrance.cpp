@@ -1,19 +1,19 @@
 #include "../room.h"
 #include "gateaentrance.h"
 
-irr::scene::IMeshSceneNode* gateaentrance::baseNode = nullptr;
 RMesh* gateaentrance::baseRMesh = nullptr;
 
-void gateaentrance::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
-	if (gateaentrance::baseNode==nullptr || gateaentrance::baseRMesh==nullptr) {
-		gateaentrance::baseNode = inNode; gateaentrance::baseRMesh = inRme; gateaentrance::baseNode->setVisible(false);
+void gateaentrance::setBase(RMesh* inRme) {
+	if (gateaentrance::baseRMesh==nullptr) {
+		gateaentrance::baseRMesh = inRme;
 	}
 }
 
 gateaentrance* gateaentrance::createNew(irr::core::vector3df inPosition,char inAngle) {
 	gateaentrance* retRoom = new gateaentrance;
 
-	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
+	retRoom->node = room::getNewNode(gateaentrance::baseRMesh->mesh); retRoom->node->setVisible(true);
+	retRoom->getSelector(gateaentrance::baseRMesh->mesh);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;

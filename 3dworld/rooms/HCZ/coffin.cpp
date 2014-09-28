@@ -1,19 +1,19 @@
 #include "../room.h"
 #include "coffin.h"
 
-irr::scene::IMeshSceneNode* coffin::baseNode = nullptr;
 RMesh* coffin::baseRMesh = nullptr;
 
-void coffin::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
-	if (coffin::baseNode==nullptr || coffin::baseRMesh==nullptr) {
-		coffin::baseNode = inNode; coffin::baseRMesh = inRme; coffin::baseNode->setVisible(false);
+void coffin::setBase(RMesh* inRme) {
+	if (coffin::baseRMesh==nullptr) {
+		coffin::baseRMesh = inRme;
 	}
 }
 
 coffin* coffin::createNew(irr::core::vector3df inPosition,char inAngle) {
 	coffin* retRoom = new coffin;
 
-	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
+	retRoom->node = room::getNewNode(coffin::baseRMesh->mesh); retRoom->node->setVisible(true);
+	retRoom->getSelector(coffin::baseRMesh->mesh);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;

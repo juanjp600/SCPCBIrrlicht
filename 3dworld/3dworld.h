@@ -298,6 +298,8 @@ class world {
         irr::video::IVideoDriver* irrDriver;
         irr::scene::ISceneManager* irrSmgr;
 
+		irr::scene::ISceneCollisionManager* irrColl;
+
         irr::gui::IGUIEnvironment* irrEnv;
 
         irr::io::IFileSystem* irrFileSystem;

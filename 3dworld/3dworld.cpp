@@ -14,6 +14,9 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     irrDevice = irr::createDevice(irrDriverType,irr::core::dimension2d<irr::u32>(width,height),32,fullscreen,false,true,irrReceiver);
     irrDriver = irrDevice->getVideoDriver();
 	irrSmgr = irrDevice->getSceneManager();
+	irrColl = irrSmgr->getSceneCollisionManager();
+
+	room::setSmgr(irrSmgr);
 
 	//irrSmgr->setAmbientLight(irr::video::SColor(255,20,20,20));
 
@@ -70,19 +73,20 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     dynRegister* itemDyn = new dynRegister(dynamics);
 
     node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/eyedrops.b3d"));
-    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
     node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
 
 	item::setDynamics(itemDyn);
 
     node->setScale(irr::core::vector3df(0.06*RoomScale,0.06*RoomScale,0.06*RoomScale));
+    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
     itemEyedrops::setMeshNode(node);
 
     node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/gasmask.b3d"));
-    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
+    //node->setDebugDataVisible(irr::scene::EDS_NORMALS);
     node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
 
     node->setScale(irr::core::vector3df(0.6*RoomScale,0.6*RoomScale,0.6*RoomScale));
+    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
     itemGasMask::setMeshNode(node);
 
     for (irr::u32 ui=0;ui<10000;ui++) {
@@ -112,74 +116,76 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	RMesh* rme;
 	//LCZ
-	/*lockroom*/rme = loadRMesh(std::string("test/lockroom_opt.rmesh"),irrFileSystem,irrDriver); lockroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*start*/rme = loadRMesh(std::string("test/173_opt.rmesh"),irrFileSystem,irrDriver); start::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2storage*/rme = loadRMesh(std::string("test/room2storage_opt.rmesh"),irrFileSystem,irrDriver); room2storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*endroom*/rme = loadRMesh(std::string("test/endroom_opt.rmesh"),irrFileSystem,irrDriver); endroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room012*/rme = loadRMesh(std::string("test/room012_opt.rmesh"),irrFileSystem,irrDriver); room012::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2*/rme = loadRMesh(std::string("test/room2_opt.rmesh"),irrFileSystem,irrDriver); room2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2_2*/rme = loadRMesh(std::string("test/room2_2_opt.rmesh"),irrFileSystem,irrDriver); room2_2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2c*/rme = loadRMesh(std::string("test/room2C_opt.rmesh"),irrFileSystem,irrDriver); room2c::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2closets*/rme = loadRMesh(std::string("test/room2closets_opt.rmesh"),irrFileSystem,irrDriver); room2closets::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2elevator*/rme = loadRMesh(std::string("test/room2elevator_opt.rmesh"),irrFileSystem,irrDriver); room2elevator::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2doors*/rme = loadRMesh(std::string("test/room2doors_opt.rmesh"),irrFileSystem,irrDriver); room2doors::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2scps*/rme = loadRMesh(std::string("test/room2scps_opt.rmesh"),irrFileSystem,irrDriver); room2scps::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2testroom2*/rme = loadRMesh(std::string("test/room2testroom2_opt.rmesh"),irrFileSystem,irrDriver); room2testroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3*/rme = loadRMesh(std::string("test/room3_opt.rmesh"),irrFileSystem,irrDriver); room3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3_2*/rme = loadRMesh(std::string("test/room3_2_opt.rmesh"),irrFileSystem,irrDriver); room3_2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room4*/rme = loadRMesh(std::string("test/room4_opt.rmesh"),irrFileSystem,irrDriver); room4::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*roompj*/rme = loadRMesh(std::string("test/roompj_opt.rmesh"),irrFileSystem,irrDriver); roompj::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*r_914*/rme = loadRMesh(std::string("test/machineroom_opt.rmesh"),irrFileSystem,irrDriver); r_914::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*lockroom*/rme = loadRMesh(std::string("test/lockroom_opt.rmesh"),irrFileSystem,irrDriver); lockroom::setBase(rme);
+	/*start*/rme = loadRMesh(std::string("test/173_opt.rmesh"),irrFileSystem,irrDriver); start::setBase(rme);
+	/*room2storage*/rme = loadRMesh(std::string("test/room2storage_opt.rmesh"),irrFileSystem,irrDriver); room2storage::setBase(rme);
+	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(rme);
+	/*endroom*/rme = loadRMesh(std::string("test/endroom_opt.rmesh"),irrFileSystem,irrDriver); endroom::setBase(rme);
+	/*room012*/rme = loadRMesh(std::string("test/room012_opt.rmesh"),irrFileSystem,irrDriver); room012::setBase(rme);
+	/*room2*/rme = loadRMesh(std::string("test/room2_opt.rmesh"),irrFileSystem,irrDriver); room2::setBase(rme);
+	/*room2_2*/rme = loadRMesh(std::string("test/room2_2_opt.rmesh"),irrFileSystem,irrDriver); room2_2::setBase(rme);
+	/*room2c*/rme = loadRMesh(std::string("test/room2C_opt.rmesh"),irrFileSystem,irrDriver); room2c::setBase(rme);
+	/*room2closets*/rme = loadRMesh(std::string("test/room2closets_opt.rmesh"),irrFileSystem,irrDriver); room2closets::setBase(rme);
+	/*room2elevator*/rme = loadRMesh(std::string("test/room2elevator_opt.rmesh"),irrFileSystem,irrDriver); room2elevator::setBase(rme);
+	/*room2doors*/rme = loadRMesh(std::string("test/room2doors_opt.rmesh"),irrFileSystem,irrDriver); room2doors::setBase(rme);
+	/*room2scps*/rme = loadRMesh(std::string("test/room2scps_opt.rmesh"),irrFileSystem,irrDriver); room2scps::setBase(rme);
+	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(rme);
+	/*room2testroom2*/rme = loadRMesh(std::string("test/room2testroom2_opt.rmesh"),irrFileSystem,irrDriver); room2testroom2::setBase(rme);
+	/*room3*/rme = loadRMesh(std::string("test/room3_opt.rmesh"),irrFileSystem,irrDriver); room3::setBase(rme);
+	/*room3_2*/rme = loadRMesh(std::string("test/room3_2_opt.rmesh"),irrFileSystem,irrDriver); room3_2::setBase(rme);
+	/*room4*/rme = loadRMesh(std::string("test/room4_opt.rmesh"),irrFileSystem,irrDriver); room4::setBase(rme);
+	/*roompj*/rme = loadRMesh(std::string("test/roompj_opt.rmesh"),irrFileSystem,irrDriver); roompj::setBase(rme);
+	/*r_914*/rme = loadRMesh(std::string("test/machineroom_opt.rmesh"),irrFileSystem,irrDriver); r_914::setBase(rme);
 	//HCZ
-	/*r_008*/rme = loadRMesh(std::string("test/008_opt.rmesh"),irrFileSystem,irrDriver); r_008::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*coffin*/rme = loadRMesh(std::string("test/coffin_opt.rmesh"),irrFileSystem,irrDriver); coffin::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*endroom2*/rme = loadRMesh(std::string("test/endroom2_opt.rmesh"),irrFileSystem,irrDriver); endroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*testroom*/rme = loadRMesh(std::string("test/testroom_opt.rmesh"),irrFileSystem,irrDriver); testroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*tunnel*/rme = loadRMesh(std::string("test/tunnel_opt.rmesh"),irrFileSystem,irrDriver); tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*tunnel2*/rme = loadRMesh(std::string("test/tunnel2_opt.rmesh"),irrFileSystem,irrDriver); tunnel2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room035*/rme = loadRMesh(std::string("test/room035_opt.rmesh"),irrFileSystem,irrDriver); room035::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room049*/rme = loadRMesh(std::string("test/room049_opt.rmesh"),irrFileSystem,irrDriver); room049::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room106*/rme = loadRMesh(std::string("test/room106_opt.rmesh"),irrFileSystem,irrDriver); room106::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2ctunnel*/rme = loadRMesh(std::string("test/room2Ctunnel_opt.rmesh"),irrFileSystem,irrDriver); room2ctunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2nuke*/rme = loadRMesh(std::string("test/room2nuke_opt.rmesh"),irrFileSystem,irrDriver); room2nuke::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2pipes*/rme = loadRMesh(std::string("test/room2pipes_opt.rmesh"),irrFileSystem,irrDriver); room2pipes::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2pit*/rme = loadRMesh(std::string("test/room2pit_opt.rmesh"),irrFileSystem,irrDriver); room2pit::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3pit*/rme = loadRMesh(std::string("test/room3pit_opt.rmesh"),irrFileSystem,irrDriver); room3pit::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2servers*/rme = loadRMesh(std::string("test/room2servers_opt.rmesh"),irrFileSystem,irrDriver); room2servers::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2tunnel*/rme = loadRMesh(std::string("test/room2tunnel_opt.rmesh"),irrFileSystem,irrDriver); room2tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3tunnel*/rme = loadRMesh(std::string("test/room3tunnel_opt.rmesh"),irrFileSystem,irrDriver); room3tunnel::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room4tunnels*/rme = loadRMesh(std::string("test/4tunnels_opt.rmesh"),irrFileSystem,irrDriver); room4tunnels::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room513*/rme = loadRMesh(std::string("test/room513_opt.rmesh"),irrFileSystem,irrDriver); room513::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*r_008*/rme = loadRMesh(std::string("test/008_opt.rmesh"),irrFileSystem,irrDriver); r_008::setBase(rme);
+	/*coffin*/rme = loadRMesh(std::string("test/coffin_opt.rmesh"),irrFileSystem,irrDriver); coffin::setBase(rme);
+	/*endroom2*/rme = loadRMesh(std::string("test/endroom2_opt.rmesh"),irrFileSystem,irrDriver); endroom2::setBase(rme);
+	/*testroom*/rme = loadRMesh(std::string("test/testroom_opt.rmesh"),irrFileSystem,irrDriver); testroom::setBase(rme);
+	/*tunnel*/rme = loadRMesh(std::string("test/tunnel_opt.rmesh"),irrFileSystem,irrDriver); tunnel::setBase(rme);
+	/*tunnel2*/rme = loadRMesh(std::string("test/tunnel2_opt.rmesh"),irrFileSystem,irrDriver); tunnel2::setBase(rme);
+	/*room035*/rme = loadRMesh(std::string("test/room035_opt.rmesh"),irrFileSystem,irrDriver); room035::setBase(rme);
+	/*room049*/rme = loadRMesh(std::string("test/room049_opt.rmesh"),irrFileSystem,irrDriver); room049::setBase(rme);
+	/*room106*/rme = loadRMesh(std::string("test/room106_opt.rmesh"),irrFileSystem,irrDriver); room106::setBase(rme);
+	/*room2ctunnel*/rme = loadRMesh(std::string("test/room2Ctunnel_opt.rmesh"),irrFileSystem,irrDriver); room2ctunnel::setBase(rme);
+	/*room2nuke*/rme = loadRMesh(std::string("test/room2nuke_opt.rmesh"),irrFileSystem,irrDriver); room2nuke::setBase(rme);
+	/*room2pipes*/rme = loadRMesh(std::string("test/room2pipes_opt.rmesh"),irrFileSystem,irrDriver); room2pipes::setBase(rme);
+	/*room2pit*/rme = loadRMesh(std::string("test/room2pit_opt.rmesh"),irrFileSystem,irrDriver); room2pit::setBase(rme);
+	/*room3pit*/rme = loadRMesh(std::string("test/room3pit_opt.rmesh"),irrFileSystem,irrDriver); room3pit::setBase(rme);
+	/*room2servers*/rme = loadRMesh(std::string("test/room2servers_opt.rmesh"),irrFileSystem,irrDriver); room2servers::setBase(rme);
+	/*room2tunnel*/rme = loadRMesh(std::string("test/room2tunnel_opt.rmesh"),irrFileSystem,irrDriver); room2tunnel::setBase(rme);
+	/*room3tunnel*/rme = loadRMesh(std::string("test/room3tunnel_opt.rmesh"),irrFileSystem,irrDriver); room3tunnel::setBase(rme);
+	/*room4tunnels*/rme = loadRMesh(std::string("test/4tunnels_opt.rmesh"),irrFileSystem,irrDriver); room4tunnels::setBase(rme);
+	/*room513*/rme = loadRMesh(std::string("test/room513_opt.rmesh"),irrFileSystem,irrDriver); room513::setBase(rme);
 	//EZ
-	/*room860*/rme = loadRMesh(std::string("test/room860_opt.rmesh"),irrFileSystem,irrDriver); room860::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*exit1*/rme = loadRMesh(std::string("test/exit1_opt.rmesh"),irrFileSystem,irrDriver); exit1::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*gateaentrance*/rme = loadRMesh(std::string("test/gateaentrance_opt.rmesh"),irrFileSystem,irrDriver); gateaentrance::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*lockroom2*/rme = loadRMesh(std::string("test/lockroom2_opt.rmesh"),irrFileSystem,irrDriver); lockroom2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room079*/rme = loadRMesh(std::string("test/room079_opt.rmesh"),irrFileSystem,irrDriver); room079::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2z3*/rme = loadRMesh(std::string("test/room2z3_opt.rmesh"),irrFileSystem,irrDriver); room2z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2cafeteria*/rme = loadRMesh(std::string("test/room2cafeteria_opt.rmesh"),irrFileSystem,irrDriver); room2cafeteria::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2cz3*/rme = loadRMesh(std::string("test/room2Cz3_opt.rmesh"),irrFileSystem,irrDriver); room2cz3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2ccont*/rme = loadRMesh(std::string("test/room2ccont_opt.rmesh"),irrFileSystem,irrDriver); room2ccont::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2offices*/rme = loadRMesh(std::string("test/room2offices_opt.rmesh"),irrFileSystem,irrDriver); room2offices::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2offices2*/rme = loadRMesh(std::string("test/room2offices2_opt.rmesh"),irrFileSystem,irrDriver); room2offices2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2offices3*/rme = loadRMesh(std::string("test/room2offices3_opt.rmesh"),irrFileSystem,irrDriver); room2offices3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2poffices*/rme = loadRMesh(std::string("test/room2poffices_opt.rmesh"),irrFileSystem,irrDriver); room2poffices::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2poffices2*/rme = loadRMesh(std::string("test/room2poffices2_opt.rmesh"),irrFileSystem,irrDriver); room2poffices2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2sroom*/rme = loadRMesh(std::string("test/room2sroom_opt.rmesh"),irrFileSystem,irrDriver); room2sroom::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2toilets*/rme = loadRMesh(std::string("test/room2toilets_opt.rmesh"),irrFileSystem,irrDriver); room2toilets::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room2tesla*/rme = loadRMesh(std::string("test/room2tesla_opt.rmesh"),irrFileSystem,irrDriver); room2tesla::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3servers*/rme = loadRMesh(std::string("test/room3servers_opt.rmesh"),irrFileSystem,irrDriver); room3servers::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3servers2*/rme = loadRMesh(std::string("test/room3servers2_opt.rmesh"),irrFileSystem,irrDriver); room3servers2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room3z3*/rme = loadRMesh(std::string("test/room3z3_opt.rmesh"),irrFileSystem,irrDriver); room3z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*room4z3*/rme = loadRMesh(std::string("test/room4z3_opt.rmesh"),irrFileSystem,irrDriver); room4z3::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*room860*/rme = loadRMesh(std::string("test/room860_opt.rmesh"),irrFileSystem,irrDriver); room860::setBase(rme);
+	/*exit1*/rme = loadRMesh(std::string("test/exit1_opt.rmesh"),irrFileSystem,irrDriver); exit1::setBase(rme);
+	/*gateaentrance*/rme = loadRMesh(std::string("test/gateaentrance_opt.rmesh"),irrFileSystem,irrDriver); gateaentrance::setBase(rme);
+	/*lockroom2*/rme = loadRMesh(std::string("test/lockroom2_opt.rmesh"),irrFileSystem,irrDriver); lockroom2::setBase(rme);
+	/*room079*/rme = loadRMesh(std::string("test/room079_opt.rmesh"),irrFileSystem,irrDriver); room079::setBase(rme);
+	/*room2z3*/rme = loadRMesh(std::string("test/room2z3_opt.rmesh"),irrFileSystem,irrDriver); room2z3::setBase(rme);
+	/*room2cafeteria*/rme = loadRMesh(std::string("test/room2cafeteria_opt.rmesh"),irrFileSystem,irrDriver); room2cafeteria::setBase(rme);
+	/*room2cz3*/rme = loadRMesh(std::string("test/room2Cz3_opt.rmesh"),irrFileSystem,irrDriver); room2cz3::setBase(rme);
+	/*room2ccont*/rme = loadRMesh(std::string("test/room2ccont_opt.rmesh"),irrFileSystem,irrDriver); room2ccont::setBase(rme);
+	/*room2offices*/rme = loadRMesh(std::string("test/room2offices_opt.rmesh"),irrFileSystem,irrDriver); room2offices::setBase(rme);
+	/*room2offices2*/rme = loadRMesh(std::string("test/room2offices2_opt.rmesh"),irrFileSystem,irrDriver); room2offices2::setBase(rme);
+	/*room2offices3*/rme = loadRMesh(std::string("test/room2offices3_opt.rmesh"),irrFileSystem,irrDriver); room2offices3::setBase(rme);
+	/*room2poffices*/rme = loadRMesh(std::string("test/room2poffices_opt.rmesh"),irrFileSystem,irrDriver); room2poffices::setBase(rme);
+	/*room2poffices2*/rme = loadRMesh(std::string("test/room2poffices2_opt.rmesh"),irrFileSystem,irrDriver); room2poffices2::setBase(rme);
+	/*room2sroom*/rme = loadRMesh(std::string("test/room2sroom_opt.rmesh"),irrFileSystem,irrDriver); room2sroom::setBase(rme);
+	/*room2toilets*/rme = loadRMesh(std::string("test/room2toilets_opt.rmesh"),irrFileSystem,irrDriver); room2toilets::setBase(rme);
+	/*room2tesla*/rme = loadRMesh(std::string("test/room2tesla_opt.rmesh"),irrFileSystem,irrDriver); room2tesla::setBase(rme);
+	/*room3servers*/rme = loadRMesh(std::string("test/room3servers_opt.rmesh"),irrFileSystem,irrDriver); room3servers::setBase(rme);
+	/*room3servers2*/rme = loadRMesh(std::string("test/room3servers2_opt.rmesh"),irrFileSystem,irrDriver); room3servers2::setBase(rme);
+	/*room3z3*/rme = loadRMesh(std::string("test/room3z3_opt.rmesh"),irrFileSystem,irrDriver); room3z3::setBase(rme);
+	/*room4z3*/rme = loadRMesh(std::string("test/room4z3_opt.rmesh"),irrFileSystem,irrDriver); room4z3::setBase(rme);
 	//Misc
-	/*r_173*/rme = loadRMesh(std::string("test/173bright_opt.rmesh"),irrFileSystem,irrDriver); r_173::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*checkpoint1*/rme = loadRMesh(std::string("test/checkpoint1_opt.rmesh"),irrFileSystem,irrDriver); checkpoint1::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*checkpoint2*/rme = loadRMesh(std::string("test/checkpoint2_opt.rmesh"),irrFileSystem,irrDriver); checkpoint2::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*gatea*/rme = loadRMesh(std::string("test/gatea_opt.rmesh"),irrFileSystem,irrDriver); gatea::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
-	/*pocketdimension*/rme = loadRMesh(std::string("test/pocketdimension1_opt.rmesh"),irrFileSystem,irrDriver); pocketdimension::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);
+	/*r_173*/rme = loadRMesh(std::string("test/173bright_opt.rmesh"),irrFileSystem,irrDriver); r_173::setBase(rme);
+	/*checkpoint1*/rme = loadRMesh(std::string("test/checkpoint1_opt.rmesh"),irrFileSystem,irrDriver); checkpoint1::setBase(rme);
+	/*checkpoint2*/rme = loadRMesh(std::string("test/checkpoint2_opt.rmesh"),irrFileSystem,irrDriver); checkpoint2::setBase(rme);
+	/*gatea*/rme = loadRMesh(std::string("test/gatea_opt.rmesh"),irrFileSystem,irrDriver); gatea::setBase(rme);
+	/*pocketdimension*/rme = loadRMesh(std::string("test/pocketdimension1_opt.rmesh"),irrFileSystem,irrDriver); pocketdimension::setBase(rme);
+
+	mainPlayer = new player(this,irrSmgr,dynamics,irrReceiver);
 
 	createMap();
 	/*room2::createNew(irr::core::vector3df(0,0,0),0);
@@ -192,68 +198,66 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
     //dynamics->addTriMesh_static(node);
 
-	for (int i = 0;i<1;i++) {
-        irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/scp-066.b3d");
-
-        node = irrSmgr->addMeshSceneNode(mesh1);
-
-
-        node->setScale(irr::core::vector3df(2.1*RoomScale));
-        node->setPosition(irr::core::vector3df(-0*RoomScale,10*RoomScale,0*RoomScale));
-
-        rbody = dynamics->addTriMesh_moving(node,5.0f,5,1,1);
-        rbody->setFriction(10.0f);
-        rbody->setDamping(0,0);
-        node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
-
-        node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
-        node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/scp-066_specular.png"));
-        node->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
-        node->getMaterial(1).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
-        node->getMaterial(1).setTexture(2, irrDriver->getTexture("test/scp-066_specular.png"));
-        node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
-
-        node->getMaterial(0).SpecularColor.set(0,0,0,0);
-        node->getMaterial(0).Shininess = 0.f;
-        node->getMaterial(1).SpecularColor.set(0,0,0,0);
-        node->getMaterial(1).Shininess = 0.0f;
-	}
-
-	mainPlayer = new player(this,irrSmgr,dynamics,irrReceiver);
-
-    //test node
-    irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/173_2.b3d");
-
-    node = irrSmgr->addMeshSceneNode(mesh1);
-
-    node->setScale(irr::core::vector3df(1.3*RoomScale));
-    node->setPosition(irr::core::vector3df(0*RoomScale,10*RoomScale,-10*RoomScale));
-    node->setMaterialFlag(irr::video::EMF_LIGHTING, true);
-    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
-
-    node->getMaterial(0).Lighting = true;
-    node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
-
-    rbody = dynamics->addTriMesh_moving(node,16000.f,20,1,1);
-    rbody->setAngularFactor(btVector3(0,1.0,0));
-    //rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
-
-    node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/173_norm.jpg"));
-    node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/173_Spec.jpg"));
-
-    node->getMaterial(0).EmissiveColor = irr::video::SColor(100,100,100,100);
-
-    mainPlayer->testNode = node;
-    //------------
-
 	irrDevice->getCursorControl()->setVisible(false);
 
 	for (int y=19;y>=0;y--) {
 		for (int x=19;x>=0;x--) {
 			if (roomArray[x][y]!=nullptr) {
-				mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
-				std::cout<<"Placed player at coords ["<<x<<"]["<<y<<"]\n";
+				//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+				//std::cout<<"Placed player at coords ["<<x<<"]["<<y<<"]\n";
+
+				//test node
+				irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/173_2.b3d");
+
+				node = irrSmgr->addMeshSceneNode(mesh1);
+
+				node->setScale(irr::core::vector3df(1.3*RoomScale));
+				node->setPosition(irr::core::vector3df(x*204.8f*RoomScale,10*RoomScale,y*204.8f*RoomScale));
+				node->setMaterialFlag(irr::video::EMF_LIGHTING, true);
+				node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
+
+				node->getMaterial(0).Lighting = true;
+				node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
+
+				rbody = dynamics->addTriMesh_moving(node,16000.f,20,1,1);
+				rbody->setAngularFactor(btVector3(0,0,0));
+				//rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
+
+				node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/173_norm.jpg"));
+				node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/173_Spec.jpg"));
+
+				node->getMaterial(0).EmissiveColor = irr::video::SColor(100,100,100,100);
+
+				mainPlayer->testNode = node;
+				//------------
+
+				mesh1 = irrSmgr->getMesh("test/scp-066.b3d");
+
+				node = irrSmgr->addMeshSceneNode(mesh1);
+
+
+				node->setScale(irr::core::vector3df(2.1*RoomScale));
+				node->setPosition(irr::core::vector3df(x*204.8f*RoomScale,10*RoomScale,y*204.8f*RoomScale));
+
+				rbody = dynamics->addTriMesh_moving(node,5.0f,5,1,1);
+				rbody->setFriction(10.0f);
+				rbody->setDamping(0,0);
+				node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
+
+				node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
+				node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/scp-066_specular.png"));
+				node->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
+				node->getMaterial(1).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
+				node->getMaterial(1).setTexture(2, irrDriver->getTexture("test/scp-066_specular.png"));
+				node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
+
+				node->getMaterial(0).SpecularColor.set(0,0,0,0);
+				node->getMaterial(0).Shininess = 0.f;
+				node->getMaterial(1).SpecularColor.set(0,0,0,0);
+				node->getMaterial(1).Shininess = 0.0f;
+
 				y=-1;
+
 				break;
 			}
 		}
@@ -524,6 +528,14 @@ void world::createMap() {
 	unsigned short room2camount[3];
 	unsigned short room3amount[3];
 	unsigned short room4amount[3];
+
+	for (int i=0;i<3;i++) {
+		room1amount[i]=0;
+		room2amount[i]=0;
+		room2camount[i]=0;
+		room3amount[i]=0;
+		room4amount[i]=0;
+	}
 
 	for (x=0;x<20;x++) {
 		for (y=0;y<20;y++) {
@@ -800,8 +812,9 @@ void world::createMap() {
 	currentRoom1 = currentRoom2 = currentRoom2c = currentRoom3 = currentRoom4 = 0;
 	short prevZone = getZone(19);
 	for (y=19;y>=0;y--) {
-		if (getZone(y)!=prevZone)
+		if (getZone(y)!=prevZone) {
 			currentRoom1 = currentRoom2 = currentRoom2c = currentRoom3 = currentRoom4 = 0;
+		}
 		for (x=19;x>=0;x--) {
 			if (roomTemp[x][y].angle>-1 && roomTemp[x][y].angle<127) {
 				switch (roomTemp[x][y].type) {
@@ -817,10 +830,12 @@ void world::createMap() {
 								}
 							break;
 							case 1: //HCZ
+								std::cout<<room1amount[1]<<" littol botterfloy\n";
 								if (currentRoom1==(int)(0.1f*(float)room1amount[1])) {
 									roomArray[x][y] = room079::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.3f*(float)room1amount[1])) {
 									roomArray[x][y] = room106::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale));
 								} else if (currentRoom1==(int)(0.5f*(float)room1amount[1])) {
 									roomArray[x][y] = coffin::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.7f*(float)room1amount[1])) {
@@ -972,6 +987,14 @@ bool world::run() {
 
     mainPlayer->update();
 
+	irr::core::triangle3df hitTriangle;
+	irr::core::vector3df intersection;
+	irr::core::line3d<irr::f32> ray;
+	ray.start = mainPlayer->getPosition();
+	ray.end = ray.start + irr::core::vector3df(0.f,-204.8*RoomScale,0.f);
+
+	irr::scene::ISceneNode * selectedSceneNode = irrColl->getSceneNodeAndCollisionPointFromRay(ray,intersection,hitTriangle);
+
 	int px,py;
 	px = coordToRoomGrid(mainPlayer->getPosition().X);
 	py = coordToRoomGrid(mainPlayer->getPosition().Z);
@@ -1000,6 +1023,7 @@ bool world::run() {
 
 				}
 				LightsCallback->setLights(nLights);
+				NormalsCallback->setLights(nLights);
 				ppx = px;
 				ppy = py;
 			}
@@ -1011,6 +1035,17 @@ bool world::run() {
     irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
     irrSmgr->drawAll();
+
+    irr::video::SMaterial material;
+    material.setTexture(0, 0);
+    material.Lighting = false;
+    material.Wireframe=true;
+
+    irrDriver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
+    irrDriver->setMaterial(material);
+    irrDriver->draw3DTriangle(hitTriangle, irr::video::SColor(0,255,0,0));
+
+
     float BlinkTimer = mainPlayer->BlinkTimer;
     if (BlinkTimer<0) {
         double darkA;

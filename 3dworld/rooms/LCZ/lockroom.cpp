@@ -1,19 +1,19 @@
 #include "../room.h"
 #include "lockroom.h"
 
-irr::scene::IMeshSceneNode* lockroom::baseNode = nullptr;
 RMesh* lockroom::baseRMesh = nullptr;
 
-void lockroom::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
-	if (lockroom::baseNode==nullptr || lockroom::baseRMesh==nullptr) {
-		lockroom::baseNode = inNode; lockroom::baseRMesh = inRme; lockroom::baseNode->setVisible(false);
+void lockroom::setBase(RMesh* inRme) {
+	if (lockroom::baseRMesh==nullptr) {
+		lockroom::baseRMesh = inRme;
 	}
 }
 
 lockroom* lockroom::createNew(irr::core::vector3df inPosition,char inAngle) {
 	lockroom* retRoom = new lockroom;
 
-	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
+	retRoom->node = room::getNewNode(lockroom::baseRMesh->mesh); retRoom->node->setVisible(true);
+	retRoom->getSelector(lockroom::baseRMesh->mesh);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;

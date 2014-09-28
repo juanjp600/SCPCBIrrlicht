@@ -1,19 +1,19 @@
 #include "../room.h"
 #include "pocketdimension.h"
 
-irr::scene::IMeshSceneNode* pocketdimension::baseNode = nullptr;
 RMesh* pocketdimension::baseRMesh = nullptr;
 
-void pocketdimension::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
-	if (pocketdimension::baseNode==nullptr || pocketdimension::baseRMesh==nullptr) {
-		pocketdimension::baseNode = inNode; pocketdimension::baseRMesh = inRme; pocketdimension::baseNode->setVisible(false);
+void pocketdimension::setBase(RMesh* inRme) {
+	if (pocketdimension::baseRMesh==nullptr) {
+		pocketdimension::baseRMesh = inRme;
 	}
 }
 
 pocketdimension* pocketdimension::createNew(irr::core::vector3df inPosition,char inAngle) {
 	pocketdimension* retRoom = new pocketdimension;
 
-	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
+	retRoom->node = room::getNewNode(pocketdimension::baseRMesh->mesh); retRoom->node->setVisible(true);
+	retRoom->getSelector(pocketdimension::baseRMesh->mesh);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;

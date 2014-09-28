@@ -1,19 +1,19 @@
 #include "../room.h"
 #include "checkpoint2.h"
 
-irr::scene::IMeshSceneNode* checkpoint2::baseNode = nullptr;
 RMesh* checkpoint2::baseRMesh = nullptr;
 
-void checkpoint2::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {
-	if (checkpoint2::baseNode==nullptr || checkpoint2::baseRMesh==nullptr) {
-		checkpoint2::baseNode = inNode; checkpoint2::baseRMesh = inRme; checkpoint2::baseNode->setVisible(false);
+void checkpoint2::setBase(RMesh* inRme) {
+	if (checkpoint2::baseRMesh==nullptr) {
+		checkpoint2::baseRMesh = inRme;
 	}
 }
 
 checkpoint2* checkpoint2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	checkpoint2* retRoom = new checkpoint2;
 
-	retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);
+	retRoom->node = room::getNewNode(checkpoint2::baseRMesh->mesh); retRoom->node->setVisible(true);
+	retRoom->getSelector(checkpoint2::baseRMesh->mesh);
 	retRoom->node->setPosition(inPosition);
 	retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 	retRoom->angle = inAngle;

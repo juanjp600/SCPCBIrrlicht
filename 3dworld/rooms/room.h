@@ -8,6 +8,8 @@ enum class roomTypes {
 };
 
 class room {
+	private:
+		static irr::scene::ISceneManager* smgr;
 	protected:
 		char angle;
 		char selectedEvent;
@@ -16,6 +18,9 @@ class room {
 		btRigidBody* rbody;
 
 		static dynRegister* dynamics;
+		//static irr::scene::IMetaTriangleSelector* metaSelector;
+		irr::scene::ITriangleSelector* getSelector(irr::scene::IMesh* mesh);
+		static irr::scene::IMeshSceneNode* getNewNode(irr::scene::IMesh* mesh);
 
 		bool isActivated = true;
 	public:
@@ -26,6 +31,7 @@ class room {
 		virtual const std::vector<irr::video::SLight>& getPointLights()=0;
 		virtual bool disableDecals() { return false; }
 		static void setDynamics(dynRegister* inDyn);
+		static void setSmgr(irr::scene::ISceneManager* inSmgr);
 };
 
 //LCZ
