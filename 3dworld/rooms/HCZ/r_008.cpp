@@ -42,3 +42,7 @@ r_008* r_008::createNew(irr::core::vector3df inPosition,char inAngle) {
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& r_008::getPointLights() {
+	return r_008::baseRMesh->pointlights;
+}

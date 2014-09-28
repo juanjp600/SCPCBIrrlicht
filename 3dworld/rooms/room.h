@@ -23,6 +23,7 @@ class room {
 		virtual char getAngle() { return angle; };
 		virtual void updateEvent() =0;
 		virtual void setActivation(bool s);
+		virtual const std::vector<irr::video::SLight>& getPointLights()=0;
 		virtual bool disableDecals() { return false; }
 		static void setDynamics(dynRegister* inDyn);
 };

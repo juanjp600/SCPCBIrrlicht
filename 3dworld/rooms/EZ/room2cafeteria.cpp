@@ -42,3 +42,7 @@ room2cafeteria* room2cafeteria::createNew(irr::core::vector3df inPosition,char i
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room2cafeteria::getPointLights() {
+	return room2cafeteria::baseRMesh->pointlights;
+}

@@ -42,3 +42,7 @@ room4tunnels* room4tunnels::createNew(irr::core::vector3df inPosition,char inAng
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room4tunnels::getPointLights() {
+	return room4tunnels::baseRMesh->pointlights;
+}

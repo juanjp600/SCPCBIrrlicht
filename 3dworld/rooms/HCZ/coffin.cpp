@@ -42,3 +42,7 @@ coffin* coffin::createNew(irr::core::vector3df inPosition,char inAngle) {
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& coffin::getPointLights() {
+	return coffin::baseRMesh->pointlights;
+}

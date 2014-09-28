@@ -42,3 +42,7 @@ room513* room513::createNew(irr::core::vector3df inPosition,char inAngle) {
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room513::getPointLights() {
+	return room513::baseRMesh->pointlights;
+}

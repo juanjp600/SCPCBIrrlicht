@@ -42,3 +42,7 @@ exit1* exit1::createNew(irr::core::vector3df inPosition,char inAngle) {
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& exit1::getPointLights() {
+	return exit1::baseRMesh->pointlights;
+}

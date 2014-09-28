@@ -42,3 +42,7 @@ room2ctunnel* room2ctunnel::createNew(irr::core::vector3df inPosition,char inAng
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room2ctunnel::getPointLights() {
+	return room2ctunnel::baseRMesh->pointlights;
+}

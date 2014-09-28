@@ -42,3 +42,7 @@ checkpoint1* checkpoint1::createNew(irr::core::vector3df inPosition,char inAngle
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& checkpoint1::getPointLights() {
+	return checkpoint1::baseRMesh->pointlights;
+}

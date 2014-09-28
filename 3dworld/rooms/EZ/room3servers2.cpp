@@ -42,3 +42,7 @@ room3servers2* room3servers2::createNew(irr::core::vector3df inPosition,char inA
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room3servers2::getPointLights() {
+	return room3servers2::baseRMesh->pointlights;
+}

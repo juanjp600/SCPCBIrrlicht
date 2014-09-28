@@ -38,9 +38,14 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     RoomShader = irrGpu->addHighLevelShaderMaterialFromFiles("RoomVertShader.txt", "vertMain", irr::video::EVST_VS_1_1,"RoomFragShader.txt", "fragMain", irr::video::EPST_PS_1_1,RoomCallback, irr::video::EMT_LIGHTMAP);
 
     NormalsShader = irr::video::EMT_SOLID; // Fallback material type
-    NormalsShaderCallBack* NormalsCallback= new NormalsShaderCallBack;
+    NormalsCallback= new NormalsShaderCallBack;
     NormalsShader = irrGpu->addHighLevelShaderMaterialFromFiles("NewNormalVert.txt", "main", irr::video::EVST_VS_1_1,"NewNormalFrag.txt", "main", irr::video::EPST_PS_1_1,NormalsCallback, irr::video::EMT_SOLID);
     NormalsCallback->fvAmbient = irr::video::SColor(255,20,20,20);
+
+	LightsShader = irr::video::EMT_SOLID; // Fallback material type
+    LightsCallback= new LightsShaderCallBack;
+    LightsShader = irrGpu->addHighLevelShaderMaterialFromFiles("LightingVert.txt", "main", irr::video::EVST_VS_1_1,"LightingFrag.txt", "main", irr::video::EPST_PS_1_1,LightsCallback, irr::video::EMT_SOLID);
+    LightsCallback->fvAmbient = irr::video::SColor(255,20,20,20);
 
     blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
     blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
@@ -66,6 +71,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
     node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/eyedrops.b3d"));
     node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
+    node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
 
 	item::setDynamics(itemDyn);
 
@@ -74,6 +80,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
     node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/gasmask.b3d"));
     node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
+    node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
 
     node->setScale(irr::core::vector3df(0.6*RoomScale,0.6*RoomScale,0.6*RoomScale));
     itemGasMask::setMeshNode(node);
@@ -970,16 +977,31 @@ bool world::run() {
 	py = coordToRoomGrid(mainPlayer->getPosition().Z);
 	if (px>=0 && px<20 && py>=0 && py<20) {
 		if (roomArray[px][py]!=nullptr) {
-			for (int y=0;y<20;y++) {
-				for (int x=0;x<20;x++) {
-					if (roomArray[x][y]!=nullptr) {
-						if (x==px && y==py) {
-							roomArray[x][y]->setActivation(true);
-						} else {
-							roomArray[x][y]->setActivation(false);
+			if (ppx!=px || ppy!=py) {
+				for (int y=0;y<20;y++) {
+					for (int x=0;x<20;x++) {
+						if (roomArray[x][y]!=nullptr) {
+							if (std::max(std::abs(x-px),std::abs(y-py))<3) {
+								roomArray[x][y]->setActivation(true);
+							} else {
+								roomArray[x][y]->setActivation(false);
+							}
 						}
 					}
 				}
+				std::vector<irr::video::SLight> nLights = roomArray[px][py]->getPointLights();
+				irr::core::vector3df offset((px*204.8f*RoomScale),0.f,(py*204.8f*RoomScale));
+				for (unsigned int i=0;i<nLights.size();i++) {
+					irr::core::matrix4 rotMatrix;
+					rotMatrix.setRotationDegrees(irr::core::vector3df(0.f,roomArray[px][py]->getAngle()*90.f,0.f));
+					rotMatrix.transformVect(nLights[i].Position);
+
+					nLights[i].Position+=offset;
+
+				}
+				LightsCallback->setLights(nLights);
+				ppx = px;
+				ppy = py;
 			}
 		}
     }
@@ -1171,24 +1193,27 @@ void player::update() {
         Capsule->setLinearVelocity(btVector3(0,speed.y()-addVSpeed,0));
     }*/
     if (!dead) {
+		sprintTimer=std::min(std::max(0.f,sprintTimer-0.1f*owner->getFPSfactor()),10.f);
 		if ((irrReceiver->IsKeyDown(irr::KEY_KEY_W)
 			|| irrReceiver->IsKeyDown(irr::KEY_KEY_S)
 			|| irrReceiver->IsKeyDown(irr::KEY_KEY_A)
 			|| irrReceiver->IsKeyDown(irr::KEY_KEY_D)
 			) && std::abs(speed[1]) < 20.f) {
 
-			float walkSpeed = 40.0;
+			float walkSpeed = 40.f;
 			if (crouchState<0.015f) {
 				if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
-					if (Stamina>0) walkSpeed=80.0;
+					if (sprintTimer>0.f && sprintTimer<10.f) Stamina-=5.f;
+					sprintTimer = 20.f;
+					if (Stamina>0) walkSpeed=80.f;
 					Stamina-=0.2*owner->getFPSfactor();
-					if (Stamina<0) Stamina = -10.0;
+					if (Stamina<0) Stamina = -10.f;
 				} else {
-					Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
+					Stamina=std::min(Stamina+0.15f*owner->getFPSfactor(),100.f);
 				}
 			} else {
 				if (crouchState>0.5f) walkSpeed = 10.f; else walkSpeed = 20.f;
-				Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
+				Stamina=std::min(Stamina+0.15f*owner->getFPSfactor(),100.f);
 			}
 			float dir = 0;
 			if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {

@@ -42,3 +42,7 @@ gateaentrance* gateaentrance::createNew(irr::core::vector3df inPosition,char inA
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& gateaentrance::getPointLights() {
+	return gateaentrance::baseRMesh->pointlights;
+}

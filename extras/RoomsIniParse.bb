@@ -5,7 +5,9 @@ iwf% = WriteFile("includes.txt")
 cmwf% = WriteFile("setBase.txt")
 sbwf% = WriteFile("createMap.txt")
 
-helperStr1$ = Chr(9) + "retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);"
+helperStr1$ = ""
+
+helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);"
 helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->node->setPosition(inPosition);"
 helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));"
 helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->angle = inAngle;"
@@ -25,9 +27,9 @@ helperStr1$ = helperStr1 + Chr(13) + Chr(10)
 helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);"
 helperStr1$ = helperStr1 + Chr(13) + Chr(10)
 helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "btVector3 localInertia;"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "room2::baseShape->calculateLocalInertia(0.0, localInertia);"
+helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "room2::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);"
 helperStr1$ = helperStr1 + Chr(13) + Chr(10)
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->rbody = new btRigidBody(0.0, MotionState, room2::baseShape, localInertia);"
+helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->rbody = new btRigidBody(0.0, MotionState, room2::baseRMesh->shape, localInertia);"
 helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);"
 helperStr1$ = helperStr1 + Chr(13) + Chr(10)
 helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->rbody->setFriction(1.f);"
@@ -84,12 +86,13 @@ While Not Eof(rf)
 			WriteLine ohrf,"class "+nstr+" : public room {"
 			WriteLine ohrf,Chr(9)+"private:"
 			WriteLine ohrf,Chr(9)+Chr(9)+"static irr::scene::IMeshSceneNode* baseNode;"
-			WriteLine ohrf,Chr(9)+Chr(9)+"static btBvhTriangleMeshShape* baseShape;"
+			WriteLine ohrf,Chr(9)+Chr(9)+"static RMesh* baseRMesh;"
 			WriteLine ohrf,Chr(9)+Chr(9)+nstr+"() {};"
 			WriteLine ohrf,Chr(9)+"public:"
 			WriteLine ohrf,Chr(9)+Chr(9)+"virtual roomTypes getType() { return roomTypes::ROOM"+roomType+"; }"
 			WriteLine ohrf,Chr(9)+Chr(9)+"virtual void updateEvent() { return; }"
-			WriteLine ohrf,Chr(9)+Chr(9)+"static void setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape);"
+			WriteLine ohrf,Chr(9)+Chr(9)+"virtual const std::vector<irr::video::SLight>& getPointLights();"
+			WriteLine ohrf,Chr(9)+Chr(9)+"static void setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme);"
 			WriteLine ohrf,Chr(9)+Chr(9)+"static "+nstr+"* createNew(irr::core::vector3df inPosition,char inAngle);"
 			WriteLine ohrf,"};"
 			
@@ -107,13 +110,13 @@ While Not Eof(rf)
 			WriteLine osrf,""
 			
 			WriteLine osrf,"irr::scene::IMeshSceneNode* "+nstr+"::baseNode = nullptr;"
-			WriteLine osrf,"btBvhTriangleMeshShape* "+nstr+"::baseShape = nullptr;"
+			WriteLine osrf,"RMesh* "+nstr+"::baseRMesh = nullptr;"
 			
 			WriteLine osrf,""
 			
-			WriteLine osrf,"void "+nstr+"::setBase(irr::scene::IMeshSceneNode* inNode,btBvhTriangleMeshShape* inShape) {"
-			WriteLine osrf,Chr(9)+"if ("+nstr+"::baseNode==nullptr || "+nstr+"::baseShape==nullptr) {"
-			WriteLine osrf,Chr(9)+Chr(9)+nstr+"::baseNode = inNode; "+nstr+"::baseShape = inShape; "+nstr+"::baseNode->setVisible(false);"
+			WriteLine osrf,"void "+nstr+"::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {"
+			WriteLine osrf,Chr(9)+"if ("+nstr+"::baseNode==nullptr || "+nstr+"::baseRMesh==nullptr) {"
+			WriteLine osrf,Chr(9)+Chr(9)+nstr+"::baseNode = inNode; "+nstr+"::baseRMesh = inRme; "+nstr+"::baseNode->setVisible(false);"
 			WriteLine osrf,Chr(9)+"}"
 			WriteLine osrf,"}"
 			
@@ -122,6 +125,12 @@ While Not Eof(rf)
 			WriteLine osrf,nstr+"* "+nstr+"::createNew(irr::core::vector3df inPosition,char inAngle) {"
 			WriteLine osrf,Chr(9)+nstr+"* retRoom = new "+nstr+";"
 			WriteLine osrf,Replace(helperStr1,"room2",nstr)
+			WriteLine osrf,"}"
+			
+			WriteLine osrf,""
+			
+			WriteLine osrf,"const std::vector<irr::video::SLight>& "+nstr+"::getPointLights() {"
+			WriteLine osrf,Chr(9)+"return "+nstr+"::baseRMesh->pointlights;"
 			WriteLine osrf,"}"
 			
 		EndIf
@@ -153,7 +162,7 @@ For i%=0 To 3
 		If rm\zone = wantZone Then
 			WriteLine iwf,"#include "+Chr(34)+rm\zone+"/"+rm\name+".h"+Chr(34)
 			rm\path = Replace(rm\path,"\","/")
-			WriteLine cmwf,"/*"+rm\name+"*/rme = loadRMesh(std::string("+Chr(34)+rm\path+Chr(34)+"),irrFileSystem,irrDriver); "+rm\name+"::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme->shape);"
+			WriteLine cmwf,"/*"+rm\name+"*/rme = loadRMesh(std::string("+Chr(34)+rm\path+Chr(34)+"),irrFileSystem,irrDriver); "+rm\name+"::setBase(irrSmgr->addMeshSceneNode(rme->mesh),rme);"
 			
 			If rm\commonness > 0 Then
 				zoneRoomCount[i]=zoneRoomCount[i]+1
@@ -175,6 +184,7 @@ For i%=0 To 3
 Next
 Local pg% = 0
 WriteLine sbwf,"int choice = 0;"
+WriteLine sbwf,"room* retRoom = nullptr;"
 WriteLine sbwf,"switch (type) {"
 WriteLine sbwf,Chr(9)+"case roomTypes::ROOM1:"
 WriteLine sbwf,Chr(9)+Chr(9)+"switch (zone) {"
@@ -184,7 +194,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="LCZ" And rm\shape = "1") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -196,7 +206,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="HCZ" And rm\shape = "1") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -208,7 +218,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="EZ" And rm\shape = "1") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -225,7 +235,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="LCZ" And rm\shape = "2") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -237,7 +247,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="HCZ" And rm\shape = "2") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -249,7 +259,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="EZ" And rm\shape = "2") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -266,7 +276,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="LCZ" And rm\shape = "2C") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -278,7 +288,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="HCZ" And rm\shape = "2C") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -290,7 +300,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="EZ" And rm\shape = "2C") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -307,7 +317,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="LCZ" And rm\shape = "3") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -319,7 +329,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="HCZ" And rm\shape = "3") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -331,7 +341,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="EZ" And rm\shape = "3") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -348,7 +358,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="LCZ" And rm\shape = "4") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -360,7 +370,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="HCZ" And rm\shape = "4") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -372,7 +382,7 @@ pg = 0
 For rm.roomMem = Each roomMem
 	If (rm\commonness>0 And rm\zone ="EZ" And rm\shape = "4") Then
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"if (choice>="+pg+" && choice<"+(pg+rm\commonness)+") {"
-		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
+		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+Chr(9)+"retRoom = "+rm\name+"::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);"
 		WriteLine sbwf,Chr(9)+Chr(9)+Chr(9)+Chr(9)+"}"
 		pg=pg+rm\commonness
 	EndIf
@@ -382,6 +392,9 @@ WriteLine sbwf,Chr(9)+Chr(9)+"}"
 WriteLine sbwf,Chr(9)+"break;"
 
 WriteLine sbwf,"}"
+
+WriteLine sbwf,"roomArray[x][y] = retRoom;"
+WriteLine sbwf,"return retRoom;"
 
 CloseFile rf
 CloseFile cmwf

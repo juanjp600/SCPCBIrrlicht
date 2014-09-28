@@ -42,3 +42,7 @@ room3storage* room3storage::createNew(irr::core::vector3df inPosition,char inAng
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room3storage::getPointLights() {
+	return room3storage::baseRMesh->pointlights;
+}

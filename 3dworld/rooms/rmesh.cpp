@@ -311,11 +311,11 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
                 file->read(&fv1,sizeof(float)); //intensity
 
-                irr::video::SColorf lightColor = irr::video::SColorf(float(cr)/255.0*fv1,float(cg)/255.0*fv1,float(cb)/255.0*fv1);
+                irr::video::SColorf lightColor = irr::video::SColorf(float(cr)/255.f*fv1,float(cg)/255.f*fv1,float(cb)/255.f*fv1);
                 irr::video::SLight newLight;
                 newLight.DiffuseColor = lightColor;
-                newLight.Radius = fu1;
-                newLight.Position = irr::core::vector3df(fx,fy,fz);
+                newLight.Radius = fu1*0.05f*RoomScale;
+                newLight.Position = irr::core::vector3df(fx*0.1f*RoomScale,fy*0.1f*RoomScale,fz*0.1f*RoomScale);
 
                 retRMesh->pointlights.push_back(newLight);
             } else if (readString1=="spotlight") { //TODO: add spotlights to the lighting shader

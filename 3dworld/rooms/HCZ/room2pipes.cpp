@@ -42,3 +42,7 @@ room2pipes* room2pipes::createNew(irr::core::vector3df inPosition,char inAngle) 
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room2pipes::getPointLights() {
+	return room2pipes::baseRMesh->pointlights;
+}

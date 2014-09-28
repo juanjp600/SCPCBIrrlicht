@@ -42,3 +42,7 @@ pocketdimension* pocketdimension::createNew(irr::core::vector3df inPosition,char
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& pocketdimension::getPointLights() {
+	return pocketdimension::baseRMesh->pointlights;
+}

@@ -42,3 +42,7 @@ room2toilets* room2toilets::createNew(irr::core::vector3df inPosition,char inAng
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room2toilets::getPointLights() {
+	return room2toilets::baseRMesh->pointlights;
+}

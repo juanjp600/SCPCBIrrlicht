@@ -171,6 +171,7 @@ itemGasMask* itemGasMask::createItemGasMask() {
         }
 
         itemGasMask::shape = dynShape;
+        itemGasMask::shape->setMargin(0.1f);
     }
 
     itemGasMask* newIt = new itemGasMask;
@@ -191,6 +192,7 @@ itemGasMask* itemGasMask::createItemGasMask() {
 	itemGasMask::shape->calculateLocalInertia(20.0, localInertia);
 
     newIt->rbody = new btRigidBody(20.0, MotionState, itemGasMask::shape, localInertia);
+    newIt->rbody->setSleepingThresholds(5.0f,5.0f);
 
     newIt->irrObj->setVisible(false);
 
@@ -213,7 +215,7 @@ void itemGasMask::Unpick(irr::core::vector3df position) {
     if (picked) {
         rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(position.X,position.Y,position.Z));
         irrObj->setVisible(true);
-        dynamics->sharedRegisterRBody(irrObj,rbody,20.0,2,2,itemGasMask::offset);
+        dynamics->sharedRegisterRBody(irrObj,rbody,-1,2,2,itemGasMask::offset);
         rbody->setLinearVelocity(btVector3(0,0,0)); rbody->setAngularVelocity(btVector3(0,0,0));
         rbody->setLinearFactor(btVector3(1,1,1)); rbody->setAngularFactor(btVector3(1,1,1));
         rbody->forceActivationState(ACTIVE_TAG); rbody->activate();

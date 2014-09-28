@@ -42,3 +42,7 @@ room2doors* room2doors::createNew(irr::core::vector3df inPosition,char inAngle) 
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room2doors::getPointLights() {
+	return room2doors::baseRMesh->pointlights;
+}

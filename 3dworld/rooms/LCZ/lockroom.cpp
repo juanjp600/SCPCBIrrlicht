@@ -42,3 +42,7 @@ lockroom* lockroom::createNew(irr::core::vector3df inPosition,char inAngle) {
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& lockroom::getPointLights() {
+	return lockroom::baseRMesh->pointlights;
+}

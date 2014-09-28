@@ -42,3 +42,7 @@ tunnel2* tunnel2::createNew(irr::core::vector3df inPosition,char inAngle) {
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& tunnel2::getPointLights() {
+	return tunnel2::baseRMesh->pointlights;
+}

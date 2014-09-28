@@ -171,6 +171,7 @@ itemEyedrops* itemEyedrops::createItemEyedrops() {
         }
 
         itemEyedrops::shape = dynShape;
+        itemEyedrops::shape->setMargin(0.1f);
     }
 
     itemEyedrops* newIt = new itemEyedrops;
@@ -191,6 +192,7 @@ itemEyedrops* itemEyedrops::createItemEyedrops() {
 	itemEyedrops::shape->calculateLocalInertia(5.0, localInertia);
 
     newIt->rbody = new btRigidBody(5.0, MotionState, itemEyedrops::shape, localInertia);
+    newIt->rbody->setSleepingThresholds(5.0f,5.0f);
 
     newIt->irrObj->setVisible(false);
 
@@ -213,7 +215,7 @@ void itemEyedrops::Unpick(irr::core::vector3df position) {
     if (picked) {
         rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(position.X,position.Y,position.Z));
         irrObj->setVisible(true);
-        dynamics->sharedRegisterRBody(irrObj,rbody,5.0,2,2,itemEyedrops::offset);
+        dynamics->sharedRegisterRBody(irrObj,rbody,-1,2,2,itemEyedrops::offset);
         rbody->setLinearVelocity(btVector3(0,0,0)); rbody->setAngularVelocity(btVector3(0,0,0));
         rbody->setLinearFactor(btVector3(1,1,1)); rbody->setAngularFactor(btVector3(1,1,1));
         rbody->forceActivationState(ACTIVE_TAG); rbody->activate();

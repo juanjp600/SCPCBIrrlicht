@@ -42,3 +42,7 @@ room2scps* room2scps::createNew(irr::core::vector3df inPosition,char inAngle) {
 	retRoom->rbody->setRollingFriction(1.f);
 	return retRoom;
 }
+
+const std::vector<irr::video::SLight>& room2scps::getPointLights() {
+	return room2scps::baseRMesh->pointlights;
+}

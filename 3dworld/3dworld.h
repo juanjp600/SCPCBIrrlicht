@@ -201,6 +201,96 @@ class NormalsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
     }
 };
 
+class LightsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
+    private:
+
+    struct sortHelper {
+        irr::video::SLight light;
+        irr::f32 dist;
+        bool operator < (const sortHelper &other) const {
+            return (dist<other.dist);
+        }
+    };
+
+    std::vector<sortHelper> lightList;
+    public:
+
+    irr::video::SColorf fvAmbient;
+    void setLights(const std::vector<irr::video::SLight> &inList) {
+        lightList.resize(inList.size());
+        for (unsigned int i=0;i<lightList.size();i++) {
+            sortHelper lig;
+            lig.light = inList[i];
+            lig.light.Radius *= lig.light.Radius;
+            lig.dist = 0;
+            lightList[i] = lig;
+        }
+    };
+
+    void sortLights(irr::core::matrix4 transfrm) {
+        for (unsigned int i=0;i<lightList.size();i++) {
+            irr::core::vector3df pos = lightList[i].light.Position;
+            transfrm.transformVect(pos);
+            lightList[i].dist = pos.getLength();
+        }
+        std::sort(lightList.begin(),lightList.end());
+    }
+
+    virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,
+            irr::s32 userData)
+    {
+        irr::video::IVideoDriver* driver = services->getVideoDriver();
+
+        irr::core::matrix4 invWorld = driver->getTransform(irr::video::ETS_WORLD);
+        invWorld.makeInverse();
+
+        irr::core::matrix4 worldViewProj;
+        worldViewProj = driver->getTransform(irr::video::ETS_VIEW);
+        worldViewProj *= driver->getTransform(irr::video::ETS_WORLD);
+
+        irr::u32 cnt = lightList.size();
+
+        irr::core::matrix4 lightTransform = worldViewProj*invWorld;
+
+        sortLights(lightTransform);
+
+		for (irr::u32 i=0; i<4; ++i)
+		{
+            std::string lightStrength = "lightRadius";
+			lightStrength+=std::to_string(i+1);
+			std::string lightPosition = "lightPos";
+			lightPosition+=std::to_string(i+1);
+			std::string lightColor = "lightColor";
+			lightColor+=std::to_string(i+1);
+
+			irr::video::SLight light;
+
+			if (i<cnt)
+				light = lightList[i].light;
+			else
+			{
+				light.DiffuseColor.set(0,0,0);
+				light.Radius = 1.0f;
+			}
+
+			light.DiffuseColor.a = 1.0f;
+
+			lightTransform.transformVect(light.Position);
+
+			services->setVertexShaderConstant(lightStrength.c_str(), (float*)(&light.Radius), 1);
+			services->setVertexShaderConstant(lightPosition.c_str(), (float*)(&light.Position), 3);
+			services->setVertexShaderConstant(lightColor.c_str(), (float*)(&light.DiffuseColor), 4);
+		}
+
+        irr::s32 TextureLayerID = 0;
+        services->setPixelShaderConstant("baseMap", &TextureLayerID, 1);
+        /*irr::s32 TextureLayerID2 = 1;
+        services->setPixelShaderConstant("specMap", &TextureLayerID2, 1);*/
+
+		services->setPixelShaderConstant("ambientLight", (float*)(&fvAmbient), 4);
+    }
+};
+
 class world {
     private:
         irr::video::E_DRIVER_TYPE irrDriverType;
@@ -232,9 +322,10 @@ class world {
         irr::u32 prevTime = 0;
         float FPSfactor = 1;
 
-        irr::s32 RoomShader, NormalsShader;
+        irr::s32 RoomShader, NormalsShader, LightsShader;
         RoomShaderCallBack* RoomCallback;
         NormalsShaderCallBack* NormalsCallback;
+        LightsShaderCallBack* LightsCallback;
 
         std::vector<item*> itemList;
 
@@ -244,6 +335,8 @@ class world {
         room* addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone);
 
         irr::gui::CGUITTFont* font1;
+
+        int ppx,ppy;
     public:
         //main
         world(unsigned int width,unsigned int height,bool fullscreen = false);
@@ -275,6 +368,8 @@ class player {
         bool crouched = false;
 
         bool dead = false;
+
+        float sprintTimer = 0;
     public:
         player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=28.0f,float radius=6.0f,float mass=10.0f);
         //mass should stay low if you want the player to be able the climb up stairs

@@ -9,6 +9,7 @@ class room3storage : public room {
 	public:
 		virtual roomTypes getType() { return roomTypes::ROOM3; }
 		virtual void updateEvent() { return; }
+		virtual const std::vector<irr::video::SLight>& getPointLights();
 		static void setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme);
 		static room3storage* createNew(irr::core::vector3df inPosition,char inAngle);
 };
