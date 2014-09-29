@@ -15,7 +15,7 @@ void room::setSmgr(irr::scene::ISceneManager* inSmgr) {
 
 irr::scene::ITriangleSelector* room::getSelector(irr::scene::IMesh* mesh) {
 	if (node->getTriangleSelector()==nullptr) {
-		irr::scene::ITriangleSelector* retSelec = smgr->createOctreeTriangleSelector(mesh,node);
+		irr::scene::ITriangleSelector* retSelec = smgr->createOctreeTriangleSelector(mesh,node,150);
 		node->setTriangleSelector(retSelec);
 		retSelec->drop();
 		return retSelec;

@@ -18,7 +18,6 @@ class room {
 		btRigidBody* rbody;
 
 		static dynRegister* dynamics;
-		//static irr::scene::IMetaTriangleSelector* metaSelector;
 		irr::scene::ITriangleSelector* getSelector(irr::scene::IMesh* mesh);
 		static irr::scene::IMeshSceneNode* getNewNode(irr::scene::IMesh* mesh);
 

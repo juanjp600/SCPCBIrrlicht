@@ -823,6 +823,7 @@ void world::createMap() {
 							case 0: //LCZ
 								if (currentRoom1==0) {
 									roomArray[x][y] = start::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
 								} else if (currentRoom1==(int)(0.4f*(float)room1amount[0])) {
 									roomArray[x][y] = roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.8f*(float)room1amount[0])) {
@@ -830,12 +831,11 @@ void world::createMap() {
 								}
 							break;
 							case 1: //HCZ
-								std::cout<<room1amount[1]<<" littol botterfloy\n";
 								if (currentRoom1==(int)(0.1f*(float)room1amount[1])) {
 									roomArray[x][y] = room079::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.3f*(float)room1amount[1])) {
 									roomArray[x][y] = room106::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale));
+									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale));
 								} else if (currentRoom1==(int)(0.5f*(float)room1amount[1])) {
 									roomArray[x][y] = coffin::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.7f*(float)room1amount[1])) {
@@ -994,6 +994,15 @@ bool world::run() {
 	ray.end = ray.start + irr::core::vector3df(0.f,-204.8*RoomScale,0.f);
 
 	irr::scene::ISceneNode * selectedSceneNode = irrColl->getSceneNodeAndCollisionPointFromRay(ray,intersection,hitTriangle);
+
+	//std::cout<<hitTriangle.index<<"\n";
+
+	std::string triTexName;
+
+	if (getNodeTriangleTextureName(selectedSceneNode,hitTriangle,triTexName)) {
+		trimFileName(triTexName);
+		std::cout<<triTexName.c_str()<<"\n";
+	}
 
 	int px,py;
 	px = coordToRoomGrid(mainPlayer->getPosition().X);
@@ -1429,96 +1438,44 @@ bool player::seesMeshNode(irr::scene::IMeshSceneNode* node) {
     return !result;
 }
 
-bool getNodeTriangleTextureName //taken from here: http://irrlicht.sourceforge.net/forum/viewtopic.php?f=9&t=45212
-(
-		irr::scene::ISceneNode* node,
-		const irr::core::triangle3df& tri,
-		std::string& texname
-) //this function can be slow, use it carefully
-{
-		irr::scene::IMesh* mesh = 0;
-
-		irr::scene::ESCENE_NODE_TYPE type = node->getType();
-		if ((type == irr::scene::ESNT_MESH) || (type == irr::scene::ESNT_OCTREE))
-		{
-				mesh = static_cast<irr::scene::IMeshSceneNode*>(node)->getMesh();
+void trimFileName(std::string &inStr) {
+	for (unsigned int i=inStr.size();i>0;i--) {
+		if (inStr[i]=='/' || inStr[i]=='\\') {
+			std::string newStr;
+			for (unsigned int j=i+1;j<inStr.size();j++) {
+				newStr.push_back(inStr[j]);
+			}
+			inStr = newStr;
+			break;
 		}
-		else if (type == irr::scene::ESNT_ANIMATED_MESH)
-		{
-				mesh = static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->getMesh()->getMesh(0);
-		}
-		else
-		{
-				return false;
-		}
+	}
+}
 
-		if (!mesh)
-				return false;
+bool getNodeTriangleTextureName(irr::scene::ISceneNode* node,const irr::core::triangle3df& tri,std::string& texname) {
+	//this function requires modified Irrlicht
+	if (!node) return false;
 
+	irr::scene::IMesh* mesh = nullptr;
 
-		irr::core::vector3df ptA = tri.pointA;
-		irr::core::vector3df ptB = tri.pointB;
-		irr::core::vector3df ptC = tri.pointC;
-
-		irr::core::matrix4 matrix = node->getAbsoluteTransformation();
-		irr::core::matrix4 inverse;
-		irr::core::vector3df p0, p1, p2;
-
-		if (matrix.getInverse(inverse))
-		{
-				inverse.transformVect(p0, ptA);
-				inverse.transformVect(p1, ptB);
-				inverse.transformVect(p2, ptC);
-		}
-		else { p0 = ptA; p1 = ptB; p2 = ptC; }
-
-		for (irr::u32 i=0; i<mesh->getMeshBufferCount(); ++i)
-		{
-				bool p0Found = false;
-				bool p1Found = false;
-				bool p2Found = false;
-
-				//printf("mesh->getMeshBuffer(%i): vertexCount=%i\n", i, mesh->getMeshBuffer(i)->getVertexCount());
-
-				irr::scene::IMeshBuffer* buf = mesh->getMeshBuffer(i);
-				for (irr::u32 j=0; j<buf->getVertexCount(); ++j)
-				{
-						irr::core::vector3df pos = buf->getPosition(j);
-
-						//if (pos.equals(p0) || pos.equals(p1) || pos.equals(p2))
-								//printf("vertice found!\n");
-
-						if ((!p0Found) && (pos.equals(p0)))
-						//if (pos.equals(p0))
-						{
-								p0Found = true;
-						}
-
-						if ((!p1Found) && (pos.equals(p1)))
-						//if (pos.equals(p1))
-						{
-								p1Found = true;
-						}
-
-						if ((!p2Found) && (pos.equals(p2)))
-						//if (pos.equals(p2))
-						{
-								p2Found = true;
-						}
-				}
-
-				if (p0Found && p1Found && p2Found)
-				{
-						irr::video::ITexture* tex = buf->getMaterial().getTexture(0);
-						if (!tex)
-								return false;
-
-						texname = std::string(tex->getName().getPath().c_str());
-						return true;
-				}
-		}
-
+	irr::scene::ESCENE_NODE_TYPE type = node->getType();
+	if ((type == irr::scene::ESNT_MESH) || (type == irr::scene::ESNT_OCTREE)){
+		mesh = static_cast<irr::scene::IMeshSceneNode*>(node)->getMesh();
+	} else if (type == irr::scene::ESNT_ANIMATED_MESH) {
+		mesh = static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->getMesh()->getMesh(0);
+	} else {
 		return false;
+	}
+
+	if (!mesh)
+		return false;
+
+	irr::scene::IMeshBuffer* buf = mesh->getMeshBuffer(tri.index);
+	irr::video::ITexture* tex = buf->getMaterial().getTexture(0);
+	if (!tex)
+		return false;
+
+	texname = std::string(tex->getName().getPath().c_str());
+	return true;
 }
 
 inline int coordToRoomGrid(float coord) {

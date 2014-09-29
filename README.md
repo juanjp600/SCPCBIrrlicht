@@ -15,5 +15,4 @@ Libraries used:
   - Irrlicht Engine: http://irrlicht.sourceforge.net/
   - Bullet Physics: http://bulletphysics.org/
   - OpenAL-Soft: http://kcat.strangesoft.net/openal.html
-  - ALURE: http://kcat.strangesoft.net/alure.html
   - FreeType: http://www.freetype.org/

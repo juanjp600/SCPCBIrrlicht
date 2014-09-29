@@ -5,6 +5,9 @@
 #include <vector>
 #include <iostream>
 
+#include <AL/al.h>
+#include <alure.h>
+
 #include <irrlicht.h>
 
 #include <CGUITTFont.h>
@@ -396,5 +399,9 @@ class player {
 };
 
 inline int coordToRoomGrid(float coord);
+
+bool getNodeTriangleTextureName(irr::scene::ISceneNode* node,const irr::core::triangle3df& tri,std::string& texname);
+
+void trimFileName(std::string &inStr);
 
 #endif // 3DWORLD_H_INCLUDED
