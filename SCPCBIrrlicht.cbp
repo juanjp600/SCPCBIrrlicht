@@ -17,14 +17,12 @@
 					<Add directory="Irrlicht/include" />
 					<Add directory="FreeType/include" />
 					<Add directory="Bullet/include" />
-					<Add directory="ALURE/include" />
 					<Add directory="OpenAL-Soft/include/AL" />
 				</Compiler>
 				<Linker>
 					<Add library="Irrlicht\lib\Win32-gcc\libIrrlicht.a" />
 					<Add library="FreeType\lib\libfreetype.dll.a" />
 					<Add library="Bullet\lib\libBullet.a" />
-					<Add library="ALURE\libALURE32.dll.a" />
 					<Add library="OpenAL-Soft\libOpenAL32.dll.a" />
 				</Linker>
 			</Target>
