@@ -6,7 +6,6 @@
 #include <iostream>
 
 #include <AL/al.h>
-#include <alure.h>
 
 #include <irrlicht.h>
 
@@ -17,6 +16,7 @@
 #include <btBulletDynamicsCommon.h>
 #include "items/items.h"
 #include "rooms/room.h"
+#include "../sound/soundWrapper.h"
 
 const float RoomScale = 0.75f;
 

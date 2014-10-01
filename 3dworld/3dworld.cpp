@@ -824,6 +824,11 @@ void world::createMap() {
 								if (currentRoom1==0) {
 									roomArray[x][y] = start::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+									sound::initSounds();
+									sound* beethoven = sound::getSound(std::string("test/682battle.ogg"));
+									if (beethoven) {
+										beethoven->playSound(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),100.f,200.f,true);
+									}
 								} else if (currentRoom1==(int)(0.4f*(float)room1amount[0])) {
 									roomArray[x][y] = roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.8f*(float)room1amount[0])) {
@@ -1069,8 +1074,11 @@ bool world::run() {
     irrDriver->setRenderTarget(0); //draw to screen
     irrDriver->clearZBuffer();
     irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
-	font1->draw("This is some random text",irr::core::rect<irr::s32>(mainWidth/2+2,mainHeight+2,mainWidth/2+2,mainHeight/2+102),irr::video::SColor(150,0,0,0),true,true);
-	font1->draw("This is some random text",irr::core::rect<irr::s32>(mainWidth/2,mainHeight,mainWidth/2,mainHeight/2+100),irr::video::SColor(255,255,255,255),true,true);
+	std::string fpsStr;
+	fpsStr = "FPS: ";
+	fpsStr += std::to_string(irrDriver->getFPS());
+	font1->draw(fpsStr.c_str(),irr::core::rect<irr::s32>(mainWidth/2+2,mainHeight+2,mainWidth/2+2,mainHeight/2+102),irr::video::SColor(150,0,0,0),true,true);
+	font1->draw(fpsStr.c_str(),irr::core::rect<irr::s32>(mainWidth/2,mainHeight,mainWidth/2,mainHeight/2+100),irr::video::SColor(255,255,255,255),true,true);
 
     //Blink meter
     irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80,mainHeight-95),irr::core::position2d<irr::s32>(284,mainHeight-95),irr::video::SColor(255,255,255,255));
@@ -1121,6 +1129,8 @@ bool world::run() {
         irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
     }
 
+	if (irrTimer->getRealTime()-prevTime<17) irrDevice->sleep(prevTime-irrTimer->getRealTime()+17);
+
     return irrDevice->run();
 }
 
@@ -1169,7 +1179,12 @@ void player::teleport(irr::core::vector3df position) {
 
 void player::update() {
 
+	float fpsFactor = owner->getFPSfactor();
+
     Camera->updateAbsolutePosition();
+
+    sound::setListenerPos(Camera->getAbsolutePosition());
+    sound::setListenerOrientation(Camera->getUpVector(),Camera->getTarget()-Camera->getAbsolutePosition());
 
     if (irrReceiver->IsKeyDown(irr::KEY_SPACE)) {
         if (BlinkTimer>0) { BlinkTimer = 0.0; }
@@ -1179,7 +1194,7 @@ void player::update() {
     irr::core::vector3df dir(0,1,0);
     irr::core::matrix4 rotMatrix;
 
-    BlinkTimer-=owner->getFPSfactor()*0.09;
+    BlinkTimer-=fpsFactor*0.09;
 
     if (BlinkTimer<=-1.785) {
         BlinkTimer = 100;
@@ -1197,7 +1212,7 @@ void player::update() {
     selfRotation.X = pitch;
     selfRotation.Y = yaw;
 
-    rotMatrix.setRotationDegrees(irr::core::vector3df(0,0,5));
+    rotMatrix.setRotationDegrees(irr::core::vector3df(0,0,0));
     rotMatrix.transformVect(dir);
 
     rotMatrix.setRotationDegrees(selfRotation);
@@ -1237,7 +1252,7 @@ void player::update() {
         Capsule->setLinearVelocity(btVector3(0,speed.y()-addVSpeed,0));
     }*/
     if (!dead) {
-		sprintTimer=std::min(std::max(0.f,sprintTimer-0.1f*owner->getFPSfactor()),10.f);
+		sprintTimer=std::min(std::max(0.f,sprintTimer-0.1f*fpsFactor),10.f);
 		if ((irrReceiver->IsKeyDown(irr::KEY_KEY_W)
 			|| irrReceiver->IsKeyDown(irr::KEY_KEY_S)
 			|| irrReceiver->IsKeyDown(irr::KEY_KEY_A)
@@ -1250,14 +1265,14 @@ void player::update() {
 					if (sprintTimer>0.f && sprintTimer<10.f) Stamina-=5.f;
 					sprintTimer = 20.f;
 					if (Stamina>0) walkSpeed=80.f;
-					Stamina-=0.2*owner->getFPSfactor();
+					Stamina-=0.2*fpsFactor;
 					if (Stamina<0) Stamina = -10.f;
 				} else {
-					Stamina=std::min(Stamina+0.15f*owner->getFPSfactor(),100.f);
+					Stamina=std::min(Stamina+0.15f*fpsFactor,100.f);
 				}
 			} else {
 				if (crouchState>0.5f) walkSpeed = 10.f; else walkSpeed = 20.f;
-				Stamina=std::min(Stamina+0.15f*owner->getFPSfactor(),100.f);
+				Stamina=std::min(Stamina+0.15f*fpsFactor,100.f);
 			}
 			float dir = 0;
 			if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
@@ -1289,7 +1304,7 @@ void player::update() {
 			zs = speed[2];
 			d = irr::core::squareroot(xs*xs+zs*zs);
 			if (irr::core::squareroot(xs*xs+zs*zs)<walkSpeed*0.75f*RoomScale) {
-				Capsule->applyCentralImpulse(btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkSpeed*2.f*RoomScale,0.f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkSpeed*2.f*RoomScale));
+				Capsule->applyCentralImpulse(btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkSpeed*2.f*RoomScale*fpsFactor,0.f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkSpeed*2.f*RoomScale*fpsFactor));
 			} else {
 				nxs = std::cos(dir+yaw*irr::core::DEGTORAD);
 				nzs = -std::sin(dir+yaw*irr::core::DEGTORAD);
@@ -1302,14 +1317,14 @@ void player::update() {
 				dd = nxs - nzs;
 				while (dd<-irr::core::PI) dd+=irr::core::PI*2.f;
 				while (dd>irr::core::PI) dd-=irr::core::PI*2.f;
-				nzs = nzs+dd * 0.08f;
+				nzs = nzs+dd * 0.08f * fpsFactor;
 				nzs -= irr::core::PI/2.f;
 
 				Capsule->setLinearVelocity(btVector3(std::cos(nzs)*d,speed[1],-std::sin(nzs)*d));
 			}
 		} else {
 			if (std::abs(speed[1])<=4.f) Capsule->setFriction(3.0f); else Capsule->setFriction(1.0f);
-			Stamina=std::min(Stamina+0.15*owner->getFPSfactor(),100.0);
+			Stamina=std::min(Stamina+0.15*fpsFactor,100.0);
 		}
 		if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
 			crouched = true;
@@ -1365,7 +1380,7 @@ void player::update() {
 	if (crouched) {
 		if (crouchState<0.5f) changed = true;
 
-		crouchState=std::min(0.5f,crouchState+(0.5f-crouchState)*owner->getFPSfactor()*0.2f);
+		crouchState=std::min(0.5f,crouchState+(0.5f-crouchState)*fpsFactor*0.2f);
 		if (crouchState>0.4998f) crouchState = 0.5f;
 
 		if (changed) { //must unregister body to perform changes to its shape
@@ -1377,7 +1392,7 @@ void player::update() {
 	} else {
 		if (crouchState>0.0f) changed = true;
 
-		crouchState=std::max(0.f,crouchState+(-crouchState)*owner->getFPSfactor()*0.1f);
+		crouchState=std::max(0.f,crouchState+(-crouchState)*fpsFactor*0.1f);
 		if (crouchState<0.002f) crouchState = 0.f;
 
 		if (changed) { //must unregister body to perform changes to its shape

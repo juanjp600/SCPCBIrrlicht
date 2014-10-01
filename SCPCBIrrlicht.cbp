@@ -18,12 +18,16 @@
 					<Add directory="FreeType/include" />
 					<Add directory="Bullet/include" />
 					<Add directory="OpenAL-Soft/include/AL" />
+					<Add directory="oggVorbis/include" />
 				</Compiler>
 				<Linker>
 					<Add library="Irrlicht\lib\Win32-gcc\libIrrlicht.a" />
 					<Add library="FreeType\lib\libfreetype.dll.a" />
 					<Add library="Bullet\lib\libBullet.a" />
 					<Add library="OpenAL-Soft\libOpenAL32.dll.a" />
+					<Add library="oggVorbis\libogg.dll.a" />
+					<Add library="oggVorbis\libvorbis.dll.a" />
+					<Add library="oggVorbis\libvorbisfile.dll.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -191,6 +195,8 @@
 		<Unit filename="Irrlicht/CGUITTFont.cpp" />
 		<Unit filename="Irrlicht/irrDynamics.cpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="sound/soundWrapper.cpp" />
+		<Unit filename="sound/soundWrapper.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
