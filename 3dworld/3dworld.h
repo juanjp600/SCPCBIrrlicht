@@ -342,6 +342,8 @@ class world {
         irr::gui::CGUITTFont* font1;
 
         int ppx,ppy;
+
+        sound* ambient[3];
     public:
         //main
         world(unsigned int width,unsigned int height,bool fullscreen = false);
@@ -375,6 +377,11 @@ class player {
         bool dead = false;
 
         float sprintTimer = 0;
+
+        sound* breathSound[5][2];
+        unsigned char currBreathSound = 4;
+        sound* stepSound[5][3][5]; //(normal/metal/pocket dimension/forest, walk/run, id)
+        float stepTimer = 0.f;
     public:
         player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=28.0f,float radius=6.0f,float mass=10.0f);
         //mass should stay low if you want the player to be able the climb up stairs

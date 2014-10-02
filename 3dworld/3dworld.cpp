@@ -18,6 +18,8 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	room::setSmgr(irrSmgr);
 
+	sound::initSounds();
+
 	//irrSmgr->setAmbientLight(irr::video::SColor(255,20,20,20));
 
     irrDriver->setTextureCreationFlag(irr::video::ETCF_ALWAYS_32_BIT, true);
@@ -114,6 +116,11 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	room::setDynamics(itemDyn);
 
+	ambient[0] = sound::getSound(std::string("test/The Dread.ogg"),false);
+	if (ambient[0]!=nullptr) {
+		ambient[0]->playSound(true);
+	}
+
 	RMesh* rme;
 	//LCZ
 	/*lockroom*/rme = loadRMesh(std::string("test/lockroom_opt.rmesh"),irrFileSystem,irrDriver); lockroom::setBase(rme);
@@ -186,6 +193,8 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	/*pocketdimension*/rme = loadRMesh(std::string("test/pocketdimension1_opt.rmesh"),irrFileSystem,irrDriver); pocketdimension::setBase(rme);
 
 	mainPlayer = new player(this,irrSmgr,dynamics,irrReceiver);
+
+	mainPlayer->update();
 
 	createMap();
 	/*room2::createNew(irr::core::vector3df(0,0,0),0);
@@ -824,11 +833,6 @@ void world::createMap() {
 								if (currentRoom1==0) {
 									roomArray[x][y] = start::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
-									sound::initSounds();
-									sound* beethoven = sound::getSound(std::string("test/682battle.ogg"));
-									if (beethoven) {
-										beethoven->playSound(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),100.f,200.f,true);
-									}
 								} else if (currentRoom1==(int)(0.4f*(float)room1amount[0])) {
 									roomArray[x][y] = roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.8f*(float)room1amount[0])) {
@@ -1006,7 +1010,7 @@ bool world::run() {
 
 	if (getNodeTriangleTextureName(selectedSceneNode,hitTriangle,triTexName)) {
 		trimFileName(triTexName);
-		std::cout<<triTexName.c_str()<<"\n";
+		//std::cout<<triTexName.c_str()<<"\n";
 	}
 
 	int px,py;
@@ -1101,6 +1105,8 @@ bool world::run() {
     }
 
     if (irrReceiver->IsMouseDown(0)) {
+		ambient[0]->pauseSound();
+		//sound::freezeCategory(0);
         for (unsigned int i=0;i<itemList.size();i++) {
             if (itemList[i]->getPicked()) {
                 itemList[i]->Unpick(mainPlayer->getPosition());
@@ -1110,6 +1116,10 @@ bool world::run() {
     }
 
     if (irrReceiver->IsMouseDown(1)) {
+		ambient[0]->resumeSound();
+		std::cout<<ambient[0]->isPlaying()<<"\n";
+		//ambient[0]->playSound(true);
+		//sound::unfreezeCategory(0);
         for (unsigned int i=0;i<itemList.size();i++) {
             if (!itemList[i]->getPicked()) {
                 itemList[i]->Pick();
@@ -1131,6 +1141,7 @@ bool world::run() {
 
 	if (irrTimer->getRealTime()-prevTime<17) irrDevice->sleep(prevTime-irrTimer->getRealTime()+17);
 
+	sound::processDrops();
     return irrDevice->run();
 }
 
@@ -1148,6 +1159,22 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
 	radius = iradius*RoomScale;
 
     selfRotation.X = selfRotation.Y = selfRotation.Z = 0;
+
+	for (unsigned char i=0;i<5;i++) {
+		breathSound[i][0] = sound::getSound(std::string("test/breath")+std::to_string(i)+std::string(".ogg"),false);
+		breathSound[i][1] = sound::getSound(std::string("test/breath")+std::to_string(i)+std::string("gas.ogg"),false);
+	}
+
+	for (unsigned char i=0;i<4;i++) {
+		stepSound[0][0][i] = sound::getSound(std::string("test/Step")+std::to_string(i+1)+std::string(".ogg"),false);
+		stepSound[0][1][i] = sound::getSound(std::string("test/Run")+std::to_string(i+1)+std::string(".ogg"),false);
+		stepSound[1][0][i] = sound::getSound(std::string("test/StepMetal")+std::to_string(i+1)+std::string(".ogg"),false);
+		stepSound[1][1][i] = sound::getSound(std::string("test/RunMetal")+std::to_string(i+1)+std::string(".ogg"),false);
+		if (i<3) {
+			stepSound[2][0][i] = sound::getSound(std::string("test/StepPD")+std::to_string(i+1)+std::string(".ogg"),false);
+			stepSound[3][1][i] = sound::getSound(std::string("test/StepForest")+std::to_string(i+1)+std::string(".ogg"),false);
+		}
+	}
 
     // Add camera
     Camera = irrSmgr->addCameraSceneNode(0,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,-1));
@@ -1179,12 +1206,17 @@ void player::teleport(irr::core::vector3df position) {
 
 void player::update() {
 
+	if (Stamina<50.f) {
+		std::cout<<(int)currBreathSound<<"\n";
+		if (!breathSound[currBreathSound][0]->isPlaying()) {
+			currBreathSound = (rand()%3)+1;
+			breathSound[currBreathSound][0]->playSound(false);
+		}
+	}
+
 	float fpsFactor = owner->getFPSfactor();
 
     Camera->updateAbsolutePosition();
-
-    sound::setListenerPos(Camera->getAbsolutePosition());
-    sound::setListenerOrientation(Camera->getUpVector(),Camera->getTarget()-Camera->getAbsolutePosition());
 
     if (irrReceiver->IsKeyDown(irr::KEY_SPACE)) {
         if (BlinkTimer>0) { BlinkTimer = 0.0; }
@@ -1231,26 +1263,14 @@ void player::update() {
     rotMatrix.setRotationDegrees(Camera->getRotation());
     rotMatrix.transformVect(dir);
     Camera->updateAbsolutePosition();
+
+    sound::setListenerPos(Camera->getAbsolutePosition());
+    sound::setListenerOrientation(Camera->getUpVector(),dir);
+
     Camera->setTarget(Camera->getAbsolutePosition()+dir);
 
     btVector3 speed = Capsule->getLinearVelocity();
 
-    /*float addVSpeed = 0.0f;//(speed.y()>=0.0)*0.75;
-    if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
-        btVector3 newSpeed(sin(irr::core::degToRad(yaw))*walkSpeed*RoomScale,speed.y()-addVSpeed,cos(irr::core::degToRad(yaw))*walkSpeed*RoomScale);
-        Capsule->setLinearVelocity(newSpeed);
-    } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) {
-        btVector3 newSpeed(sin(irr::core::degToRad(yaw))*-walkSpeed*RoomScale,speed.y()-addVSpeed,cos(irr::core::degToRad(yaw))*-walkSpeed*RoomScale);
-        Capsule->setLinearVelocity(newSpeed);
-    } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
-        btVector3 newSpeed(sin(irr::core::degToRad(yaw-90.0))*walkSpeed*RoomScale,speed.y()-addVSpeed,cos(irr::core::degToRad(yaw-90.0))*walkSpeed*RoomScale);
-        Capsule->setLinearVelocity(newSpeed);
-    } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
-        btVector3 newSpeed(sin(irr::core::degToRad(yaw+90.0))*walkSpeed*RoomScale,speed.y()-addVSpeed,cos(irr::core::degToRad(yaw+90.0))*walkSpeed*RoomScale);
-        Capsule->setLinearVelocity(newSpeed);
-    } else {
-        Capsule->setLinearVelocity(btVector3(0,speed.y()-addVSpeed,0));
-    }*/
     if (!dead) {
 		sprintTimer=std::min(std::max(0.f,sprintTimer-0.1f*fpsFactor),10.f);
 		if ((irrReceiver->IsKeyDown(irr::KEY_KEY_W)
@@ -1296,6 +1316,14 @@ void player::update() {
 					dir = 90;
 				}
 			}
+
+			if (stepTimer<=0.f) {
+				unsigned char chosen = rand()%4;
+				stepSound[1][1][chosen]->playSound(false);
+				stepTimer = 2000.f;
+			}
+			stepTimer-=walkSpeed*fpsFactor;
+
 			dir-=90;
 			dir *= irr::core::DEGTORAD;
 			Capsule->setFriction(0.15f);
