@@ -775,7 +775,7 @@ void world::createMap() {
 										switch (roomTemp[x][y].angle) {
 											case 0:
 												if (adjRoom->angle == 1) adjRoom->angle = 2; //south-west
-												//else if (adjRoom->angle == 3) adjRoom->angle = 3; //south-east
+												else if (adjRoom->angle == 3) adjRoom->angle = 3; //south-east
 												else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
 											break;
 											case 1:
@@ -790,7 +790,7 @@ void world::createMap() {
 											break;
 											case 3:
 												if (adjRoom->angle == 0) adjRoom->angle = 0; //north-west
-												//else if (adjRoom->angle == 2) adjRoom->angle = 2; //south-west
+												else if (adjRoom->angle == 2) adjRoom->angle = 2; //south-west
 												else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
 											break;
 										}
@@ -994,24 +994,9 @@ bool world::run() {
 
     dynamics->simStep(irrTimer->getRealTime(),60.f * prec);
 
-    mainPlayer->update();
-
-	irr::core::triangle3df hitTriangle;
-	irr::core::vector3df intersection;
-	irr::core::line3d<irr::f32> ray;
-	ray.start = mainPlayer->getPosition();
-	ray.end = ray.start + irr::core::vector3df(0.f,-204.8*RoomScale,0.f);
-
-	irr::scene::ISceneNode * selectedSceneNode = irrColl->getSceneNodeAndCollisionPointFromRay(ray,intersection,hitTriangle);
+	mainPlayer->update();
 
 	//std::cout<<hitTriangle.index<<"\n";
-
-	std::string triTexName;
-
-	if (getNodeTriangleTextureName(selectedSceneNode,hitTriangle,triTexName)) {
-		trimFileName(triTexName);
-		//std::cout<<triTexName.c_str()<<"\n";
-	}
 
 	int px,py;
 	px = coordToRoomGrid(mainPlayer->getPosition().X);
@@ -1053,15 +1038,6 @@ bool world::run() {
     irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
     irrSmgr->drawAll();
-
-    irr::video::SMaterial material;
-    material.setTexture(0, 0);
-    material.Lighting = false;
-    material.Wireframe=true;
-
-    irrDriver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
-    irrDriver->setMaterial(material);
-    irrDriver->draw3DTriangle(hitTriangle, irr::video::SColor(0,255,0,0));
 
 
     float BlinkTimer = mainPlayer->BlinkTimer;
@@ -1145,6 +1121,33 @@ bool world::run() {
     return irrDevice->run();
 }
 
+unsigned char world::pickPlayerTriangle() {
+	irr::core::triangle3df hitTriangle;
+	irr::core::vector3df intersection;
+	irr::core::line3d<irr::f32> ray;
+	ray.start = mainPlayer->getPosition();
+	ray.end = ray.start + irr::core::vector3df(0.f,-204.8*RoomScale,0.f);
+
+	irr::scene::ISceneNode * selectedSceneNode = irrColl->getSceneNodeAndCollisionPointFromRay(ray,intersection,hitTriangle);
+
+	std::string triTexName;
+	unsigned char materialType = 0;
+	if (getNodeTriangleTextureName(selectedSceneNode,hitTriangle,triTexName)) {
+		trimFileName(triTexName);
+
+		if (triTexName=="metal3.jpg" ||
+			triTexName=="dirtymetal.jpg" ||
+			triTexName=="metalpanels.jpg" ||
+			triTexName=="metalpanels2.jpg") {
+			materialType = 1;
+		} else {
+			materialType = 0;
+		}
+	}
+
+	return materialType;
+}
+
 float world::getFPSfactor() {
     return FPSfactor;
 }
@@ -1206,17 +1209,10 @@ void player::teleport(irr::core::vector3df position) {
 
 void player::update() {
 
-	if (Stamina<50.f) {
-		std::cout<<(int)currBreathSound<<"\n";
-		if (!breathSound[currBreathSound][0]->isPlaying()) {
-			currBreathSound = (rand()%3)+1;
-			breathSound[currBreathSound][0]->playSound(false);
-		}
-	}
-
 	float fpsFactor = owner->getFPSfactor();
 
     Camera->updateAbsolutePosition();
+    Camera->setPosition(Camera->getAbsolutePosition()+irr::core::vector3df(0.f,std::sin(shake*irr::core::DEGTORAD)*(1.f-(crouchState*1.f)),0.f));
 
     if (irrReceiver->IsKeyDown(irr::KEY_SPACE)) {
         if (BlinkTimer>0) { BlinkTimer = 0.0; }
@@ -1244,7 +1240,7 @@ void player::update() {
     selfRotation.X = pitch;
     selfRotation.Y = yaw;
 
-    rotMatrix.setRotationDegrees(irr::core::vector3df(0,0,0));
+    rotMatrix.setRotationDegrees(irr::core::vector3df(0,0,std::max(std::min(std::sin((shake)*irr::core::DEGTORAD/2.f)*2.5f,8.f),-8.f)*1.5f));
     rotMatrix.transformVect(dir);
 
     rotMatrix.setRotationDegrees(selfRotation);
@@ -1271,6 +1267,13 @@ void player::update() {
 
     btVector3 speed = Capsule->getLinearVelocity();
 
+    if (speed[1]-20.f>prevLinearVelocity[1] && dynamics->rayTest(Capsule->getCenterOfMassPosition(),Capsule->getCenterOfMassPosition()-btVector3(0,height/2.f,0))) {
+		unsigned char chosen = rand()%4;
+		stepSound[owner->pickPlayerTriangle()][1][chosen]->playSound(false);
+    }
+
+	float shakeFactor = 0.f;
+
     if (!dead) {
 		sprintTimer=std::min(std::max(0.f,sprintTimer-0.1f*fpsFactor),10.f);
 		if ((irrReceiver->IsKeyDown(irr::KEY_KEY_W)
@@ -1287,6 +1290,18 @@ void player::update() {
 					if (Stamina>0) walkSpeed=80.f;
 					Stamina-=0.2*fpsFactor;
 					if (Stamina<0) Stamina = -10.f;
+
+					if (Stamina<5.f) {
+						if (!breathSound[currBreathSound][0]->isPlaying()) {
+							currBreathSound = 0;
+							breathSound[currBreathSound][0]->playSound(false);
+						}
+					} else if (Stamina<50.f) {
+						if (!breathSound[currBreathSound][0]->isPlaying()) {
+							currBreathSound = (rand()%3)+1;
+							breathSound[currBreathSound][0]->playSound(false);
+						}
+					}
 				} else {
 					Stamina=std::min(Stamina+0.15f*fpsFactor,100.f);
 				}
@@ -1319,10 +1334,10 @@ void player::update() {
 
 			if (stepTimer<=0.f) {
 				unsigned char chosen = rand()%4;
-				stepSound[1][1][chosen]->playSound(false);
-				stepTimer = 2000.f;
+				stepSound[owner->pickPlayerTriangle()][walkSpeed>40.f][chosen]->playSound(false);
+				stepTimer = 360.f;
 			}
-			stepTimer-=walkSpeed*fpsFactor;
+			stepTimer-=walkSpeed*fpsFactor*0.15f;
 
 			dir-=90;
 			dir *= irr::core::DEGTORAD;
@@ -1350,6 +1365,7 @@ void player::update() {
 
 				Capsule->setLinearVelocity(btVector3(std::cos(nzs)*d,speed[1],-std::sin(nzs)*d));
 			}
+			shakeFactor = walkSpeed;
 		} else {
 			if (std::abs(speed[1])<=4.f) Capsule->setFriction(3.0f); else Capsule->setFriction(1.0f);
 			Stamina=std::min(Stamina+0.15*fpsFactor,100.0);
@@ -1431,6 +1447,12 @@ void player::update() {
 		}
 	}
 	//std::cout<<Capsule->getCollisionShape()->getLocalScaling()[1]<<" "<<crouchState<<"\n";
+
+	prevLinearVelocity = Capsule->getLinearVelocity();
+
+	shake+=shakeFactor*fpsFactor*0.15f; //owner->getFPSfactor()
+    while (shake>720.f) shake-=720.f;
+    while (shake<0.f) shake+=720.f;
 
     //std::cout<<"seesNode: "<<seesMeshNode(testNode)<<"\n";
 }

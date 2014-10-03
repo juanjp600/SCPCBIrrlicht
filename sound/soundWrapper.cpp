@@ -210,6 +210,7 @@ void sound::grab() {
 unsigned char sound::playSound(const irr::core::vector3df &sourcePos,float near,float far,bool isLooping) {
 	if (!sound::isActive()) return 0;
 	if (this==nullptr) return 0;
+	if (sound::frozenCategories & (1<<category)) return 0;
 	ALuint selectedSound = 0;
 	bool foundCandidate = false;
 	unsigned char i;
@@ -244,6 +245,7 @@ unsigned char sound::playSound(const irr::core::vector3df &sourcePos,float near,
 unsigned char sound::playSound(bool isLooping) {
 	if (!sound::isActive()) return 0;
 	if (this==nullptr) return 0;
+	if (sound::frozenCategories & (1<<category)) return 0;
 	ALuint selectedSound = 0;
 	bool foundCandidate = false;
 	unsigned char i;
@@ -276,6 +278,7 @@ unsigned char sound::playSound(bool isLooping) {
 }
 
 void sound::pauseSound(unsigned char sourceNum) {
+	if (sound::frozenCategories & (1<<category)) return;
 	sourceNum%=sourceCount;
 	if (sound::playingSounds[sourceNum]==this) {
 		sound::pauseState[sourceNum]=true;
@@ -284,6 +287,7 @@ void sound::pauseSound(unsigned char sourceNum) {
 }
 
 void sound::pauseSound() {
+	if (sound::frozenCategories & (1<<category)) return;
 	for (unsigned char i=0;i<sourceCount;i++) {
 		if (sound::playingSounds[i]==this) pauseSound(i);
 	}
@@ -326,6 +330,7 @@ void sound::unfreezeCategory(unsigned char categ) {
 }
 
 void sound::stopSound(unsigned char sourceNum) {
+	if (sound::frozenCategories & (1<<category)) return;
 	sourceNum%=sourceCount;
 	if (sound::playingSounds[sourceNum]==this) {
 		sound::pauseState[sourceNum]=false;
@@ -335,12 +340,14 @@ void sound::stopSound(unsigned char sourceNum) {
 }
 
 void sound::stopSound() {
+	if (sound::frozenCategories & (1<<category)) return;
 	for (unsigned char i=0;i<sourceCount;i++) {
 		stopSound(i);
 	}
 }
 
 void sound::resumeSound(unsigned char sourceNum) {
+	if (sound::frozenCategories & (1<<category)) return;
 	sourceNum%=sourceCount;
 	if (sound::playingSounds[sourceNum]==this) {
 		ALint state;
@@ -354,6 +361,7 @@ void sound::resumeSound(unsigned char sourceNum) {
 }
 
 void sound::resumeSound() {
+	if (sound::frozenCategories & (1<<category)) return;
 	for (unsigned char i=0;i<sourceCount;i++) {
 		if (sound::playingSounds[i]==this) resumeSound(i);
 	}
@@ -362,6 +370,7 @@ void sound::resumeSound() {
 bool sound::isPlaying() {
 	if (!sound::isActive()) return false;
 	if (this == nullptr) return false;
+	if (sound::frozenCategories & (1<<category)) return false;
 
 	for (unsigned char i=0;i<sourceCount;i++) {
 		if (sound::playingSounds[i]==this) {

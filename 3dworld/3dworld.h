@@ -352,6 +352,8 @@ class world {
         float getFPSfactor();
 
         bool run();
+
+        unsigned char pickPlayerTriangle();
 };
 
 const unsigned int inventory_size = 10;
@@ -362,6 +364,7 @@ class player {
         irr::scene::ISceneManager* irrSmgr;
         irrDynamics* dynamics;
         MainEventReceiver* irrReceiver;
+        btVector3 prevLinearVelocity;
         float walkingSpeed;
         irr::scene::ICameraSceneNode* Camera;
         btRigidBody* Capsule;
@@ -380,8 +383,10 @@ class player {
 
         sound* breathSound[5][2];
         unsigned char currBreathSound = 4;
-        sound* stepSound[5][3][5]; //(normal/metal/pocket dimension/forest, walk/run, id)
+        sound* stepSound[4][2][4]; //(normal/metal/pocket dimension/forest, walk/run, id)
         float stepTimer = 0.f;
+
+        float shake = 0.f;
     public:
         player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=28.0f,float radius=6.0f,float mass=10.0f);
         //mass should stay low if you want the player to be able the climb up stairs
