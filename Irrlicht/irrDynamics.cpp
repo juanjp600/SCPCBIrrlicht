@@ -31,9 +31,8 @@
 
 using namespace irr;
 
-irrDynamics::irrDynamics() : lastStep(0)
-{
-// Initialize bullet
+irrDynamics::irrDynamics() : lastStep(0) {
+	// Initialize bullet
     collisionConfiguration = new btDefaultCollisionConfiguration();
     broadPhase = new btAxisSweep3(btVector3(-1000, -1000, -1000), btVector3(1000, 1000, 1000));
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
@@ -42,32 +41,27 @@ irrDynamics::irrDynamics() : lastStep(0)
 }
 
 
-void irrDynamics::simStep(u32 curTimeStamp,float prec)
-{
-    irrDynamics* inst = this;
-    if (inst->lastStep == 0)
-        inst->lastStep = curTimeStamp;
+void irrDynamics::simStep(u32 curTimeStamp,float prec) {
+    if (lastStep == 0)
+        lastStep = curTimeStamp;
 
-    if ((curTimeStamp - inst->lastStep)<=0) return;
-    inst->world->stepSimulation((curTimeStamp - inst->lastStep) * 0.001f, 14.f*prec/60.f, 1.0/prec);
+    if ((curTimeStamp - lastStep)<=0) return;
+    world->stepSimulation((curTimeStamp - lastStep) * 0.001f, 14.f*prec/60.f, 1.0/prec);
 
-    inst->updateObjects();
-    inst->lastStep = curTimeStamp;
+    updateObjects();
+    lastStep = curTimeStamp;
 }
 
-void irrDynamics::shutdown()
-{
-    irrDynamics* inst = this;
-    inst->clearObjects();
-    delete inst->world;
-    delete inst->solver;
-    delete inst->dispatcher;
-    delete inst->broadPhase;
-    delete inst->collisionConfiguration;
+void irrDynamics::shutdown() {
+    clearObjects();
+    delete world;
+    delete solver;
+    delete dispatcher;
+    delete broadPhase;
+    delete collisionConfiguration;
 }
 
 btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,float mass,unsigned int precisionLoss,short group,short mask) { //any concave stuff will become convex
-	irrDynamics* inst = this;
 	node->updateAbsolutePosition();
 	core::vector3df irrPos = node->getPosition();
 	btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
@@ -90,11 +84,9 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 	mx = my = mz = INFINITY;
 
 	u32 bufferCount = pMesh->getMeshBufferCount();
-	for (i=0; i<bufferCount; i++) //get mesh boundaries
-	{
+	for (i=0; i<bufferCount; i++) { //get mesh boundaries
 		scene::IMeshBuffer* mb=pMesh->getMeshBuffer(i);
-		if(mb->getVertexType()==video::EVT_STANDARD)
-		{
+		if (mb->getVertexType()==video::EVT_STANDARD) {
 			video::S3DVertex* mb_vertices=(video::S3DVertex*)mb->getVertices();
 			//mb_indices = mb->getIndices();
 			numVertices = mb->getVertexCount()-precisionLoss+1;
@@ -109,9 +101,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 				mz = std::min(mz,irrPos2.Z * scaling.Z);
 				Mz = std::max(Mz,irrPos2.Z * scaling.Z);
 			}
-		}
-		else if(mb->getVertexType()==video::EVT_2TCOORDS)
-		{
+		} else if(mb->getVertexType()==video::EVT_2TCOORDS) {
 			video::S3DVertex2TCoords* mb_vertices=(video::S3DVertex2TCoords*)mb->getVertices();
 			numVertices = mb->getVertexCount()-precisionLoss+1;
 
@@ -125,9 +115,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 				mz = std::min(mz,irrPos2.Z * scaling.Z);
 				Mz = std::max(Mz,irrPos2.Z * scaling.Z);
 			}
-		}
-		else if(mb->getVertexType()==video::EVT_TANGENTS)
-		{
+		} else if(mb->getVertexType()==video::EVT_TANGENTS) {
 			video::S3DVertexTangents* mb_vertices=(video::S3DVertexTangents*)mb->getVertices();
 			numVertices = mb->getVertexCount()-precisionLoss+1;
 
@@ -150,11 +138,9 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 
 	float ccdThreshold = std::min(Mx-mx,std::min(My-my,Mz-mz));
 
-	for (i=0; i<bufferCount; i++) //set offset to vertices
-	{
+	for (i=0; i<bufferCount; i++) { //set offset to vertices
 		scene::IMeshBuffer* mb=pMesh->getMeshBuffer(i);
-		if(mb->getVertexType()==video::EVT_STANDARD)
-		{
+		if (mb->getVertexType()==video::EVT_STANDARD) {
 			video::S3DVertex* mb_vertices=(video::S3DVertex*)mb->getVertices();
 			numVertices = mb->getVertexCount()-precisionLoss+1;
 
@@ -164,9 +150,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 				btVector3 btPos2((irrPos2.X * scaling.X)-mOffset->X, (irrPos2.Y * scaling.Y)-mOffset->Y, (irrPos2.Z * scaling.Z)-mOffset->Z);
 				mShape->addPoint(btPos2);
 			}
-		}
-		else if(mb->getVertexType()==video::EVT_2TCOORDS)
-		{
+		} else if(mb->getVertexType()==video::EVT_2TCOORDS) {
 			video::S3DVertex2TCoords* mb_vertices=(video::S3DVertex2TCoords*)mb->getVertices();
 			numVertices = mb->getVertexCount()-precisionLoss+1;
 
@@ -176,9 +160,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 				btVector3 btPos2((irrPos2.X * scaling.X)-mOffset->X, (irrPos2.Y * scaling.Y)-mOffset->Y, (irrPos2.Z * scaling.Z)-mOffset->Z);
 				mShape->addPoint(btPos2);
 			}
-		}
-		else if(mb->getVertexType()==video::EVT_TANGENTS)
-		{
+		} else if(mb->getVertexType()==video::EVT_TANGENTS) {
 			video::S3DVertexTangents* mb_vertices=(video::S3DVertexTangents*)mb->getVertices();
 			numVertices = mb->getVertexCount()-precisionLoss+1;
 
@@ -197,7 +179,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 	mShape->setMargin(0.1f);
 
 	btRigidBody* rbody = new btRigidBody(mass, MotionState, mShape, localInertia);
-	inst->world->addRigidBody(rbody,group,mask);
+	world->addRigidBody(rbody,group,mask);
 
 	rbody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
 	rbody->setFriction(mass*0.001);
@@ -205,8 +187,8 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 	rbody->setCcdMotionThreshold(ccdThreshold);
 	rbody->setCcdSweptSphereRadius(ccdThreshold/2.0);
 
-	inst->objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rbody));
-	inst->offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
+	objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rbody));
+	offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
 
 	return rbody;
 }
@@ -238,7 +220,7 @@ dynRegister::dynRegister(irrDynamics* dyn) {
 }
 
 void irrDynamics::addTriMesh_static(irr::scene::IMeshSceneNode* node,short group,short mask) { //can be concave
-	irrDynamics* inst = this;//getInstance();
+
 	node->updateAbsolutePosition();
 	core::vector3df irrPos = node->getPosition();
 	btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
@@ -299,15 +281,15 @@ void irrDynamics::addTriMesh_static(irr::scene::IMeshSceneNode* node,short group
 	//Add the mesh collision shape to the world
 	btBvhTriangleMeshShape* mShape = new btBvhTriangleMeshShape(pTriMesh, true);
 	btRigidBody* rbody = new btRigidBody(0.f, MotionState, mShape);
-	inst->world->addRigidBody(rbody,group,mask);
+	world->addRigidBody(rbody,group,mask);
 
-	inst->objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rbody));
-	inst->offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
+	objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rbody));
+	offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
 }
 
 void irrDynamics::addTerrain(scene::ITerrainSceneNode* terrain, u32 lodLevel)
 {
-    irrDynamics* inst = this;//getInstance();
+
     terrain->updateAbsolutePosition();
     core::vector3df irrPos = terrain->getPosition();
     btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
@@ -346,10 +328,10 @@ void irrDynamics::addTerrain(scene::ITerrainSceneNode* terrain, u32 lodLevel)
     //Add the terrain collision shape to the world
     btBvhTriangleMeshShape* mShape = new btBvhTriangleMeshShape(mTriMesh, true);
     btRigidBody* rbody = new btRigidBody(0.f, MotionState, mShape);
-    inst->world->addRigidBody(rbody);
+    world->addRigidBody(rbody);
 
-    inst->objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(terrain, rbody));
-    inst->offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(terrain, mOffset));
+    objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(terrain, rbody));
+    offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(terrain, mOffset));
 
     terrain->grab();
 }
@@ -392,13 +374,13 @@ void irrDynamics::updateObjects()
 
 void irrDynamics::removeObject(scene::ISceneNode* node)
 {
-    irrDynamics* inst = this;//getInstance();
-    std::map<scene::ISceneNode*, btRigidBody*>::iterator iter = inst->objects.find(node);
-    std::map<scene::ISceneNode*, core::vector3df*>::iterator iter2 = inst->offset.find(node);
-    if (iter != inst->objects.end())
+
+    std::map<scene::ISceneNode*, btRigidBody*>::iterator iter = objects.find(node);
+    std::map<scene::ISceneNode*, core::vector3df*>::iterator iter2 = offset.find(node);
+    if (iter != objects.end())
     {
-        inst->removeConstraints(iter->second);
-        inst->world->removeRigidBody(iter->second);
+        removeConstraints(iter->second);
+        world->removeRigidBody(iter->second);
 
         // Free memory
         delete iter->second->getMotionState();
@@ -406,8 +388,8 @@ void irrDynamics::removeObject(scene::ISceneNode* node)
         delete iter->second;
         delete iter2->second;
         iter->first->drop();
-        inst->objects.erase(iter);
-        inst->offset.erase(iter2);
+        objects.erase(iter);
+        offset.erase(iter2);
     }
     else
     {
@@ -461,7 +443,7 @@ void irrDynamics::clearObjects()
 
 btRigidBody* irrDynamics::addSphericalObject(scene::ISceneNode* node, f32 radius, f32 mass,short group,short mask)
 {
-    irrDynamics* inst = this;//getInstance();
+
     node->updateAbsolutePosition();
     core::vector3df irrPos = node->getAbsolutePosition();
     btVector3 tPosition(irrPos.X, irrPos.Y, irrPos.Z);
@@ -484,13 +466,13 @@ btRigidBody* irrDynamics::addSphericalObject(scene::ISceneNode* node, f32 radius
     btRigidBody *rigidBody = new btRigidBody(mass, motionState, shape, localInertia);
 
     // Add it to the world
-    inst->world->addRigidBody(rigidBody,group,mask);
+    world->addRigidBody(rigidBody,group,mask);
 
     rigidBody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
     rigidBody->setFriction(mass*0.001);
 
-    inst->objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
-    inst->offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
+    objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
+    offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
     //node->grab();
 
     rigidBody->activate(true);
@@ -508,7 +490,7 @@ bool irrDynamics::rayTest(btVector3 Start,btVector3 End) {
 
 btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 height, f32 radius, f32 mass,short group,short mask)
 {
-    irrDynamics* inst = this;//getInstance();
+
     node->updateAbsolutePosition();
     core::vector3df irrPos = node->getAbsolutePosition();
     btVector3 tPosition(irrPos.X, irrPos.Y, irrPos.Z);
@@ -523,15 +505,15 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     // Create the shape
     btConvexHullShape *mShape = new btConvexHullShape();
 
-	radius-=0.8f;
-	height-=1.6f;
+	radius-=1.5f;
+	height-=3.0f;
 	for (int i=0;i<90;i++) {
 		float fi = (float)i*4.f*irr::core::DEGTORAD;
-		mShape->addPoint(btVector3(std::cos(fi)*0.4f*radius,-height*0.5f,std::sin(fi)*0.4f*radius));
-		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.6f,std::sin(fi)*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*0.2f*radius,-height*0.5f,std::sin(fi)*0.2f*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.9f,std::sin(fi)*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
 	}
-	mShape->setMargin(0.8f);
+	mShape->setMargin(1.5f);
 
     // Add mass
     btVector3 localInertia;
@@ -539,18 +521,18 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
 
     // Create the rigid body object
     btRigidBody *rigidBody = new btRigidBody(mass, motionState, mShape, localInertia);
-    //rigidBody->setRestitution(0.0f);
-    //rigidBody->setContactProcessingThreshold(btScalar(0.0f));
+    //rigidBody->setRestitution(10.0f);
+    //rigidBody->setContactProcessingThreshold(btScalar(3.0f));
 
     // Add it to the world
-    inst->world->addRigidBody(rigidBody,group,mask);
+    world->addRigidBody(rigidBody,group,mask);
 
-    rigidBody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
+    rigidBody->setDamping((1.0/mass)*0.01,(1.0/mass)*0.01);
     rigidBody->setFriction(mass*0.001);
     rigidBody->setRollingFriction(mass*0.001);
 
-    inst->objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
-    inst->offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
+    objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
+    offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
     //node->grab();
 
     rigidBody->activate(true);
@@ -561,7 +543,7 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
 
 btRigidBody* irrDynamics::addCapsuleObject(scene::ISceneNode* node, f32 height, f32 radius, f32 mass,short group,short mask)
 {
-    irrDynamics* inst = this;//getInstance();
+
     node->updateAbsolutePosition();
     core::vector3df irrPos = node->getAbsolutePosition();
     btVector3 tPosition(irrPos.X, irrPos.Y, irrPos.Z);
@@ -585,14 +567,14 @@ btRigidBody* irrDynamics::addCapsuleObject(scene::ISceneNode* node, f32 height, 
     btRigidBody *rigidBody = new btRigidBody(mass, motionState, shape, localInertia);
 
     // Add it to the world
-    inst->world->addRigidBody(rigidBody,group,mask);
+    world->addRigidBody(rigidBody,group,mask);
 
     rigidBody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
     rigidBody->setFriction(mass*0.001);
     rigidBody->setRollingFriction(mass);
 
-    inst->objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
-    inst->offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
+    objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
+    offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
     //node->grab();
 
     rigidBody->activate(true);
@@ -603,7 +585,7 @@ btRigidBody* irrDynamics::addCapsuleObject(scene::ISceneNode* node, f32 height, 
 
 btRigidBody* irrDynamics::addBoxObject(scene::ISceneNode* node, f32 mass,short group,short mask)
 {
-    irrDynamics* inst = this;//getInstance();
+
     node->updateAbsolutePosition();
     core::vector3df irrPos = node->getAbsolutePosition();
     btVector3 tPosition(irrPos.X, irrPos.Y, irrPos.Z);
@@ -639,40 +621,40 @@ btRigidBody* irrDynamics::addBoxObject(scene::ISceneNode* node, f32 mass,short g
     btRigidBody *rigidBody = new btRigidBody(mass, motionState, shape, localInertia);
 
     // Add it to the world
-    inst->world->addRigidBody(rigidBody,group,mask);
+    world->addRigidBody(rigidBody,group,mask);
 
     rigidBody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
     rigidBody->setFriction(mass*0.001);
     rigidBody->setRollingFriction(mass);
 
-    inst->objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
-    inst->offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
+    objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
+    offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
     node->grab();
     return rigidBody;
 }
 
 bool irrDynamics::createHingeConstraint(scene::ISceneNode* nodeA, scene::ISceneNode* nodeB, const core::vector3df& pivotInA, const core::vector3df& pivotInB, const core::vector3df& axisInA, const irr::core::vector3df& axisInB)
 {
-    irrDynamics* inst = this;//getInstance();
+
     //find the corresponding rigid bodies:
     std::map<scene::ISceneNode*, btRigidBody*>::iterator iterA, iterB;
-    iterA = inst->objects.find(nodeA);
-    iterB = inst->objects.find(nodeB);
+    iterA = objects.find(nodeA);
+    iterB = objects.find(nodeB);
 
-    if (iterA == inst->objects.end())
+    if (iterA == objects.end())
     {
         printf("irrdynamics: Unable to find first node for constraint!\n");
         return false;
     }
 
-    if (iterB == inst->objects.end())
+    if (iterB == objects.end())
     {
         printf("irrdynamics: Unable to find second node for constraint!\n");
         return false;
     }
 
     btHingeConstraint* constraint = new btHingeConstraint(*(iterA->second), *(iterB->second), btVector3(pivotInA.X, pivotInA.Y, pivotInA.Z), btVector3(pivotInB.X, pivotInB.Y, pivotInB.Z), btVector3(axisInA.X, axisInA.Y, axisInA.Z), btVector3(axisInB.X, axisInB.Y, axisInB.Z));
-    inst->world->addConstraint(constraint);
+    world->addConstraint(constraint);
     iterA->second->addConstraintRef(constraint);
     iterB->second->addConstraintRef(constraint);
     return true;
@@ -680,26 +662,26 @@ bool irrDynamics::createHingeConstraint(scene::ISceneNode* nodeA, scene::ISceneN
 
 bool irrDynamics::createPoint2PointConstraint(scene::ISceneNode* nodeA, scene::ISceneNode* nodeB, const core::vector3df& pivotInA, const core::vector3df& pivotInB)
 {
-    irrDynamics* inst = this;//getInstance();
+
     //find the corresponding rigid bodies:
     std::map<scene::ISceneNode*, btRigidBody*>::iterator iterA, iterB;
-    iterA = inst->objects.find(nodeA);
-    iterB = inst->objects.find(nodeB);
+    iterA = objects.find(nodeA);
+    iterB = objects.find(nodeB);
 
-    if (iterA == inst->objects.end())
+    if (iterA == objects.end())
     {
         printf("irrdynamics: Unable to find first node for constraint!\n");
         return false;
     }
 
-    if (iterB == inst->objects.end())
+    if (iterB == objects.end())
     {
         printf("irrdynamics: Unable to find second node for constraint!\n");
         return false;
     }
 
     btPoint2PointConstraint* constraint = new btPoint2PointConstraint(*(iterA->second), *(iterB->second), btVector3(pivotInA.X, pivotInA.Y, pivotInA.Z), btVector3(pivotInB.X, pivotInB.Y, pivotInB.Z));
-    inst->world->addConstraint(constraint);
+    world->addConstraint(constraint);
     iterA->second->addConstraintRef(constraint);
     iterB->second->addConstraintRef(constraint);
     return true;
@@ -712,19 +694,19 @@ bool irrDynamics::createSliderConstraint(scene::ISceneNode* nodeA,
                                          const core::vector3df& posInB,
                                          const core::vector3df& rotInB)
 {
-    irrDynamics* inst = this;//getInstance();
+
     //find the corresponding rigid bodies:
     std::map<scene::ISceneNode*, btRigidBody*>::iterator iterA, iterB;
-    iterA = inst->objects.find(nodeA);
-    iterB = inst->objects.find(nodeB);
+    iterA = objects.find(nodeA);
+    iterB = objects.find(nodeB);
 
-    if (iterA == inst->objects.end())
+    if (iterA == objects.end())
     {
         printf("irrdynamics: Unable to find first node for constraint!\n");
         return false;
     }
 
-    if (iterB == inst->objects.end())
+    if (iterB == objects.end())
     {
         printf("irrdynamics: Unable to find second node for constraint!\n");
         return false;
@@ -749,7 +731,7 @@ bool irrDynamics::createSliderConstraint(scene::ISceneNode* nodeA,
 
 
     btSliderConstraint* constraint = new btSliderConstraint(*(iterA->second), *(iterB->second), matA, matB, true);
-    inst->world->addConstraint(constraint);
+    world->addConstraint(constraint);
     iterA->second->addConstraintRef(constraint);
     iterB->second->addConstraintRef(constraint);
     return true;
@@ -757,11 +739,11 @@ bool irrDynamics::createSliderConstraint(scene::ISceneNode* nodeA,
 
 void irrDynamics::applyCentralForce(scene::ISceneNode* node, const core::vector3df& force)
 {
-    irrDynamics* inst = this;//getInstance();
+
     //find the corresponding rigid body:
     std::map<scene::ISceneNode*, btRigidBody*>::iterator iter;
-    iter = inst->objects.find(node);
-    if (iter == inst->objects.end())
+    iter = objects.find(node);
+    if (iter == objects.end())
     {
         printf("irrdynamics: Unable to find node in list. Force application aborted.\n");
         return;
@@ -773,11 +755,11 @@ void irrDynamics::applyCentralForce(scene::ISceneNode* node, const core::vector3
 
 void irrDynamics::applyCentralImpulse(scene::ISceneNode* node, const core::vector3df& force)
 {
-    irrDynamics* inst = this;//getInstance();
+
     //find the corresponding rigid body:
     std::map<scene::ISceneNode*, btRigidBody*>::iterator iter;
-    iter = inst->objects.find(node);
-    if (iter == inst->objects.end())
+    iter = objects.find(node);
+    if (iter == objects.end())
     {
         printf("irrdynamics: Unable to find node in list. Impulse application aborted.\n");
         return;
@@ -789,11 +771,11 @@ void irrDynamics::applyCentralImpulse(scene::ISceneNode* node, const core::vecto
 
 void irrDynamics::applyTorque(scene::ISceneNode* node, const core::vector3df& torque)
 {
-    irrDynamics* inst = this;//getInstance();
+
     //find the corresponding rigid body:
     std::map<scene::ISceneNode*, btRigidBody*>::iterator iter;
-    iter = inst->objects.find(node);
-    if (iter == inst->objects.end())
+    iter = objects.find(node);
+    if (iter == objects.end())
     {
         printf("irrdynamics: Unable to find node in list. Torque application aborted.\n");
         return;
@@ -805,7 +787,7 @@ void irrDynamics::applyTorque(scene::ISceneNode* node, const core::vector3df& to
 
 btRigidBody* irrDynamics::addFloor(const core::vector3df& normal, const core::vector3df& offset)
 {
-    irrDynamics* inst = this;//getInstance();
+
     btVector3 tPosition(offset.X, offset.Y, offset.Z);
     btTransform transform;
     transform.setIdentity();
@@ -823,18 +805,18 @@ btRigidBody* irrDynamics::addFloor(const core::vector3df& normal, const core::ve
     btRigidBody *rigidBody = new btRigidBody(0.f, motionState, shape, localInertia);
 
     // Add it to the world
-    inst->world->addRigidBody(rigidBody);
+    world->addRigidBody(rigidBody);
 
     return rigidBody;
 }
 
 void irrDynamics::setDamping(scene::ISceneNode* node, f32 linearDamping, f32 angularDamping)
 {
-    irrDynamics* inst = this;//getInstance();
+
     //find the corresponding rigid body:
     std::map<scene::ISceneNode*, btRigidBody*>::iterator iter;
-    iter = inst->objects.find(node);
-    if (iter == inst->objects.end())
+    iter = objects.find(node);
+    if (iter == objects.end())
     {
         printf("irrdynamics: Unable to find node in list. Damping application aborted.\n");
         return;
@@ -845,11 +827,11 @@ void irrDynamics::setDamping(scene::ISceneNode* node, f32 linearDamping, f32 ang
 
 void irrDynamics::setPosition(scene::ISceneNode* node, const core::vector3df& newPos)
 {
-    irrDynamics* inst = this;//getInstance();
+
     //find the corresponding rigid body:
     std::map<scene::ISceneNode*, btRigidBody*>::iterator iter;
-    iter = inst->objects.find(node);
-    if (iter == inst->objects.end())
+    iter = objects.find(node);
+    if (iter == objects.end())
     {
         printf("irrdynamics: Unable to find node in list. Position update aborted.\n");
         return;
