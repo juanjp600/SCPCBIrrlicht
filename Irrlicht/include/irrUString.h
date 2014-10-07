@@ -2981,7 +2981,7 @@ public:
 		if (endian != unicode::EUTFEE_NATIVE && getEndianness() != endian)
 		{
 			for (size_t i = 0; i <= used; ++i)
-				*ptr++ = unicode::swapEndian16(*ptr);
+				*(ptr+1) = unicode::swapEndian16(*ptr);
 		}
 		ret.set_used(used + (addBOM ? unicode::BOM_UTF16_LEN : 0));
 		ret.push_back(0);
