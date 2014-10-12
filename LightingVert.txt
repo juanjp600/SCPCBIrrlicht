@@ -15,7 +15,7 @@ uniform float lightRadius2;
 uniform float lightRadius3;
 uniform float lightRadius4;
 
-varying vec3 N,TN;
+varying vec3 TN;
 varying vec3 v;
 
 //light positions for specular mapping
@@ -39,9 +39,10 @@ void main(void)
 {
 	
 	v = vec3(gl_ModelViewMatrix * gl_Vertex);       
-	N = gl_Normal;
+	vec3 N = gl_Normal;
 	
 	TN = gl_NormalMatrix*N;
+	TN = normalize(TN);
 	
 	oNormalMatrix = gl_NormalMatrix;
 	
@@ -60,7 +61,14 @@ void main(void)
 	oLightColor3 *= vec4(vec3(max(1.0/(getLengthSQR(olightPos3)/lightRadius3),0.0)*0.8),1.0);
 	oLightColor4 *= vec4(vec3(max(1.0/(getLengthSQR(olightPos4)/lightRadius4),0.0)*0.8),1.0);
 	
+	olightPos1 = normalize(olightPos1);
+	olightPos2 = normalize(olightPos2);
+	olightPos3 = normalize(olightPos3);
+	olightPos4 = normalize(olightPos4);
+	
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+	
+	v = normalize(-v);
 	
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	

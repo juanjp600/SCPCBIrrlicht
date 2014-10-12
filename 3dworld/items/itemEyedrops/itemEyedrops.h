@@ -18,23 +18,15 @@ class itemEyedrops : public item {
             return itemTempIDs::ITEM_EYEDROPS;
         }
 
-        bool updateItem() {
-            return false;
-        }
-
-        std::string getName() {
-            return "Eyedrops";
-        }
-
-        //IMesh*,ISceneNode* parent=0,s32 id = -1,const core::vector3df& position = core::vector3df(0,0,0),
-        //const core::vector3df& rotation = core::vector3df(0,0,0),const core::vector3df& scale = core::vector3df(0,0,0),bool alsoAddIfMeshPointerZero = false
+        bool updateItem();
 
         static itemEyedrops* createItemEyedrops();
 
-        static void setMeshNode(irr::scene::IMeshSceneNode* &node);
+        static void setMeshNode(irr::scene::IMeshSceneNode* node);
+		
+		virtual std::string getInvName();
 
-        void Pick();
-        void Unpick(irr::core::vector3df position);
+        virtual irr::core::vector3df getOffset();
 };
 
 #endif // ITEMEYEDROPS_H_INCLUDED

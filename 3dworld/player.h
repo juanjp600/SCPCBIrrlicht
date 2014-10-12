@@ -35,6 +35,8 @@ class player {
 
         btVector3 dynSpeed = btVector3(0.f,0.f,0.f);
         float dir = 0;
+
+        bool lastMouseDown[2];
     public:
         player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=26.0f,float radius=4.0f,float mass=5.0f);
         //mass should stay low if you want the player to be able the climb up stairs
@@ -44,18 +46,25 @@ class player {
 
         float BlinkTimer=100.0,Stamina=100.0;
 
-        void addToInventory(item* it);
-        void takeFromInventory(unsigned char slot);
+        bool addToInventory(item* it);
+        item* takeFromInventory(unsigned char slot);
 
         void teleport(irr::core::vector3df position);
 
         bool seesMeshNode(irr::scene::IMeshSceneNode* node);
+        bool seesBoundingBox(irr::core::aabbox3df bbox,irr::scene::SViewFrustum frust);
 
         irr::scene::IMeshSceneNode* testNode;
 
         irr::core::vector3df getPosition() {
             return irr::core::vector3df(Capsule->getCenterOfMassPosition()[0],Capsule->getCenterOfMassPosition()[1],Capsule->getCenterOfMassPosition()[2]);
         }
+
+        bool getLastMouseDown(unsigned char index) {
+			return lastMouseDown[index];
+		}
+
+		const irr::scene::SViewFrustum* getViewFrustum();
 };
 
 #endif // PLAYER_H_INCLUDED

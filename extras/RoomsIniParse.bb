@@ -7,33 +7,7 @@ sbwf% = WriteFile("createMap.txt")
 
 helperStr1$ = ""
 
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->node = baseNode->clone(); retRoom->node->setVisible(true);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->node->setPosition(inPosition);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->angle = inAngle;"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10)
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "//Add the Bullet rigid body"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->node->updateAbsolutePosition();"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "irr::core::vector3df irrPos = retRoom->node->getAbsolutePosition();"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "btTransform Transform;"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "Transform.setIdentity();"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "Transform.setOrigin(btPos);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "btQuaternion btRot;"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "irr::core::vector3df irrRot = retRoom->node->getRotation();"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "btRot.setEulerZYX(irrRot.Z*irr::core::DEGTORAD,irrRot.Y*irr::core::DEGTORAD,irrRot.X*irr::core::DEGTORAD);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "Transform.setRotation(btRot);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10)
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10)
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "btVector3 localInertia;"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "room2::baseRMesh->shape->calculateLocalInertia(0.0, localInertia);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10)
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->rbody = new btRigidBody(0.0, MotionState, room2::baseRMesh->shape, localInertia);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "room::dynamics->sharedRegisterRBody(retRoom->node,retRoom->rbody,0.f);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10)
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->rbody->setFriction(1.f);"
-helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->rbody->setRollingFriction(1.f);"
+helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "retRoom->loadAssets(room2::baseRMesh,inPosition,inAngle);"
 
 helperStr1$ = helperStr1 + Chr(13) + Chr(10) + Chr(9) + "return retRoom;"
 
@@ -85,14 +59,13 @@ While Not Eof(rf)
 			
 			WriteLine ohrf,"class "+nstr+" : public room {"
 			WriteLine ohrf,Chr(9)+"private:"
-			WriteLine ohrf,Chr(9)+Chr(9)+"static irr::scene::IMeshSceneNode* baseNode;"
 			WriteLine ohrf,Chr(9)+Chr(9)+"static RMesh* baseRMesh;"
 			WriteLine ohrf,Chr(9)+Chr(9)+nstr+"() {};"
 			WriteLine ohrf,Chr(9)+"public:"
 			WriteLine ohrf,Chr(9)+Chr(9)+"virtual roomTypes getType() { return roomTypes::ROOM"+roomType+"; }"
 			WriteLine ohrf,Chr(9)+Chr(9)+"virtual void updateEvent() { return; }"
 			WriteLine ohrf,Chr(9)+Chr(9)+"virtual const std::vector<irr::video::SLight>& getPointLights();"
-			WriteLine ohrf,Chr(9)+Chr(9)+"static void setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme);"
+			WriteLine ohrf,Chr(9)+Chr(9)+"static void setBase(RMesh* inRme);"
 			WriteLine ohrf,Chr(9)+Chr(9)+"static "+nstr+"* createNew(irr::core::vector3df inPosition,char inAngle);"
 			WriteLine ohrf,"};"
 			
@@ -109,14 +82,13 @@ While Not Eof(rf)
 			
 			WriteLine osrf,""
 			
-			WriteLine osrf,"irr::scene::IMeshSceneNode* "+nstr+"::baseNode = nullptr;"
 			WriteLine osrf,"RMesh* "+nstr+"::baseRMesh = nullptr;"
 			
 			WriteLine osrf,""
 			
-			WriteLine osrf,"void "+nstr+"::setBase(irr::scene::IMeshSceneNode* inNode,RMesh* inRme) {"
-			WriteLine osrf,Chr(9)+"if ("+nstr+"::baseNode==nullptr || "+nstr+"::baseRMesh==nullptr) {"
-			WriteLine osrf,Chr(9)+Chr(9)+nstr+"::baseNode = inNode; "+nstr+"::baseRMesh = inRme; "+nstr+"::baseNode->setVisible(false);"
+			WriteLine osrf,"void "+nstr+"::setBase(RMesh* inRme) {"
+			WriteLine osrf,Chr(9)+"if ("+nstr+"::baseRMesh==nullptr) {"
+			WriteLine osrf,Chr(9)+Chr(9)+nstr+"::baseRMesh = inRme;"
 			WriteLine osrf,Chr(9)+"}"
 			WriteLine osrf,"}"
 			

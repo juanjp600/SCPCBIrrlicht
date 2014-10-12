@@ -118,6 +118,7 @@ class world {
         LightsShaderCallBack* LightsCallback;
 
         std::vector<item*> itemList;
+        irr::scene::IMeshSceneNode* genItemNode(const std::string &meshPath,const std::string &texPath,float scale);
 
 		room* roomArray[20][20];
 
@@ -141,7 +142,7 @@ class world {
         unsigned char pickPlayerTriangle();
 };
 
-#include "player.h"
+//#include "player.h"
 
 inline int coordToRoomGrid(float coord);
 

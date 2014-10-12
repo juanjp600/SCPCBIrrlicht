@@ -22,6 +22,8 @@ class room {
 		static irr::scene::IMeshSceneNode* getNewNode(irr::scene::IMesh* mesh);
 
 		bool isActivated = true;
+
+		void loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle);
 	public:
 		virtual roomTypes getType() =0;
 		virtual char getAngle() { return angle; };

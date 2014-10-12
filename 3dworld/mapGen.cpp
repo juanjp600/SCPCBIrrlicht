@@ -1,4 +1,5 @@
 #include "3dworld.h"
+#include "player.h"
 
 room* world::addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone) {
 	int choice = 0;
@@ -552,6 +553,11 @@ void world::createMap() {
 								if (currentRoom1==0) {
 									roomArray[x][y] = start::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+
+									for (unsigned int i=0;i<itemList.size();i++) {
+										itemList[i]->Unpick(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+									}
+
 								} else if (currentRoom1==(int)(0.4f*(float)room1amount[0])) {
 									roomArray[x][y] = roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.8f*(float)room1amount[0])) {

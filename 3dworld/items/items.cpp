@@ -1,20 +1,55 @@
 #include "../3dworld.h"
 #include "items.h"
 
-/*itemtemplate::itemtemplate(const itemTempConstructParams &params) {
-    name = params.name;
-    id = params.id;
-    color = params.color;
-    //owner = caller;
-    scale = params.scale;
+item::item() {}
 
-    //get the mesh
-    irrMesh = params.mesh;
+dynRegister* item::dynamics = nullptr;
+void item::setDynamics(dynRegister* dyn) {
+    if (item::dynamics == nullptr) {
+        item::dynamics = dyn;
+    }
+}
 
-    //generate the collision shape
-    irr::core::vector3df scaling = irr::core::vector3df(scale,scale,scale);
+irr::core::aabbox3df item::getBBox() {
+	return irrObj->getBoundingBox();
+}
+
+irr::core::matrix4 item::getTransform() {
+	return irrObj->getAbsoluteTransformation();
+}
+
+void item::Pick() {
+    if (!picked) {
+        //rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(0,1000000.0*RoomScale,0));
+        irrObj->setVisible(false);
+        dynamics->sharedUnregisterRBody(rbody);
+        rbody->setLinearVelocity(btVector3(0,0,0)); rbody->setAngularVelocity(btVector3(0,0,0));
+        rbody->setLinearFactor(btVector3(0,0,0)); rbody->setAngularFactor(btVector3(0,0,0));
+        rbody->forceActivationState(DISABLE_SIMULATION);
+        picked = true;
+    }
+}
+
+void item::Unpick(irr::core::vector3df position) {
+    if (picked) {
+        rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(position.X,position.Y,position.Z));
+        irrObj->setVisible(true);
+        dynamics->sharedRegisterRBody(irrObj,rbody,-1,2,2,getOffset());
+        rbody->setLinearVelocity(btVector3(0,0,0)); rbody->setAngularVelocity(btVector3(0,0,0));
+        rbody->setLinearFactor(btVector3(1,1,1)); rbody->setAngularFactor(btVector3(1,1,1));
+        rbody->forceActivationState(ACTIVE_TAG); rbody->activate();
+        picked = false;
+    }
+}
+
+void item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShape* &outShape,irr::core::vector3df &offset) {
+	//get the mesh
+	irr::scene::IMesh* irrMesh = node->getMesh();
+
+	//generate the collision shape
+	irr::core::vector3df scaling = node->getScale();//irr::core::vector3df(scale,scale,scale);
 	irr::u32 i,k,numVertices,precLoss;
-	dynShape = new btConvexHullShape();
+	btConvexHullShape* dynShape = new btConvexHullShape();
 
 	float mx,Mx,my,My,mz,Mz;
 	Mx = My = Mz = -INFINITY;
@@ -30,10 +65,10 @@
 			//mb_indices = mb->getIndices();
 			numVertices = mb->getVertexCount();
 
-            precLoss = 1;
+			precLoss = 1;
 
-			while (numVertices/precLoss>250) {
-                precLoss++;
+			while (numVertices/precLoss>100) {
+				precLoss++;
 			}
 
 			for (k=0;k<numVertices;k+=precLoss) {
@@ -52,10 +87,10 @@
 			irr::video::S3DVertex2TCoords* mb_vertices=(irr::video::S3DVertex2TCoords*)mb->getVertices();
 			numVertices = mb->getVertexCount();
 
-            precLoss = 1;
+			precLoss = 1;
 
 			while (numVertices/precLoss>250) {
-                precLoss++;
+				precLoss++;
 			}
 
 			for (k=0;k<numVertices;k+=precLoss) {
@@ -74,10 +109,10 @@
 			irr::video::S3DVertexTangents* mb_vertices=(irr::video::S3DVertexTangents*)mb->getVertices();
 			numVertices = mb->getVertexCount();
 
-            precLoss = 1;
+			precLoss = 1;
 
-			while (numVertices/precLoss>250) {
-                precLoss++;
+			while (numVertices/precLoss>100) {
+				precLoss++;
 			}
 
 			for (k=0;k<numVertices;k+=precLoss) {
@@ -93,13 +128,13 @@
 		}
 	}
 
-	mOffset.X = (mx+Mx)/2.f;
-	mOffset.Y = (my+My)/2.f;
-	mOffset.Z = (mz+Mz)/2.f;
+	offset.X = (mx+Mx)/2.f;
+	offset.Y = (my+My)/2.f;
+	offset.Z = (mz+Mz)/2.f;
 
-	ccdThreshold = std::min(Mx-mx,std::min(My-my,Mz-mz));
+	//float ccdThreshold = std::min(Mx-mx,std::min(My-my,Mz-mz));
 
-    for (i=0; i<bufferCount; i++) //set offset to vertices
+	for (i=0; i<bufferCount; i++) //set offset to vertices
 	{
 		irr::scene::IMeshBuffer* mb=irrMesh->getMeshBuffer(i);
 		if(mb->getVertexType()==irr::video::EVT_STANDARD)
@@ -109,14 +144,14 @@
 
 			precLoss = 1;
 
-			while (numVertices/precLoss>250) {
-                precLoss++;
+			while (numVertices/precLoss>100) {
+				precLoss++;
 			}
 
 			for (k=0;k<numVertices;k+=precLoss) {
 				irr::core::vector3df irrPos2 = mb_vertices[k].Pos;
 
-				btVector3 btPos2((irrPos2.X * scaling.X)-mOffset.X, (irrPos2.Y * scaling.Y)-mOffset.Y, (irrPos2.Z * scaling.Z)-mOffset.Z);
+				btVector3 btPos2((irrPos2.X * scaling.X)-offset.X, (irrPos2.Y * scaling.Y)-offset.Y, (irrPos2.Z * scaling.Z)-offset.Z);
 				dynShape->addPoint(btPos2);
 			}
 		}
@@ -128,13 +163,13 @@
 			precLoss = 1;
 
 			while (numVertices/precLoss>250) {
-                precLoss++;
+				precLoss++;
 			}
 
 			for (k=0;k<numVertices;k+=precLoss) {
 				irr::core::vector3df irrPos2 = mb_vertices[k].Pos;
 
-				btVector3 btPos2((irrPos2.X * scaling.X)-mOffset.X, (irrPos2.Y * scaling.Y)-mOffset.Y, (irrPos2.Z * scaling.Z)-mOffset.Z);
+				btVector3 btPos2((irrPos2.X * scaling.X)-offset.X, (irrPos2.Y * scaling.Y)-offset.Y, (irrPos2.Z * scaling.Z)-offset.Z);
 				dynShape->addPoint(btPos2);
 			}
 		}
@@ -146,64 +181,59 @@
 			precLoss = 1;
 
 			while (numVertices/precLoss>250) {
-                precLoss++;
+				precLoss++;
 			}
 
 			for (k=0;k<numVertices;k+=precLoss) {
 				irr::core::vector3df irrPos2 = mb_vertices[k].Pos;
 
-				btVector3 btPos2((irrPos2.X * scaling.X)-mOffset.X, (irrPos2.Y * scaling.Y)-mOffset.Y, (irrPos2.Z * scaling.Z)-mOffset.Z);
+				btVector3 btPos2((irrPos2.X * scaling.X)-offset.X, (irrPos2.Y * scaling.Y)-offset.Y, (irrPos2.Z * scaling.Z)-offset.Z);
 				dynShape->addPoint(btPos2);
 			}
 		}
 	}
-}*/
 
-/*item::item(const world &owner) {
-    //Template = params.temp;
-    //name = params.name;
-    //if (name=="") { name = params.temp->getName(); }
-    for (int i=0;i<3;i++) { state[i]=0; }
-
-    //irrObj = params.node;
-    //rbody = params.rbody;
-
-    irrObj = params.getNode(getTempID());
-    rbody = params.getRBody(getTempID());
-    offset = params.getOffset(getTempID());
-
-    registerRBody = params.*registerRBody;
-    unregisterRBody = params.*unregisterRBody;
-
-    picked = true;
-}*/
-item::item() {}
-
-dynRegister* item::dynamics = nullptr;
-void item::setDynamics(dynRegister* dyn) {
-    if (item::dynamics == nullptr) {
-        item::dynamics = dyn;
-    }
+	outShape = dynShape;
+	outShape->setMargin(0.1f);
 }
 
-/*void item::Pick() {
-    if (!picked) {
-        rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(0,1000000.0*RoomScale,0));
-        irrObj->setVisible(false);
-        unregisterRBody(rbody);
-        picked = true;
-    }
+void item::loadAssets(irr::scene::IMeshSceneNode* node,btConvexHullShape* shape) {
+	irrObj = node->clone();
+
+    //Add the Bullet rigid body
+    irrObj->updateAbsolutePosition();
+	irr::core::vector3df irrPos = irrObj->getAbsolutePosition();
+	btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
+	btTransform Transform;
+	Transform.setIdentity();
+	Transform.setOrigin(btPos);
+
+	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
+
+    btVector3 localInertia;
+	shape->calculateLocalInertia(20.0, localInertia);
+
+    rbody = new btRigidBody(20.0, MotionState, shape, localInertia);
+    rbody->setSleepingThresholds(5.0f,5.0f);
+
+	rbody->setCcdMotionThreshold(0.2f);
+	rbody->setCcdSweptSphereRadius(0.1f);
+
+    irrObj->setVisible(false);
 }
 
-void item::Unpick(irr::core::vector3df position) {
-    if (picked) {
-        rbody->translate(-btVector3(0,1000000.0*RoomScale,0)+btVector3(position.X,position.Y,position.Z));
-        irrObj->setVisible(true);
-        registerRBody(irrObj,rbody,5.0,2,2,getOffset());
-        picked = false;
-    }
-}*/
+irr::scene::IMeshSceneNode* world::genItemNode(const std::string &meshPath,const std::string &texPath,float scale) {
+	irr::scene::IMeshSceneNode* node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh(meshPath.c_str()));
 
-/*item* item::updateItem() {
-    //TODO: add items
-}*/
+	if (texPath!="") {
+		irr::video::ITexture* tex = irrDriver->getTexture(texPath.c_str());
+		node->setMaterialTexture(0,tex);
+	}
+
+    node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
+
+    node->setScale(irr::core::vector3df(scale,scale,scale));
+    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
+
+    return node;
+}

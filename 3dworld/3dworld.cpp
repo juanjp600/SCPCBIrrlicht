@@ -1,4 +1,5 @@
 #include "3dworld.h"
+#include "player.h"
 //#include "rooms/rmesh.h"
 #include "rooms/room.h"
 
@@ -73,11 +74,10 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	irr::scene::IMeshSceneNode* node = nullptr;
     dynRegister* itemDyn = new dynRegister(dynamics);
-
-    node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/eyedrops.b3d"));
-    node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
-
 	item::setDynamics(itemDyn);
+
+    /*node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/eyedrops.b3d"));
+    node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
 
     node->setScale(irr::core::vector3df(0.06*RoomScale,0.06*RoomScale,0.06*RoomScale));
     node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
@@ -91,12 +91,95 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
     itemGasMask::setMeshNode(node);
 
-    for (irr::u32 ui=0;ui<10000;ui++) {
+    for (irr::u32 ui=0;ui<10;ui++) {
         item* it = itemEyedrops::createItemEyedrops();
         itemList.push_back(it);
 
         it = itemGasMask::createItemGasMask();
         itemList.push_back(it);
+    }*/
+
+    item420::setMeshNode(genItemNode(std::string("test/420.x"),std::string(""),0.015f*RoomScale));
+	itemKey1::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard1.jpg"),0.012f*RoomScale));
+	itemKey2::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard2.jpg"),0.012f*RoomScale));
+	itemKey3::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard3.jpg"),0.012f*RoomScale));
+	itemKey4::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard4.jpg"),0.012f*RoomScale));
+	itemKey5::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard5.jpg"),0.012f*RoomScale));
+	itemMisc::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/card.jpg"),0.012f*RoomScale));
+	itemKey6::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycardomni.jpg"),0.012f*RoomScale));
+	itemScp860::setMeshNode(genItemNode(std::string("test/key.b3d"),std::string(""),0.03f*RoomScale));
+	itemPaper::setMeshNode(genItemNode(std::string("test/paper.x"),std::string(""),0.09f*RoomScale));
+	itemVest::setMeshNode(genItemNode(std::string("test/vest.x"),std::string("test/MTFbody.jpg"),0.6f*RoomScale));
+	itemFinevest::setMeshNode(genItemNode(std::string("test/vest.x"),std::string("test/MTFbody.jpg"),0.66f*RoomScale));
+	itemVeryfinevest::setMeshNode(genItemNode(std::string("test/vest.x"),std::string("test/MTFbody.jpg"),0.75f*RoomScale));
+	itemHazmatsuit::setMeshNode(genItemNode(std::string("test/hazmat.b3d"),std::string(""),0.39f*RoomScale));
+	itemHazmatsuit2::setMeshNode(genItemNode(std::string("test/hazmat.b3d"),std::string(""),0.39f*RoomScale));
+	itemHazmatsuit3::setMeshNode(genItemNode(std::string("test/hazmat.b3d"),std::string(""),0.39f*RoomScale));
+	itemCup::setMeshNode(genItemNode(std::string("test/cup.x"),std::string(""),1.2f*RoomScale));
+	itemEmptycup::setMeshNode(genItemNode(std::string("test/cup.x"),std::string(""),1.2f*RoomScale));
+	itemScp500::setMeshNode(genItemNode(std::string("test/pill.b3d"),std::string(""),0.03f*RoomScale));
+	itemFirstaid::setMeshNode(genItemNode(std::string("test/firstaid.x"),std::string(""),1.5f*RoomScale));
+	itemFinefirstaid::setMeshNode(genItemNode(std::string("test/firstaid.x"),std::string(""),0.9f*RoomScale));
+	itemFirstaid2::setMeshNode(genItemNode(std::string("test/firstaid.x"),std::string("test/firstaidkit2.jpg"),0.9f*RoomScale));
+	itemVeryfinefirstaid::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string("test/bottle.jpg"),0.06f*RoomScale));
+	itemGasmask::setMeshNode(genItemNode(std::string("test/gasmask.b3d"),std::string(""),0.6f*RoomScale));
+	itemSupergasmask::setMeshNode(genItemNode(std::string("test/gasmask.b3d"),std::string(""),0.63f*RoomScale));
+	itemGasmask3::setMeshNode(genItemNode(std::string("test/gasmask.b3d"),std::string(""),0.63f*RoomScale));
+	itemBat::setMeshNode(genItemNode(std::string("test/battery.x"),std::string(""),0.006f*RoomScale));
+	itemScp148::setMeshNode(genItemNode(std::string("test/metalpanel.x"),std::string(""),0.117187f*RoomScale));
+	itemScp148ingot::setMeshNode(genItemNode(std::string("test/scp148.x"),std::string(""),0.117187f*RoomScale));
+	itemNav::setMeshNode(genItemNode(std::string("test/navigator.x"),std::string(""),0.024f*RoomScale));
+	itemRadio::setMeshNode(genItemNode(std::string("test/radio.x"),std::string(""),30.0f*RoomScale));
+	itemFineradio::setMeshNode(genItemNode(std::string("test/radio.x"),std::string(""),0.03f*RoomScale));
+	itemVeryfineradio::setMeshNode(genItemNode(std::string("test/radio.x"),std::string(""),0.03f*RoomScale));
+	item18vradio::setMeshNode(genItemNode(std::string("test/radio.x"),std::string(""),0.036f*RoomScale));
+	itemCigarette::setMeshNode(genItemNode(std::string("test/420.x"),std::string(""),0.012f*RoomScale));
+	item420s::setMeshNode(genItemNode(std::string("test/420.x"),std::string(""),0.012f*RoomScale));
+	itemHand::setMeshNode(genItemNode(std::string("test/severedhand.b3d"),std::string(""),1.2f*RoomScale));
+	itemHand2::setMeshNode(genItemNode(std::string("test/severedhand.b3d"),std::string("test/shand2.png"),1.2f*RoomScale));
+	item18vbat::setMeshNode(genItemNode(std::string("test/battery.x"),std::string(""),0.009f*RoomScale));
+	itemKillbat::setMeshNode(genItemNode(std::string("test/battery.x"),std::string(""),0.009f*RoomScale));
+	itemFineeyedrops::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
+	itemSupereyedrops::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
+	itemEyedrops::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
+	itemEyedrops::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string("test/eyedropsred.jpg"),0.036f*RoomScale));
+	itemScp714::setMeshNode(genItemNode(std::string("test/scp714.b3d"),std::string(""),9.0f*RoomScale));
+	itemScp1025::setMeshNode(genItemNode(std::string("test/scp1025.b3d"),std::string(""),3.0f*RoomScale));
+	itemScp513::setMeshNode(genItemNode(std::string("test/513.x"),std::string(""),3.0f*RoomScale));
+
+	for (irr::u32 ui=0;ui<2;ui++) {
+        item* it = itemEyedrops::createItemEyedrops();
+        itemList.push_back(it);
+
+		it = itemGasmask::createItemGasmask();
+        itemList.push_back(it);
+
+        it = itemKey2::createItemKey2();
+        itemList.push_back(it);
+
+        it = itemPaper::createItemPaper();
+        itemList.push_back(it);
+        it = itemPaper::createItemPaper();
+        itemList.push_back(it);
+        it = itemPaper::createItemPaper();
+        itemList.push_back(it);
+        it = itemPaper::createItemPaper();
+        itemList.push_back(it);
+
+        it = itemKey3::createItemKey3();
+        itemList.push_back(it);
+
+        it = itemKey4::createItemKey4();
+        itemList.push_back(it);
+
+        it = itemKey5::createItemKey5();
+        itemList.push_back(it);
+
+        it = itemKey6::createItemKey6();
+        itemList.push_back(it);
+
+        /*it = item18vbat::createItem18vbat();
+        itemList.push_back(it);*/
     }
 
 	btRigidBody* rbody;
@@ -293,9 +376,30 @@ bool world::run() {
 	mainPlayer->update();
     dynamics->simStep(irrTimer->getRealTime(),60.f * prec);
     mainPlayer->resetSpeeds();
-    mainPlayer->updateHead();
 
-	//std::cout<<hitTriangle.index<<"\n";
+    if (irrReceiver->IsMouseDown(0) != mainPlayer->getLastMouseDown(0) && irrReceiver->IsMouseDown(0)==false) {
+		for (unsigned int i=0;i<itemList.size();i++) {
+			irr::scene::SViewFrustum frust = *mainPlayer->getViewFrustum();
+			//transform the frustum to the node's current absolute transformation
+			irr::core::matrix4 invTrans(itemList[i]->getTransform(), irr::core::matrix4::EM4CONST_INVERSE);
+			//invTrans.makeInverse();
+			frust.transform(invTrans);
+			if (!itemList[i]->getPicked()) {
+				if (mainPlayer->seesBoundingBox(itemList[i]->getBBox(),frust)) {
+					mainPlayer->addToInventory(itemList[i]);
+					break;
+				}
+			}
+		}
+    }
+    if (irrReceiver->IsMouseDown(1) != mainPlayer->getLastMouseDown(1) && irrReceiver->IsMouseDown(1)==false) {
+		for (unsigned int i=0;i<inventory_size;i++) {
+			if (mainPlayer->takeFromInventory(i)) break;
+		}
+    }
+    //std::cout<<mainPlayer->seesMeshNode(mainPlayer->testNode)<<"\n";
+
+    mainPlayer->updateHead();
 
 	int px,py;
 	px = coordToRoomGrid(mainPlayer->getPosition().X);
@@ -379,7 +483,7 @@ bool world::run() {
         irrDriver->draw2DImage(StaminaMeterIMG,irr::core::position2d<irr::s32>(83+i*10,mainHeight-52),irr::core::rect<irr::s32>(0,0,8,14), 0,irr::video::SColor(255,255,255,255), false);
     }
 
-    if (irrReceiver->IsMouseDown(0)) {
+    /*if (irrReceiver->IsMouseDown(0)) {
 		ambient[0]->pauseSound();
 		//sound::freezeCategory(0);
         for (unsigned int i=0;i<itemList.size();i++) {
@@ -401,9 +505,9 @@ bool world::run() {
                 break;
             }
         }
-    }
+    }*/
 
-    blurAlpha = 200;
+    blurAlpha = 100;
 
     irrDriver->endScene();
 

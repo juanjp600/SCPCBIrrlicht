@@ -185,8 +185,10 @@ void player::update() {
 		} else {
 			Stamina=std::min(Stamina+0.15*fpsFactor,100.0);
 			if (std::abs(speed[1])<10.f) {
-				walkingSpeed = walkingSpeed/2.f;
+				walkingSpeed = walkingSpeed-(walkingSpeed*0.5f*fpsFactor);
 				if (walkingSpeed<=0.02f) walkingSpeed = 0.f;
+			} else {
+				if (walkingSpeed>=60.f) walkingSpeed=std::max(60.f,walkingSpeed-(walkingSpeed*0.5f*fpsFactor));
 			}
 		}
 		if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
@@ -313,31 +315,51 @@ void player::updateHead() {
 
     Camera->setTarget(Camera->getAbsolutePosition()+cdir);
 
+	lastMouseDown[0] = irrReceiver->IsMouseDown(0);
+	lastMouseDown[1] = irrReceiver->IsMouseDown(1);
 }
 
-void player::addToInventory(item* it) {
+bool player::addToInventory(item* it) {
     for (irr::u32 i=0;i<inventory_size;i++) {
         if (inventory[i]==nullptr) {
             inventory[i]=it;
             it->Pick();
-            break;
+            return true;
         }
     }
+    return false;
 }
-void player::takeFromInventory(unsigned char slot) {
+item* player::takeFromInventory(unsigned char slot) {
+	slot%=inventory_size;
+	if (inventory[slot]!=nullptr) {
+		Camera->updateAbsolutePosition();
+		inventory[slot]->Unpick(Camera->getAbsolutePosition());
+		item* it = inventory[slot];
+		inventory[slot]=nullptr;
+		return it;
+	}
+	return nullptr;
+}
 
+const irr::scene::SViewFrustum* player::getViewFrustum() {
+	return Camera->getViewFrustum();
 }
 
 bool player::seesMeshNode(irr::scene::IMeshSceneNode* node) {
-    irr::scene::SViewFrustum frust = *Camera->getViewFrustum();
-
-    //transform the frustum to the node's current absolute transformation
+	irr::scene::SViewFrustum frust = *Camera->getViewFrustum();
+	//transform the frustum to the node's current absolute transformation
     irr::core::matrix4 invTrans(node->getAbsoluteTransformation(), irr::core::matrix4::EM4CONST_INVERSE);
     //invTrans.makeInverse();
     frust.transform(invTrans);
 
+	return seesBoundingBox(node->getBoundingBox(),frust);
+}
+
+bool player::seesBoundingBox(irr::core::aabbox3df bbox,irr::scene::SViewFrustum frust) {
+    //irr::scene::SViewFrustum frust = *Camera->getViewFrustum();
+
     irr::core::vector3df edges[8];
-    node->getBoundingBox().getEdges(edges);
+    bbox.getEdges(edges);
 
     bool result = false;
 
