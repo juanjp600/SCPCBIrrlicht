@@ -36,6 +36,10 @@ std::string item420::getInvName() {
 	return std::string("Some SCP-420-J");
 }
 
+std::string item420::getInvImgPath() {
+	return std::string("GFX/items/INV420.jpg");
+}
+
 bool item420::updateItem() {
 	return false;
 }

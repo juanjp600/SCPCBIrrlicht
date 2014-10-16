@@ -36,6 +36,10 @@ std::string itemHazmatsuit::getInvName() {
 	return std::string("Hazmat Suit");
 }
 
+std::string itemHazmatsuit::getInvImgPath() {
+	return std::string("GFX/items/INVhazmat.jpg");
+}
+
 bool itemHazmatsuit::updateItem() {
 	return false;
 }

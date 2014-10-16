@@ -71,6 +71,7 @@ class item {
     public:
         virtual bool updateItem() =0;
         virtual std::string getInvName() =0;
+        virtual std::string getInvImgPath() =0;
         virtual itemTempIDs getTempID() =0;
 
         virtual float getState(int i) {

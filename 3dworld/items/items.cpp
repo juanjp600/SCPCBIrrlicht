@@ -89,7 +89,7 @@ void item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 
 			precLoss = 1;
 
-			while (numVertices/precLoss>250) {
+			while (numVertices/precLoss>100) {
 				precLoss++;
 			}
 
@@ -162,7 +162,7 @@ void item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 
 			precLoss = 1;
 
-			while (numVertices/precLoss>250) {
+			while (numVertices/precLoss>100) {
 				precLoss++;
 			}
 
@@ -180,7 +180,7 @@ void item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 
 			precLoss = 1;
 
-			while (numVertices/precLoss>250) {
+			while (numVertices/precLoss>100) {
 				precLoss++;
 			}
 

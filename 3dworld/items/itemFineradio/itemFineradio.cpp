@@ -36,6 +36,10 @@ std::string itemFineradio::getInvName() {
 	return std::string("Radio Transceiver");
 }
 
+std::string itemFineradio::getInvImgPath() {
+	return std::string("GFX/items/INVradio.jpg");
+}
+
 bool itemFineradio::updateItem() {
 	return false;
 }

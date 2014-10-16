@@ -36,6 +36,10 @@ std::string itemEmptycup::getInvName() {
 	return std::string("Empty Cup");
 }
 
+std::string itemEmptycup::getInvImgPath() {
+	return std::string("GFX/items/INVcup.jpg");
+}
+
 bool itemEmptycup::updateItem() {
 	return false;
 }

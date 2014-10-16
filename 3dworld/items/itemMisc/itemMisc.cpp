@@ -36,6 +36,10 @@ std::string itemMisc::getInvName() {
 	return std::string("Electronical components");
 }
 
+std::string itemMisc::getInvImgPath() {
+	return std::string("GFX/items/INVelectronics.jpg");
+}
+
 bool itemMisc::updateItem() {
 	return false;
 }

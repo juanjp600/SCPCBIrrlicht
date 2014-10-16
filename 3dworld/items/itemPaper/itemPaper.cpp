@@ -36,6 +36,10 @@ std::string itemPaper::getInvName() {
 	return std::string("Incident Report SCP-106-0204");
 }
 
+std::string itemPaper::getInvImgPath() {
+	return std::string("GFX/items/INVpaper.jpg");
+}
+
 bool itemPaper::updateItem() {
 	return false;
 }

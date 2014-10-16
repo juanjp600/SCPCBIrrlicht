@@ -36,6 +36,10 @@ std::string itemKillbat::getInvName() {
 	return std::string("Strange Battery");
 }
 
+std::string itemKillbat::getInvImgPath() {
+	return std::string("GFX/items/INVbattery.jpg");
+}
+
 bool itemKillbat::updateItem() {
 	return false;
 }

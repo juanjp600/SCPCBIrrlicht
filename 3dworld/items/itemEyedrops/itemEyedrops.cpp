@@ -36,6 +36,10 @@ std::string itemEyedrops::getInvName() {
 	return std::string("RedVision Eyedrops");
 }
 
+std::string itemEyedrops::getInvImgPath() {
+	return std::string("GFX/items/INVeyedropsred.jpg");
+}
+
 bool itemEyedrops::updateItem() {
 	return false;
 }

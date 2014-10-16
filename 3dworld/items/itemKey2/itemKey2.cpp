@@ -36,6 +36,10 @@ std::string itemKey2::getInvName() {
 	return std::string("Level 2 Key Card");
 }
 
+std::string itemKey2::getInvImgPath() {
+	return std::string("GFX/items/INVkey2.jpg");
+}
+
 bool itemKey2::updateItem() {
 	return false;
 }

@@ -36,6 +36,10 @@ std::string itemNav::getInvName() {
 	return std::string("S-NAV 310 Navigator");
 }
 
+std::string itemNav::getInvImgPath() {
+	return std::string("GFX/items/INVnavigator.jpg");
+}
+
 bool itemNav::updateItem() {
 	return false;
 }

@@ -36,6 +36,10 @@ std::string item420s::getInvName() {
 	return std::string("Smelly Joint");
 }
 
+std::string item420s::getInvImgPath() {
+	return std::string("GFX/items/INV420.jpg");
+}
+
 bool item420s::updateItem() {
 	return false;
 }

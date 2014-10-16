@@ -36,6 +36,10 @@ std::string itemCup::getInvName() {
 	return std::string("cup");
 }
 
+std::string itemCup::getInvImgPath() {
+	return std::string("GFX/items/INVcup.jpg");
+}
+
 bool itemCup::updateItem() {
 	return false;
 }

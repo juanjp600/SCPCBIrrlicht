@@ -36,6 +36,10 @@ std::string itemScp1025::getInvName() {
 	return std::string("SCP-1025");
 }
 
+std::string itemScp1025::getInvImgPath() {
+	return std::string("GFX/items/INV1025.jpg");
+}
+
 bool itemScp1025::updateItem() {
 	return false;
 }

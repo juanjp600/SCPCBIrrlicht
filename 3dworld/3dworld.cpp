@@ -7,6 +7,9 @@
 #include <cmath>
 #include <cstdlib>
 
+const unsigned char world::PAUSEOPEN = 1;
+const unsigned char world::INVOPEN = 2;
+
 world::world(unsigned int width,unsigned int height,bool fullscreen) {
     mainWidth = width; mainHeight = height;
 
@@ -20,6 +23,8 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	room::setSmgr(irrSmgr);
 
 	sound::initSounds();
+
+	menusOpen = INVOPEN;
 
 	//irrSmgr->setAmbientLight(irr::video::SColor(255,20,20,20));
 
@@ -99,53 +104,52 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
         itemList.push_back(it);
     }*/
 
-    item420::setMeshNode(genItemNode(std::string("test/420.x"),std::string(""),0.015f*RoomScale));
-	itemKey1::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard1.jpg"),0.012f*RoomScale));
-	itemKey2::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard2.jpg"),0.012f*RoomScale));
-	itemKey3::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard3.jpg"),0.012f*RoomScale));
-	itemKey4::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard4.jpg"),0.012f*RoomScale));
-	itemKey5::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycard5.jpg"),0.012f*RoomScale));
-	itemMisc::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/card.jpg"),0.012f*RoomScale));
-	itemKey6::setMeshNode(genItemNode(std::string("test/keycard.x"),std::string("test/keycardomni.jpg"),0.012f*RoomScale));
-	itemScp860::setMeshNode(genItemNode(std::string("test/key.b3d"),std::string(""),0.03f*RoomScale));
-	itemPaper::setMeshNode(genItemNode(std::string("test/paper.x"),std::string(""),0.09f*RoomScale));
-	itemVest::setMeshNode(genItemNode(std::string("test/vest.x"),std::string("test/MTFbody.jpg"),0.6f*RoomScale));
-	itemFinevest::setMeshNode(genItemNode(std::string("test/vest.x"),std::string("test/MTFbody.jpg"),0.66f*RoomScale));
-	itemVeryfinevest::setMeshNode(genItemNode(std::string("test/vest.x"),std::string("test/MTFbody.jpg"),0.75f*RoomScale));
-	itemHazmatsuit::setMeshNode(genItemNode(std::string("test/hazmat.b3d"),std::string(""),0.39f*RoomScale));
-	itemHazmatsuit2::setMeshNode(genItemNode(std::string("test/hazmat.b3d"),std::string(""),0.39f*RoomScale));
-	itemHazmatsuit3::setMeshNode(genItemNode(std::string("test/hazmat.b3d"),std::string(""),0.39f*RoomScale));
-	itemCup::setMeshNode(genItemNode(std::string("test/cup.x"),std::string(""),1.2f*RoomScale));
-	itemEmptycup::setMeshNode(genItemNode(std::string("test/cup.x"),std::string(""),1.2f*RoomScale));
-	itemScp500::setMeshNode(genItemNode(std::string("test/pill.b3d"),std::string(""),0.03f*RoomScale));
-	itemFirstaid::setMeshNode(genItemNode(std::string("test/firstaid.x"),std::string(""),1.5f*RoomScale));
-	itemFinefirstaid::setMeshNode(genItemNode(std::string("test/firstaid.x"),std::string(""),0.9f*RoomScale));
-	itemFirstaid2::setMeshNode(genItemNode(std::string("test/firstaid.x"),std::string("test/firstaidkit2.jpg"),0.9f*RoomScale));
-	itemVeryfinefirstaid::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string("test/bottle.jpg"),0.06f*RoomScale));
-	itemGasmask::setMeshNode(genItemNode(std::string("test/gasmask.b3d"),std::string(""),0.6f*RoomScale));
-	itemSupergasmask::setMeshNode(genItemNode(std::string("test/gasmask.b3d"),std::string(""),0.63f*RoomScale));
-	itemGasmask3::setMeshNode(genItemNode(std::string("test/gasmask.b3d"),std::string(""),0.63f*RoomScale));
-	itemBat::setMeshNode(genItemNode(std::string("test/battery.x"),std::string(""),0.006f*RoomScale));
-	itemScp148::setMeshNode(genItemNode(std::string("test/metalpanel.x"),std::string(""),0.117187f*RoomScale));
-	itemScp148ingot::setMeshNode(genItemNode(std::string("test/scp148.x"),std::string(""),0.117187f*RoomScale));
-	itemNav::setMeshNode(genItemNode(std::string("test/navigator.x"),std::string(""),0.024f*RoomScale));
-	itemRadio::setMeshNode(genItemNode(std::string("test/radio.x"),std::string(""),30.0f*RoomScale));
-	itemFineradio::setMeshNode(genItemNode(std::string("test/radio.x"),std::string(""),0.03f*RoomScale));
-	itemVeryfineradio::setMeshNode(genItemNode(std::string("test/radio.x"),std::string(""),0.03f*RoomScale));
-	item18vradio::setMeshNode(genItemNode(std::string("test/radio.x"),std::string(""),0.036f*RoomScale));
-	itemCigarette::setMeshNode(genItemNode(std::string("test/420.x"),std::string(""),0.012f*RoomScale));
-	item420s::setMeshNode(genItemNode(std::string("test/420.x"),std::string(""),0.012f*RoomScale));
-	itemHand::setMeshNode(genItemNode(std::string("test/severedhand.b3d"),std::string(""),1.2f*RoomScale));
-	itemHand2::setMeshNode(genItemNode(std::string("test/severedhand.b3d"),std::string("test/shand2.png"),1.2f*RoomScale));
-	item18vbat::setMeshNode(genItemNode(std::string("test/battery.x"),std::string(""),0.009f*RoomScale));
-	itemKillbat::setMeshNode(genItemNode(std::string("test/battery.x"),std::string(""),0.009f*RoomScale));
-	itemFineeyedrops::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
-	itemSupereyedrops::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
-	itemEyedrops::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
-	itemEyedrops::setMeshNode(genItemNode(std::string("test/eyedrops.b3d"),std::string("test/eyedropsred.jpg"),0.036f*RoomScale));
-	itemScp714::setMeshNode(genItemNode(std::string("test/scp714.b3d"),std::string(""),9.0f*RoomScale));
-	itemScp1025::setMeshNode(genItemNode(std::string("test/scp1025.b3d"),std::string(""),3.0f*RoomScale));
-	itemScp513::setMeshNode(genItemNode(std::string("test/513.x"),std::string(""),3.0f*RoomScale));
+    item420::setMeshNode(genItemNode(std::string("GFX/items/420.x"),std::string(""),0.015f*RoomScale));
+	itemKey1::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/keycard1.jpg"),0.012f*RoomScale));
+	itemKey2::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/keycard2.jpg"),0.012f*RoomScale));
+	itemKey3::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/keycard3.jpg"),0.012f*RoomScale));
+	itemKey4::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/keycard4.jpg"),0.012f*RoomScale));
+	itemKey5::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/keycard5.jpg"),0.012f*RoomScale));
+	itemMisc::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/card.jpg"),0.012f*RoomScale));
+	itemKey6::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/keycardomni.jpg"),0.012f*RoomScale));
+	itemScp860::setMeshNode(genItemNode(std::string("GFX/items/key.b3d"),std::string(""),0.03f*RoomScale));
+	itemPaper::setMeshNode(genItemNode(std::string("GFX/items/paper.x"),std::string(""),0.09f*RoomScale));
+	itemVest::setMeshNode(genItemNode(std::string("GFX/items/vest.x"),std::string("GFX/npcs/MTFbody.jpg"),0.6f*RoomScale));
+	itemFinevest::setMeshNode(genItemNode(std::string("GFX/items/vest.x"),std::string("GFX/npcs/MTFbody.jpg"),0.66f*RoomScale));
+	itemVeryfinevest::setMeshNode(genItemNode(std::string("GFX/items/vest.x"),std::string("GFX/npcs/MTFbody.jpg"),0.75f*RoomScale));
+	itemHazmatsuit::setMeshNode(genItemNode(std::string("GFX/items/hazmat.b3d"),std::string(""),0.39f*RoomScale));
+	itemHazmatsuit2::setMeshNode(genItemNode(std::string("GFX/items/hazmat.b3d"),std::string(""),0.39f*RoomScale));
+	itemHazmatsuit3::setMeshNode(genItemNode(std::string("GFX/items/hazmat.b3d"),std::string(""),0.39f*RoomScale));
+	itemCup::setMeshNode(genItemNode(std::string("GFX/items/cup.x"),std::string(""),1.2f*RoomScale));
+	itemEmptycup::setMeshNode(genItemNode(std::string("GFX/items/cup.x"),std::string(""),1.2f*RoomScale));
+	itemScp500::setMeshNode(genItemNode(std::string("GFX/items/pill.b3d"),std::string(""),0.03f*RoomScale));
+	itemFirstaid::setMeshNode(genItemNode(std::string("GFX/items/firstaid.x"),std::string(""),1.5f*RoomScale));
+	itemFinefirstaid::setMeshNode(genItemNode(std::string("GFX/items/firstaid.x"),std::string(""),0.9f*RoomScale));
+	itemFirstaid2::setMeshNode(genItemNode(std::string("GFX/items/firstaid.x"),std::string("GFX/items/firstaidkit2.jpg"),0.9f*RoomScale));
+	itemVeryfinefirstaid::setMeshNode(genItemNode(std::string("GFX/items/eyedrops.b3d"),std::string("GFX/items/bottle.jpg"),0.06f*RoomScale));
+	itemGasmask::setMeshNode(genItemNode(std::string("GFX/items/gasmask.b3d"),std::string(""),0.6f*RoomScale));
+	itemSupergasmask::setMeshNode(genItemNode(std::string("GFX/items/gasmask.b3d"),std::string(""),0.63f*RoomScale));
+	itemGasmask3::setMeshNode(genItemNode(std::string("GFX/items/gasmask.b3d"),std::string(""),0.63f*RoomScale));
+	itemBat::setMeshNode(genItemNode(std::string("GFX/items/battery.x"),std::string(""),0.006f*RoomScale));
+	itemScp148::setMeshNode(genItemNode(std::string("GFX/items/metalpanel.x"),std::string(""),0.117187f*RoomScale));
+	itemScp148ingot::setMeshNode(genItemNode(std::string("GFX/items/scp148.x"),std::string(""),0.117187f*RoomScale));
+	itemNav::setMeshNode(genItemNode(std::string("GFX/items/navigator.x"),std::string(""),0.024f*RoomScale));
+	itemRadio::setMeshNode(genItemNode(std::string("GFX/items/radio.x"),std::string(""),30.0f*RoomScale));
+	itemFineradio::setMeshNode(genItemNode(std::string("GFX/items/radio.x"),std::string(""),0.03f*RoomScale));
+	itemVeryfineradio::setMeshNode(genItemNode(std::string("GFX/items/radio.x"),std::string(""),0.03f*RoomScale));
+	item18vradio::setMeshNode(genItemNode(std::string("GFX/items/radio.x"),std::string(""),0.036f*RoomScale));
+	itemCigarette::setMeshNode(genItemNode(std::string("GFX/items/420.x"),std::string(""),0.012f*RoomScale));
+	item420s::setMeshNode(genItemNode(std::string("GFX/items/420.x"),std::string(""),0.012f*RoomScale));
+	itemHand::setMeshNode(genItemNode(std::string("GFX/items/severedhand.b3d"),std::string(""),1.2f*RoomScale));
+	itemHand2::setMeshNode(genItemNode(std::string("GFX/items/severedhand.b3d"),std::string("GFX/items/shand2.png"),1.2f*RoomScale));
+	item18vbat::setMeshNode(genItemNode(std::string("GFX/items/battery.x"),std::string(""),0.009f*RoomScale));
+	itemKillbat::setMeshNode(genItemNode(std::string("GFX/items/battery.x"),std::string(""),0.009f*RoomScale));
+	itemFineeyedrops::setMeshNode(genItemNode(std::string("GFX/items/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
+	itemSupereyedrops::setMeshNode(genItemNode(std::string("GFX/items/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
+	itemEyedrops::setMeshNode(genItemNode(std::string("GFX/items/eyedrops.b3d"),std::string(""),0.036f*RoomScale));
+	itemScp714::setMeshNode(genItemNode(std::string("GFX/items/scp714.b3d"),std::string(""),9.0f*RoomScale));
+	itemScp1025::setMeshNode(genItemNode(std::string("GFX/items/scp1025.b3d"),std::string(""),3.0f*RoomScale));
+	itemScp513::setMeshNode(genItemNode(std::string("GFX/items/513.x"),std::string(""),3.0f*RoomScale));
 
 	for (irr::u32 ui=0;ui<2;ui++) {
         item* it = itemEyedrops::createItemEyedrops();
@@ -157,11 +161,11 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
         it = itemKey2::createItemKey2();
         itemList.push_back(it);
 
-        it = itemPaper::createItemPaper();
+        it = itemNav::createItemNav();
         itemList.push_back(it);
-        it = itemPaper::createItemPaper();
+        it = itemMisc::createItemMisc();
         itemList.push_back(it);
-        it = itemPaper::createItemPaper();
+        it = itemScp148ingot::createItemScp148ingot();
         itemList.push_back(it);
         it = itemPaper::createItemPaper();
         itemList.push_back(it);
@@ -199,81 +203,81 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	room::setDynamics(itemDyn);
 
-	ambient[0] = sound::getSound(std::string("test/The Dread.ogg"),false);
+	ambient[0] = sound::getSound(std::string("SFX/Music/The Dread.ogg"),false);
 	if (ambient[0]!=nullptr) {
 		ambient[0]->playSound(true);
 	}
 
 	RMesh* rme;
 	//LCZ
-	/*lockroom*/rme = loadRMesh(std::string("test/lockroom_opt.rmesh"),irrFileSystem,irrDriver); lockroom::setBase(rme);
-	/*start*/rme = loadRMesh(std::string("test/173_opt.rmesh"),irrFileSystem,irrDriver); start::setBase(rme);
-	/*room2storage*/rme = loadRMesh(std::string("test/room2storage_opt.rmesh"),irrFileSystem,irrDriver); room2storage::setBase(rme);
-	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(rme);
-	/*endroom*/rme = loadRMesh(std::string("test/endroom_opt.rmesh"),irrFileSystem,irrDriver); endroom::setBase(rme);
-	/*room012*/rme = loadRMesh(std::string("test/room012_opt.rmesh"),irrFileSystem,irrDriver); room012::setBase(rme);
-	/*room2*/rme = loadRMesh(std::string("test/room2_opt.rmesh"),irrFileSystem,irrDriver); room2::setBase(rme);
-	/*room2_2*/rme = loadRMesh(std::string("test/room2_2_opt.rmesh"),irrFileSystem,irrDriver); room2_2::setBase(rme);
-	/*room2c*/rme = loadRMesh(std::string("test/room2C_opt.rmesh"),irrFileSystem,irrDriver); room2c::setBase(rme);
-	/*room2closets*/rme = loadRMesh(std::string("test/room2closets_opt.rmesh"),irrFileSystem,irrDriver); room2closets::setBase(rme);
-	/*room2elevator*/rme = loadRMesh(std::string("test/room2elevator_opt.rmesh"),irrFileSystem,irrDriver); room2elevator::setBase(rme);
-	/*room2doors*/rme = loadRMesh(std::string("test/room2doors_opt.rmesh"),irrFileSystem,irrDriver); room2doors::setBase(rme);
-	/*room2scps*/rme = loadRMesh(std::string("test/room2scps_opt.rmesh"),irrFileSystem,irrDriver); room2scps::setBase(rme);
-	/*room3storage*/rme = loadRMesh(std::string("test/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(rme);
-	/*room2testroom2*/rme = loadRMesh(std::string("test/room2testroom2_opt.rmesh"),irrFileSystem,irrDriver); room2testroom2::setBase(rme);
-	/*room3*/rme = loadRMesh(std::string("test/room3_opt.rmesh"),irrFileSystem,irrDriver); room3::setBase(rme);
-	/*room3_2*/rme = loadRMesh(std::string("test/room3_2_opt.rmesh"),irrFileSystem,irrDriver); room3_2::setBase(rme);
-	/*room4*/rme = loadRMesh(std::string("test/room4_opt.rmesh"),irrFileSystem,irrDriver); room4::setBase(rme);
-	/*roompj*/rme = loadRMesh(std::string("test/roompj_opt.rmesh"),irrFileSystem,irrDriver); roompj::setBase(rme);
-	/*r_914*/rme = loadRMesh(std::string("test/machineroom_opt.rmesh"),irrFileSystem,irrDriver); r_914::setBase(rme);
+	/*lockroom*/rme = loadRMesh(std::string("GFX/map/lockroom_opt.rmesh"),irrFileSystem,irrDriver); lockroom::setBase(rme);
+	/*start*/rme = loadRMesh(std::string("GFX/map/173_opt.rmesh"),irrFileSystem,irrDriver); start::setBase(rme);
+	/*room2storage*/rme = loadRMesh(std::string("GFX/map/room2storage_opt.rmesh"),irrFileSystem,irrDriver); room2storage::setBase(rme);
+	/*room3storage*/rme = loadRMesh(std::string("GFX/map/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(rme);
+	/*endroom*/rme = loadRMesh(std::string("GFX/map/endroom_opt.rmesh"),irrFileSystem,irrDriver); endroom::setBase(rme);
+	/*room012*/rme = loadRMesh(std::string("GFX/map/room012_opt.rmesh"),irrFileSystem,irrDriver); room012::setBase(rme);
+	/*room2*/rme = loadRMesh(std::string("GFX/map/room2_opt.rmesh"),irrFileSystem,irrDriver); room2::setBase(rme);
+	/*room2_2*/rme = loadRMesh(std::string("GFX/map/room2_2_opt.rmesh"),irrFileSystem,irrDriver); room2_2::setBase(rme);
+	/*room2c*/rme = loadRMesh(std::string("GFX/map/room2C_opt.rmesh"),irrFileSystem,irrDriver); room2c::setBase(rme);
+	/*room2closets*/rme = loadRMesh(std::string("GFX/map/room2closets_opt.rmesh"),irrFileSystem,irrDriver); room2closets::setBase(rme);
+	/*room2elevator*/rme = loadRMesh(std::string("GFX/map/room2elevator_opt.rmesh"),irrFileSystem,irrDriver); room2elevator::setBase(rme);
+	/*room2doors*/rme = loadRMesh(std::string("GFX/map/room2doors_opt.rmesh"),irrFileSystem,irrDriver); room2doors::setBase(rme);
+	/*room2scps*/rme = loadRMesh(std::string("GFX/map/room2scps_opt.rmesh"),irrFileSystem,irrDriver); room2scps::setBase(rme);
+	/*room3storage*/rme = loadRMesh(std::string("GFX/map/room3storage_opt.rmesh"),irrFileSystem,irrDriver); room3storage::setBase(rme);
+	/*room2testroom2*/rme = loadRMesh(std::string("GFX/map/room2testroom2_opt.rmesh"),irrFileSystem,irrDriver); room2testroom2::setBase(rme);
+	/*room3*/rme = loadRMesh(std::string("GFX/map/room3_opt.rmesh"),irrFileSystem,irrDriver); room3::setBase(rme);
+	/*room3_2*/rme = loadRMesh(std::string("GFX/map/room3_2_opt.rmesh"),irrFileSystem,irrDriver); room3_2::setBase(rme);
+	/*room4*/rme = loadRMesh(std::string("GFX/map/room4_opt.rmesh"),irrFileSystem,irrDriver); room4::setBase(rme);
+	/*roompj*/rme = loadRMesh(std::string("GFX/map/roompj_opt.rmesh"),irrFileSystem,irrDriver); roompj::setBase(rme);
+	/*r_914*/rme = loadRMesh(std::string("GFX/map/machineroom_opt.rmesh"),irrFileSystem,irrDriver); r_914::setBase(rme);
 	//HCZ
-	/*r_008*/rme = loadRMesh(std::string("test/008_opt.rmesh"),irrFileSystem,irrDriver); r_008::setBase(rme);
-	/*coffin*/rme = loadRMesh(std::string("test/coffin_opt.rmesh"),irrFileSystem,irrDriver); coffin::setBase(rme);
-	/*endroom2*/rme = loadRMesh(std::string("test/endroom2_opt.rmesh"),irrFileSystem,irrDriver); endroom2::setBase(rme);
-	/*testroom*/rme = loadRMesh(std::string("test/testroom_opt.rmesh"),irrFileSystem,irrDriver); testroom::setBase(rme);
-	/*tunnel*/rme = loadRMesh(std::string("test/tunnel_opt.rmesh"),irrFileSystem,irrDriver); tunnel::setBase(rme);
-	/*tunnel2*/rme = loadRMesh(std::string("test/tunnel2_opt.rmesh"),irrFileSystem,irrDriver); tunnel2::setBase(rme);
-	/*room035*/rme = loadRMesh(std::string("test/room035_opt.rmesh"),irrFileSystem,irrDriver); room035::setBase(rme);
-	/*room049*/rme = loadRMesh(std::string("test/room049_opt.rmesh"),irrFileSystem,irrDriver); room049::setBase(rme);
-	/*room106*/rme = loadRMesh(std::string("test/room106_opt.rmesh"),irrFileSystem,irrDriver); room106::setBase(rme);
-	/*room2ctunnel*/rme = loadRMesh(std::string("test/room2Ctunnel_opt.rmesh"),irrFileSystem,irrDriver); room2ctunnel::setBase(rme);
-	/*room2nuke*/rme = loadRMesh(std::string("test/room2nuke_opt.rmesh"),irrFileSystem,irrDriver); room2nuke::setBase(rme);
-	/*room2pipes*/rme = loadRMesh(std::string("test/room2pipes_opt.rmesh"),irrFileSystem,irrDriver); room2pipes::setBase(rme);
-	/*room2pit*/rme = loadRMesh(std::string("test/room2pit_opt.rmesh"),irrFileSystem,irrDriver); room2pit::setBase(rme);
-	/*room3pit*/rme = loadRMesh(std::string("test/room3pit_opt.rmesh"),irrFileSystem,irrDriver); room3pit::setBase(rme);
-	/*room2servers*/rme = loadRMesh(std::string("test/room2servers_opt.rmesh"),irrFileSystem,irrDriver); room2servers::setBase(rme);
-	/*room2tunnel*/rme = loadRMesh(std::string("test/room2tunnel_opt.rmesh"),irrFileSystem,irrDriver); room2tunnel::setBase(rme);
-	/*room3tunnel*/rme = loadRMesh(std::string("test/room3tunnel_opt.rmesh"),irrFileSystem,irrDriver); room3tunnel::setBase(rme);
-	/*room4tunnels*/rme = loadRMesh(std::string("test/4tunnels_opt.rmesh"),irrFileSystem,irrDriver); room4tunnels::setBase(rme);
-	/*room513*/rme = loadRMesh(std::string("test/room513_opt.rmesh"),irrFileSystem,irrDriver); room513::setBase(rme);
+	/*r_008*/rme = loadRMesh(std::string("GFX/map/008_opt.rmesh"),irrFileSystem,irrDriver); r_008::setBase(rme);
+	/*coffin*/rme = loadRMesh(std::string("GFX/map/coffin_opt.rmesh"),irrFileSystem,irrDriver); coffin::setBase(rme);
+	/*endroom2*/rme = loadRMesh(std::string("GFX/map/endroom2_opt.rmesh"),irrFileSystem,irrDriver); endroom2::setBase(rme);
+	/*testroom*/rme = loadRMesh(std::string("GFX/map/testroom_opt.rmesh"),irrFileSystem,irrDriver); testroom::setBase(rme);
+	/*tunnel*/rme = loadRMesh(std::string("GFX/map/tunnel_opt.rmesh"),irrFileSystem,irrDriver); tunnel::setBase(rme);
+	/*tunnel2*/rme = loadRMesh(std::string("GFX/map/tunnel2_opt.rmesh"),irrFileSystem,irrDriver); tunnel2::setBase(rme);
+	/*room035*/rme = loadRMesh(std::string("GFX/map/room035_opt.rmesh"),irrFileSystem,irrDriver); room035::setBase(rme);
+	/*room049*/rme = loadRMesh(std::string("GFX/map/room049_opt.rmesh"),irrFileSystem,irrDriver); room049::setBase(rme);
+	/*room106*/rme = loadRMesh(std::string("GFX/map/room106_opt.rmesh"),irrFileSystem,irrDriver); room106::setBase(rme);
+	/*room2ctunnel*/rme = loadRMesh(std::string("GFX/map/room2Ctunnel_opt.rmesh"),irrFileSystem,irrDriver); room2ctunnel::setBase(rme);
+	/*room2nuke*/rme = loadRMesh(std::string("GFX/map/room2nuke_opt.rmesh"),irrFileSystem,irrDriver); room2nuke::setBase(rme);
+	/*room2pipes*/rme = loadRMesh(std::string("GFX/map/room2pipes_opt.rmesh"),irrFileSystem,irrDriver); room2pipes::setBase(rme);
+	/*room2pit*/rme = loadRMesh(std::string("GFX/map/room2pit_opt.rmesh"),irrFileSystem,irrDriver); room2pit::setBase(rme);
+	/*room3pit*/rme = loadRMesh(std::string("GFX/map/room3pit_opt.rmesh"),irrFileSystem,irrDriver); room3pit::setBase(rme);
+	/*room2servers*/rme = loadRMesh(std::string("GFX/map/room2servers_opt.rmesh"),irrFileSystem,irrDriver); room2servers::setBase(rme);
+	/*room2tunnel*/rme = loadRMesh(std::string("GFX/map/room2tunnel_opt.rmesh"),irrFileSystem,irrDriver); room2tunnel::setBase(rme);
+	/*room3tunnel*/rme = loadRMesh(std::string("GFX/map/room3tunnel_opt.rmesh"),irrFileSystem,irrDriver); room3tunnel::setBase(rme);
+	/*room4tunnels*/rme = loadRMesh(std::string("GFX/map/4tunnels_opt.rmesh"),irrFileSystem,irrDriver); room4tunnels::setBase(rme);
+	/*room513*/rme = loadRMesh(std::string("GFX/map/room513_opt.rmesh"),irrFileSystem,irrDriver); room513::setBase(rme);
 	//EZ
-	/*room860*/rme = loadRMesh(std::string("test/room860_opt.rmesh"),irrFileSystem,irrDriver); room860::setBase(rme);
-	/*exit1*/rme = loadRMesh(std::string("test/exit1_opt.rmesh"),irrFileSystem,irrDriver); exit1::setBase(rme);
-	/*gateaentrance*/rme = loadRMesh(std::string("test/gateaentrance_opt.rmesh"),irrFileSystem,irrDriver); gateaentrance::setBase(rme);
-	/*lockroom2*/rme = loadRMesh(std::string("test/lockroom2_opt.rmesh"),irrFileSystem,irrDriver); lockroom2::setBase(rme);
-	/*room079*/rme = loadRMesh(std::string("test/room079_opt.rmesh"),irrFileSystem,irrDriver); room079::setBase(rme);
-	/*room2z3*/rme = loadRMesh(std::string("test/room2z3_opt.rmesh"),irrFileSystem,irrDriver); room2z3::setBase(rme);
-	/*room2cafeteria*/rme = loadRMesh(std::string("test/room2cafeteria_opt.rmesh"),irrFileSystem,irrDriver); room2cafeteria::setBase(rme);
-	/*room2cz3*/rme = loadRMesh(std::string("test/room2Cz3_opt.rmesh"),irrFileSystem,irrDriver); room2cz3::setBase(rme);
-	/*room2ccont*/rme = loadRMesh(std::string("test/room2ccont_opt.rmesh"),irrFileSystem,irrDriver); room2ccont::setBase(rme);
-	/*room2offices*/rme = loadRMesh(std::string("test/room2offices_opt.rmesh"),irrFileSystem,irrDriver); room2offices::setBase(rme);
-	/*room2offices2*/rme = loadRMesh(std::string("test/room2offices2_opt.rmesh"),irrFileSystem,irrDriver); room2offices2::setBase(rme);
-	/*room2offices3*/rme = loadRMesh(std::string("test/room2offices3_opt.rmesh"),irrFileSystem,irrDriver); room2offices3::setBase(rme);
-	/*room2poffices*/rme = loadRMesh(std::string("test/room2poffices_opt.rmesh"),irrFileSystem,irrDriver); room2poffices::setBase(rme);
-	/*room2poffices2*/rme = loadRMesh(std::string("test/room2poffices2_opt.rmesh"),irrFileSystem,irrDriver); room2poffices2::setBase(rme);
-	/*room2sroom*/rme = loadRMesh(std::string("test/room2sroom_opt.rmesh"),irrFileSystem,irrDriver); room2sroom::setBase(rme);
-	/*room2toilets*/rme = loadRMesh(std::string("test/room2toilets_opt.rmesh"),irrFileSystem,irrDriver); room2toilets::setBase(rme);
-	/*room2tesla*/rme = loadRMesh(std::string("test/room2tesla_opt.rmesh"),irrFileSystem,irrDriver); room2tesla::setBase(rme);
-	/*room3servers*/rme = loadRMesh(std::string("test/room3servers_opt.rmesh"),irrFileSystem,irrDriver); room3servers::setBase(rme);
-	/*room3servers2*/rme = loadRMesh(std::string("test/room3servers2_opt.rmesh"),irrFileSystem,irrDriver); room3servers2::setBase(rme);
-	/*room3z3*/rme = loadRMesh(std::string("test/room3z3_opt.rmesh"),irrFileSystem,irrDriver); room3z3::setBase(rme);
-	/*room4z3*/rme = loadRMesh(std::string("test/room4z3_opt.rmesh"),irrFileSystem,irrDriver); room4z3::setBase(rme);
+	/*room860*/rme = loadRMesh(std::string("GFX/map/room860_opt.rmesh"),irrFileSystem,irrDriver); room860::setBase(rme);
+	/*exit1*/rme = loadRMesh(std::string("GFX/map/exit1_opt.rmesh"),irrFileSystem,irrDriver); exit1::setBase(rme);
+	/*gateaentrance*/rme = loadRMesh(std::string("GFX/map/gateaentrance_opt.rmesh"),irrFileSystem,irrDriver); gateaentrance::setBase(rme);
+	/*lockroom2*/rme = loadRMesh(std::string("GFX/map/lockroom2_opt.rmesh"),irrFileSystem,irrDriver); lockroom2::setBase(rme);
+	/*room079*/rme = loadRMesh(std::string("GFX/map/room079_opt.rmesh"),irrFileSystem,irrDriver); room079::setBase(rme);
+	/*room2z3*/rme = loadRMesh(std::string("GFX/map/room2z3_opt.rmesh"),irrFileSystem,irrDriver); room2z3::setBase(rme);
+	/*room2cafeteria*/rme = loadRMesh(std::string("GFX/map/room2cafeteria_opt.rmesh"),irrFileSystem,irrDriver); room2cafeteria::setBase(rme);
+	/*room2cz3*/rme = loadRMesh(std::string("GFX/map/room2Cz3_opt.rmesh"),irrFileSystem,irrDriver); room2cz3::setBase(rme);
+	/*room2ccont*/rme = loadRMesh(std::string("GFX/map/room2ccont_opt.rmesh"),irrFileSystem,irrDriver); room2ccont::setBase(rme);
+	/*room2offices*/rme = loadRMesh(std::string("GFX/map/room2offices_opt.rmesh"),irrFileSystem,irrDriver); room2offices::setBase(rme);
+	/*room2offices2*/rme = loadRMesh(std::string("GFX/map/room2offices2_opt.rmesh"),irrFileSystem,irrDriver); room2offices2::setBase(rme);
+	/*room2offices3*/rme = loadRMesh(std::string("GFX/map/room2offices3_opt.rmesh"),irrFileSystem,irrDriver); room2offices3::setBase(rme);
+	/*room2poffices*/rme = loadRMesh(std::string("GFX/map/room2poffices_opt.rmesh"),irrFileSystem,irrDriver); room2poffices::setBase(rme);
+	/*room2poffices2*/rme = loadRMesh(std::string("GFX/map/room2poffices2_opt.rmesh"),irrFileSystem,irrDriver); room2poffices2::setBase(rme);
+	/*room2sroom*/rme = loadRMesh(std::string("GFX/map/room2sroom_opt.rmesh"),irrFileSystem,irrDriver); room2sroom::setBase(rme);
+	/*room2toilets*/rme = loadRMesh(std::string("GFX/map/room2toilets_opt.rmesh"),irrFileSystem,irrDriver); room2toilets::setBase(rme);
+	/*room2tesla*/rme = loadRMesh(std::string("GFX/map/room2tesla_opt.rmesh"),irrFileSystem,irrDriver); room2tesla::setBase(rme);
+	/*room3servers*/rme = loadRMesh(std::string("GFX/map/room3servers_opt.rmesh"),irrFileSystem,irrDriver); room3servers::setBase(rme);
+	/*room3servers2*/rme = loadRMesh(std::string("GFX/map/room3servers2_opt.rmesh"),irrFileSystem,irrDriver); room3servers2::setBase(rme);
+	/*room3z3*/rme = loadRMesh(std::string("GFX/map/room3z3_opt.rmesh"),irrFileSystem,irrDriver); room3z3::setBase(rme);
+	/*room4z3*/rme = loadRMesh(std::string("GFX/map/room4z3_opt.rmesh"),irrFileSystem,irrDriver); room4z3::setBase(rme);
 	//Misc
-	/*r_173*/rme = loadRMesh(std::string("test/173bright_opt.rmesh"),irrFileSystem,irrDriver); r_173::setBase(rme);
-	/*checkpoint1*/rme = loadRMesh(std::string("test/checkpoint1_opt.rmesh"),irrFileSystem,irrDriver); checkpoint1::setBase(rme);
-	/*checkpoint2*/rme = loadRMesh(std::string("test/checkpoint2_opt.rmesh"),irrFileSystem,irrDriver); checkpoint2::setBase(rme);
-	/*gatea*/rme = loadRMesh(std::string("test/gatea_opt.rmesh"),irrFileSystem,irrDriver); gatea::setBase(rme);
-	/*pocketdimension*/rme = loadRMesh(std::string("test/pocketdimension1_opt.rmesh"),irrFileSystem,irrDriver); pocketdimension::setBase(rme);
+	/*r_173*/rme = loadRMesh(std::string("GFX/map/173bright_opt.rmesh"),irrFileSystem,irrDriver); r_173::setBase(rme);
+	/*checkpoint1*/rme = loadRMesh(std::string("GFX/map/checkpoint1_opt.rmesh"),irrFileSystem,irrDriver); checkpoint1::setBase(rme);
+	/*checkpoint2*/rme = loadRMesh(std::string("GFX/map/checkpoint2_opt.rmesh"),irrFileSystem,irrDriver); checkpoint2::setBase(rme);
+	/*gatea*/rme = loadRMesh(std::string("GFX/map/gatea_opt.rmesh"),irrFileSystem,irrDriver); gatea::setBase(rme);
+	/*pocketdimension*/rme = loadRMesh(std::string("GFX/map/pocketdimension1_opt.rmesh"),irrFileSystem,irrDriver); pocketdimension::setBase(rme);
 
 	mainPlayer = new player(this,irrSmgr,dynamics,irrReceiver);
 
@@ -366,75 +370,114 @@ world::~world() {
 
 bool world::run() {
 
-    if (prevTime==0) { FPSfactor = 1.0; } else {
-        FPSfactor = (irrTimer->getRealTime()-prevTime)/(1000.0/70.0);
-    }
-    prevTime = irrTimer->getRealTime();
+	if (prevTime==0) { FPSfactor = 1.0; } else {
+		FPSfactor = (irrTimer->getRealTime()-prevTime)/(1000.0/70.0);
+	}
+	prevTime = irrTimer->getRealTime();
 
-    float prec = 0.75f;
+	if (menusOpen==0) {
 
-	mainPlayer->update();
-    dynamics->simStep(irrTimer->getRealTime(),60.f * prec);
-    mainPlayer->resetSpeeds();
+		float prec = 0.75f;
 
-    if (irrReceiver->IsMouseDown(0) != mainPlayer->getLastMouseDown(0) && irrReceiver->IsMouseDown(0)==false) {
-		for (unsigned int i=0;i<itemList.size();i++) {
-			irr::scene::SViewFrustum frust = *mainPlayer->getViewFrustum();
-			//transform the frustum to the node's current absolute transformation
-			irr::core::matrix4 invTrans(itemList[i]->getTransform(), irr::core::matrix4::EM4CONST_INVERSE);
-			//invTrans.makeInverse();
-			frust.transform(invTrans);
-			if (!itemList[i]->getPicked()) {
-				if (mainPlayer->seesBoundingBox(itemList[i]->getBBox(),frust)) {
-					mainPlayer->addToInventory(itemList[i]);
-					break;
+		mainPlayer->update();
+		dynamics->simStep(irrTimer->getRealTime(),60.f * prec);
+		mainPlayer->resetSpeeds();
+
+		if (irrReceiver->IsMouseDown(0) != mainPlayer->getLastMouseDown(0) && irrReceiver->IsMouseDown(0)==false) {
+			for (unsigned int i=0;i<itemList.size();i++) {
+				irr::scene::SViewFrustum frust = *mainPlayer->getViewFrustum();
+				//transform the frustum to the node's current absolute transformation
+				irr::core::matrix4 invTrans(itemList[i]->getTransform(), irr::core::matrix4::EM4CONST_INVERSE);
+				//invTrans.makeInverse();
+				frust.transform(invTrans);
+				if (!itemList[i]->getPicked()) {
+					if (mainPlayer->seesBoundingBox(itemList[i]->getBBox(),frust)) {
+						mainPlayer->addToInventory(itemList[i]);
+						break;
+					}
 				}
 			}
 		}
-    }
-    if (irrReceiver->IsMouseDown(1) != mainPlayer->getLastMouseDown(1) && irrReceiver->IsMouseDown(1)==false) {
-		for (unsigned int i=0;i<inventory_size;i++) {
-			if (mainPlayer->takeFromInventory(i)) break;
+		if (irrReceiver->IsMouseDown(1) != mainPlayer->getLastMouseDown(1) && irrReceiver->IsMouseDown(1)==false) {
+			for (unsigned int i=0;i<inventory_size;i++) {
+				if (mainPlayer->takeFromInventory(i)) break;
+			}
 		}
-    }
-    //std::cout<<mainPlayer->seesMeshNode(mainPlayer->testNode)<<"\n";
+		//std::cout<<mainPlayer->seesMeshNode(mainPlayer->testNode)<<"\n";
 
-    mainPlayer->updateHead();
+		mainPlayer->updateHead();
 
-	int px,py;
-	px = coordToRoomGrid(mainPlayer->getPosition().X);
-	py = coordToRoomGrid(mainPlayer->getPosition().Z);
-	if (px>=0 && px<20 && py>=0 && py<20) {
-		if (roomArray[px][py]!=nullptr) {
-			if (ppx!=px || ppy!=py) {
-				for (int y=0;y<20;y++) {
-					for (int x=0;x<20;x++) {
-						if (roomArray[x][y]!=nullptr) {
-							if (std::max(std::abs(x-px),std::abs(y-py))<3) {
-								roomArray[x][y]->setActivation(true);
-							} else {
-								roomArray[x][y]->setActivation(false);
+		int px,py;
+		px = coordToRoomGrid(mainPlayer->getPosition().X);
+		py = coordToRoomGrid(mainPlayer->getPosition().Z);
+		if (px>=0 && px<20 && py>=0 && py<20) {
+			if (roomArray[px][py]!=nullptr) {
+				if (ppx!=px || ppy!=py) {
+					for (int y=0;y<20;y++) {
+						for (int x=0;x<20;x++) {
+							if (roomArray[x][y]!=nullptr) {
+								if (std::max(std::abs(x-px),std::abs(y-py))<3) {
+									roomArray[x][y]->setActivation(true);
+								} else {
+									roomArray[x][y]->setActivation(false);
+								}
 							}
 						}
 					}
-				}
-				std::vector<irr::video::SLight> nLights = roomArray[px][py]->getPointLights();
-				irr::core::vector3df offset((px*204.8f*RoomScale),0.f,(py*204.8f*RoomScale));
-				for (unsigned int i=0;i<nLights.size();i++) {
-					irr::core::matrix4 rotMatrix;
-					rotMatrix.setRotationDegrees(irr::core::vector3df(0.f,roomArray[px][py]->getAngle()*90.f,0.f));
-					rotMatrix.transformVect(nLights[i].Position);
+					std::vector<irr::video::SLight> nLights = roomArray[px][py]->getPointLights();
+					irr::core::vector3df offset((px*204.8f*RoomScale),0.f,(py*204.8f*RoomScale));
+					for (unsigned int i=0;i<nLights.size();i++) {
+						irr::core::matrix4 rotMatrix;
+						rotMatrix.setRotationDegrees(irr::core::vector3df(0.f,roomArray[px][py]->getAngle()*90.f,0.f));
+						rotMatrix.transformVect(nLights[i].Position);
 
-					nLights[i].Position+=offset;
+						nLights[i].Position+=offset;
 
+					}
+					LightsCallback->setLights(nLights);
+					NormalsCallback->setLights(nLights);
+					ppx = px;
+					ppy = py;
 				}
-				LightsCallback->setLights(nLights);
-				NormalsCallback->setLights(nLights);
-				ppx = px;
-				ppy = py;
 			}
 		}
-    }
+
+		irr::core::position2di mousePos = irrReceiver->getMousePos();
+		if (mousePos != irr::core::position2di(mainWidth/2,mainHeight/2)) {
+			mainPlayer->yaw += ((int)mousePos.X-(int)(mainWidth/2))*0.1f;
+			mainPlayer->pitch += ((int)mousePos.Y-(int)(mainHeight/2))*0.1f;
+			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
+		}
+
+		if (irrReceiver->IsKeyDown(irr::KEY_TAB) && !irrReceiver->IsPrevKeyDown(irr::KEY_TAB)) {
+			menusOpen = INVOPEN;
+			for (unsigned char i=0;i<inventory_size;i++) {
+				invImgs[i]=nullptr;
+				std::string imgpath = mainPlayer->getItemInvImg(i);
+				if (imgpath!="") {
+					invImgs[i]=irrDriver->getTexture(imgpath.c_str());
+				}
+			}
+		}
+	} else {
+		FPSfactor = 0.f;
+
+		dynamics->resetTimer(irrTimer->getRealTime());
+		if (menusOpen==INVOPEN) {
+			if (irrReceiver->IsKeyDown(irr::KEY_TAB) && !irrReceiver->IsPrevKeyDown(irr::KEY_TAB)) {
+				menusOpen = 0;
+				for (unsigned char i=0;i<inventory_size;i++) {
+					if (invImgs[i]!=nullptr) {
+						irrDriver->removeTexture(invImgs[i]);
+						for (unsigned char j=0;j<inventory_size;j++) {
+							if (invImgs[j]==invImgs[i] && i!=j) invImgs[j]=nullptr;
+						}
+						invImgs[i]=nullptr;
+					}
+				}
+			}
+		}
+	}
 
     irrDriver->beginScene(true, true, irr::video::SColor(255, 255, 0, 255));
     irrDriver->setRenderTarget(blurImage2); //copy the old render
@@ -483,44 +526,22 @@ bool world::run() {
         irrDriver->draw2DImage(StaminaMeterIMG,irr::core::position2d<irr::s32>(83+i*10,mainHeight-52),irr::core::rect<irr::s32>(0,0,8,14), 0,irr::video::SColor(255,255,255,255), false);
     }
 
-    /*if (irrReceiver->IsMouseDown(0)) {
-		ambient[0]->pauseSound();
-		//sound::freezeCategory(0);
-        for (unsigned int i=0;i<itemList.size();i++) {
-            if (itemList[i]->getPicked()) {
-                itemList[i]->Unpick(mainPlayer->getPosition());
-                break;
-            }
-        }
-    }
-
-    if (irrReceiver->IsMouseDown(1)) {
-		ambient[0]->resumeSound();
-		std::cout<<ambient[0]->isPlaying()<<"\n";
-		//ambient[0]->playSound(true);
-		//sound::unfreezeCategory(0);
-        for (unsigned int i=0;i<itemList.size();i++) {
-            if (!itemList[i]->getPicked()) {
-                itemList[i]->Pick();
-                break;
-            }
-        }
-    }*/
-
     blurAlpha = 100;
 
-    irrDriver->endScene();
+	if (menusOpen==INVOPEN) {
+		for (unsigned char i=0;i<inventory_size;i++) {
+			if (invImgs[i]!=nullptr) {
+				irrDriver->draw2DImage(invImgs[i],irr::core::position2di(i*68,0),irr::core::rect<irr::s32>(0,0,64,64));
+			}
+		}
+	}
 
-    irr::core::position2di mousePos = irrReceiver->getMousePos();
-    if (mousePos != irr::core::position2di(mainWidth/2,mainHeight/2)) {
-        mainPlayer->yaw += ((int)mousePos.X-(int)(mainWidth/2))*0.1f;
-        mainPlayer->pitch += ((int)mousePos.Y-(int)(mainHeight/2))*0.1f;
-        irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
-    }
+    irrDriver->endScene();
 
 	if (irrTimer->getRealTime()-prevTime<17) irrDevice->sleep(17-(irrTimer->getRealTime()-prevTime));
 
 	sound::processDrops();
+	irrReceiver->CopyToPrevKeys();
     return irrDevice->run();
 }
 

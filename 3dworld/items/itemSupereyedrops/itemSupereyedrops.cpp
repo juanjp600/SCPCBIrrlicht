@@ -36,6 +36,10 @@ std::string itemSupereyedrops::getInvName() {
 	return std::string("Eyedrops");
 }
 
+std::string itemSupereyedrops::getInvImgPath() {
+	return std::string("GFX/items/INVeyedrops.jpg");
+}
+
 bool itemSupereyedrops::updateItem() {
 	return false;
 }

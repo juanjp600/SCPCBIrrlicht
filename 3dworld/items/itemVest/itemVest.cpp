@@ -36,6 +36,10 @@ std::string itemVest::getInvName() {
 	return std::string("Ballistic Vest");
 }
 
+std::string itemVest::getInvImgPath() {
+	return std::string("GFX/items/INVvest.jpg");
+}
+
 bool itemVest::updateItem() {
 	return false;
 }

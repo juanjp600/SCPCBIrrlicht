@@ -36,6 +36,10 @@ std::string itemScp148ingot::getInvName() {
 	return std::string("SCP-148 Ingot");
 }
 
+std::string itemScp148ingot::getInvImgPath() {
+	return std::string("GFX/items/INVscp148.jpg");
+}
+
 bool itemScp148ingot::updateItem() {
 	return false;
 }

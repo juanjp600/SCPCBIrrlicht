@@ -36,6 +36,10 @@ std::string itemVeryfinevest::getInvName() {
 	return std::string("Bulky Ballistic Vest");
 }
 
+std::string itemVeryfinevest::getInvImgPath() {
+	return std::string("GFX/items/INVvest.jpg");
+}
+
 bool itemVeryfinevest::updateItem() {
 	return false;
 }

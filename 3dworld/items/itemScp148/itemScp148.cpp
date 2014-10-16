@@ -36,6 +36,10 @@ std::string itemScp148::getInvName() {
 	return std::string("Metal Panel");
 }
 
+std::string itemScp148::getInvImgPath() {
+	return std::string("GFX/items/INVmetalpanel.jpg");
+}
+
 bool itemScp148::updateItem() {
 	return false;
 }

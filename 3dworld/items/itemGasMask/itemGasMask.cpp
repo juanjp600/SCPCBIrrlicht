@@ -36,6 +36,10 @@ std::string itemGasmask::getInvName() {
 	return std::string("Gas Mask");
 }
 
+std::string itemGasmask::getInvImgPath() {
+	return std::string("GFX/items/INVgasmask.jpg");
+}
+
 bool itemGasmask::updateItem() {
 	return false;
 }

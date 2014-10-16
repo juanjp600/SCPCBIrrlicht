@@ -36,6 +36,10 @@ std::string itemBat::getInvName() {
 	return std::string("9V Battery");
 }
 
+std::string itemBat::getInvImgPath() {
+	return std::string("GFX/items/INVbattery.jpg");
+}
+
 bool itemBat::updateItem() {
 	return false;
 }

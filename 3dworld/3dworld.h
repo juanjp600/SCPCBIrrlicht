@@ -26,6 +26,8 @@ class MainEventReceiver : public irr::IEventReceiver {
 	private:
         bool KeyIsDown[irr::KEY_KEY_CODES_COUNT];
         bool MouseIsDown[2];
+
+        bool PrevKeyIsDown[irr::KEY_KEY_CODES_COUNT];
         irr::core::position2di MousePosition;
     public:
         virtual bool OnEvent(const irr::SEvent& event) {
@@ -67,6 +69,12 @@ class MainEventReceiver : public irr::IEventReceiver {
         virtual bool IsKeyDown(irr::EKEY_CODE keyCode) const {
             return KeyIsDown[keyCode];
         }
+        virtual bool IsPrevKeyDown(irr::EKEY_CODE keyCode) const {
+            return PrevKeyIsDown[keyCode];
+        }
+        virtual void CopyToPrevKeys() {
+            memcpy(PrevKeyIsDown,KeyIsDown,sizeof(PrevKeyIsDown));
+        }
         virtual bool IsMouseDown(unsigned char keyCode) const {
             return MouseIsDown[keyCode];
         }
@@ -76,6 +84,9 @@ class MainEventReceiver : public irr::IEventReceiver {
 
         MainEventReceiver() {
             memset(KeyIsDown, false, sizeof(KeyIsDown));
+            memset(PrevKeyIsDown, false, sizeof(PrevKeyIsDown));
+            memset(MouseIsDown, false, sizeof(MouseIsDown));
+            MousePosition = irr::core::position2di(0,0);
         }
 };
 
@@ -130,6 +141,12 @@ class world {
         int ppx,ppy;
 
         sound* ambient[3];
+
+        unsigned char menusOpen = 0;
+
+        static const unsigned char PAUSEOPEN;
+        static const unsigned char INVOPEN;
+        irr::video::ITexture* invImgs[10];
     public:
         //main
         world(unsigned int width,unsigned int height,bool fullscreen = false);

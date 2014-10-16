@@ -13,18 +13,18 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     selfRotation.X = selfRotation.Y = selfRotation.Z = 0;
 
 	for (unsigned char i=0;i<5;i++) {
-		breathSound[i][0] = sound::getSound(std::string("test/breath")+std::to_string(i)+std::string(".ogg"),false);
-		breathSound[i][1] = sound::getSound(std::string("test/breath")+std::to_string(i)+std::string("gas.ogg"),false);
+		breathSound[i][0] = sound::getSound(std::string("SFX/9341/breath")+std::to_string(i)+std::string(".ogg"),false);
+		breathSound[i][1] = sound::getSound(std::string("SFX/9341/breath")+std::to_string(i)+std::string("gas.ogg"),false);
 	}
 
 	for (unsigned char i=0;i<4;i++) {
-		stepSound[0][0][i] = sound::getSound(std::string("test/Step")+std::to_string(i+1)+std::string(".ogg"),false);
-		stepSound[0][1][i] = sound::getSound(std::string("test/Run")+std::to_string(i+1)+std::string(".ogg"),false);
-		stepSound[1][0][i] = sound::getSound(std::string("test/StepMetal")+std::to_string(i+1)+std::string(".ogg"),false);
-		stepSound[1][1][i] = sound::getSound(std::string("test/RunMetal")+std::to_string(i+1)+std::string(".ogg"),false);
+		stepSound[0][0][i] = sound::getSound(std::string("SFX/Step")+std::to_string(i+1)+std::string(".ogg"),false);
+		stepSound[0][1][i] = sound::getSound(std::string("SFX/Run")+std::to_string(i+1)+std::string(".ogg"),false);
+		stepSound[1][0][i] = sound::getSound(std::string("SFX/StepMetal")+std::to_string(i+1)+std::string(".ogg"),false);
+		stepSound[1][1][i] = sound::getSound(std::string("SFX/RunMetal")+std::to_string(i+1)+std::string(".ogg"),false);
 		if (i<3) {
-			stepSound[2][0][i] = sound::getSound(std::string("test/StepPD")+std::to_string(i+1)+std::string(".ogg"),false);
-			stepSound[3][1][i] = sound::getSound(std::string("test/StepForest")+std::to_string(i+1)+std::string(".ogg"),false);
+			stepSound[2][0][i] = sound::getSound(std::string("SFX/StepPD")+std::to_string(i+1)+std::string(".ogg"),false);
+			stepSound[3][1][i] = sound::getSound(std::string("SFX/StepForest")+std::to_string(i+1)+std::string(".ogg"),false);
 		}
 	}
 
@@ -410,3 +410,15 @@ unsigned char world::pickPlayerTriangle() {
 	return materialType;
 }
 
+
+std::string player::getItemName(unsigned char slot) {
+	slot%=inventory_size;
+	if (inventory[slot]==nullptr) return std::string("");
+	return inventory[slot]->getInvName();
+}
+
+std::string player::getItemInvImg(unsigned char slot) {
+	slot%=inventory_size;
+	if (inventory[slot]==nullptr) return std::string("");
+	return inventory[slot]->getInvImgPath();
+}

@@ -36,6 +36,10 @@ std::string itemVeryfinefirstaid::getInvName() {
 	return std::string("Strange Bottle");
 }
 
+std::string itemVeryfinefirstaid::getInvImgPath() {
+	return std::string("GFX/items/INVbottle.jpg");
+}
+
 bool itemVeryfinefirstaid::updateItem() {
 	return false;
 }

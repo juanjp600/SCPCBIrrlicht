@@ -36,6 +36,10 @@ std::string itemKey6::getInvName() {
 	return std::string("Key Card Omni");
 }
 
+std::string itemKey6::getInvImgPath() {
+	return std::string("GFX/items/INVkeyomni.jpg");
+}
+
 bool itemKey6::updateItem() {
 	return false;
 }

@@ -65,6 +65,9 @@ class player {
 		}
 
 		const irr::scene::SViewFrustum* getViewFrustum();
+
+		std::string getItemName(unsigned char slot);
+		std::string getItemInvImg(unsigned char slot);
 };
 
 #endif // PLAYER_H_INCLUDED

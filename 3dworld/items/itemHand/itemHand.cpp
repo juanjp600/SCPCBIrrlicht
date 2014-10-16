@@ -36,6 +36,10 @@ std::string itemHand::getInvName() {
 	return std::string("Severed Hand");
 }
 
+std::string itemHand::getInvImgPath() {
+	return std::string("GFX/items/INVhand.jpg");
+}
+
 bool itemHand::updateItem() {
 	return false;
 }

@@ -36,6 +36,10 @@ std::string itemFirstaid2::getInvName() {
 	return std::string("Blue First Aid Kit");
 }
 
+std::string itemFirstaid2::getInvImgPath() {
+	return std::string("GFX/items/INVfirstaid2.jpg");
+}
+
 bool itemFirstaid2::updateItem() {
 	return false;
 }

@@ -36,6 +36,10 @@ std::string itemCigarette::getInvName() {
 	return std::string("Cigarette");
 }
 
+std::string itemCigarette::getInvImgPath() {
+	return std::string("GFX/items/INV420.jpg");
+}
+
 bool itemCigarette::updateItem() {
 	return false;
 }

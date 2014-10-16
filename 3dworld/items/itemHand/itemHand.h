@@ -25,6 +25,7 @@ class itemHand : public item {
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
 		
 		virtual std::string getInvName();
+		virtual std::string getInvImgPath();
 
         virtual irr::core::vector3df getOffset();
 };

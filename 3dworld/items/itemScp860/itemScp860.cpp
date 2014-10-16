@@ -36,6 +36,10 @@ std::string itemScp860::getInvName() {
 	return std::string("SCP-860");
 }
 
+std::string itemScp860::getInvImgPath() {
+	return std::string("GFX/items/INVkey.jpg");
+}
+
 bool itemScp860::updateItem() {
 	return false;
 }
