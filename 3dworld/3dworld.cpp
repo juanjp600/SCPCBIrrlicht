@@ -480,13 +480,28 @@ bool world::run() {
 	}
 
     irrDriver->beginScene(true, true, irr::video::SColor(255, 255, 0, 255));
-    irrDriver->setRenderTarget(blurImage2); //copy the old render
+
+	draw3D();
+	drawHUD();
+
+    irrDriver->endScene();
+
+	if (irrTimer->getRealTime()-prevTime<17) irrDevice->sleep(17-(irrTimer->getRealTime()-prevTime));
+
+	sound::processDrops();
+	irrReceiver->CopyToPrevKeys();
+    return irrDevice->run();
+}
+
+void world::draw3D() {
+	irrDriver->setRenderTarget(blurImage2); //copy the old render
     irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
     irrSmgr->drawAll();
+}
 
-
-    float BlinkTimer = mainPlayer->BlinkTimer;
+void world::drawHUD() {
+	float BlinkTimer = mainPlayer->BlinkTimer;
     if (BlinkTimer<0) {
         double darkA;
         if (mainPlayer->BlinkTimer>-0.44625) {
@@ -528,21 +543,24 @@ bool world::run() {
 
     blurAlpha = 100;
 
-	if (menusOpen==INVOPEN) {
+    if (menusOpen==INVOPEN) {
 		for (unsigned char i=0;i<inventory_size;i++) {
+			int x,y,w,h;
+			x = mainWidth/2-(90*inventory_size/4)+(i%5*90);
+			y = mainHeight/2-(90*inventory_size/10)+(i/5*90);
+			w = 64;
+			h = 64;
+			irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,255),irr::core::recti(irr::core::position2di(x-2,y-2),irr::core::position2di(x+w+2,y+h+2)));
 			if (invImgs[i]!=nullptr) {
-				irrDriver->draw2DImage(invImgs[i],irr::core::position2di(i*68,0),irr::core::rect<irr::s32>(0,0,64,64));
+				irrDriver->draw2DImage(invImgs[i],irr::core::position2di(x,y),irr::core::rect<irr::s32>(0,0,w,h));
+				if (irrReceiver->getMousePos().X>x && irrReceiver->getMousePos().X<x+w && irrReceiver->getMousePos().Y>y && irrReceiver->getMousePos().Y<y+h) {
+					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x,y+h+6),irr::core::position2di(x+w,y+h+22)),irr::video::SColor(255,255,255,255),true,true);
+				}
+			} else {
+				irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(irr::core::position2di(x,y),irr::core::position2di(x+w,y+h)));
 			}
 		}
 	}
-
-    irrDriver->endScene();
-
-	if (irrTimer->getRealTime()-prevTime<17) irrDevice->sleep(17-(irrTimer->getRealTime()-prevTime));
-
-	sound::processDrops();
-	irrReceiver->CopyToPrevKeys();
-    return irrDevice->run();
 }
 
 float world::getFPSfactor() {

@@ -147,6 +147,9 @@ class world {
         static const unsigned char PAUSEOPEN;
         static const unsigned char INVOPEN;
         irr::video::ITexture* invImgs[10];
+
+        void draw3D();
+        void drawHUD();
     public:
         //main
         world(unsigned int width,unsigned int height,bool fullscreen = false);
