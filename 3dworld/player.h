@@ -48,6 +48,7 @@ class player {
 
         bool addToInventory(item* it);
         item* takeFromInventory(unsigned char slot);
+        unsigned char moveToSlot(unsigned char srcSlot,unsigned char destSlot);
 
         void teleport(irr::core::vector3df position);
 

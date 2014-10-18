@@ -28,8 +28,20 @@ class MainEventReceiver : public irr::IEventReceiver {
         bool MouseIsDown[2];
 
         bool PrevKeyIsDown[irr::KEY_KEY_CODES_COUNT];
+        bool PrevMouseIsDown[2];
+
+        bool MouseDoubleClick[2];
         irr::core::position2di MousePosition;
+
+        irr::u32 lastMouseClick;
+
+        irr::ITimer* timer;
+        irr::u32 time1[2],time2[2];
     public:
+		void setTimer(irr::ITimer* inTimer) {
+			timer=inTimer;
+		}
+
         virtual bool OnEvent(const irr::SEvent& event) {
             if (event.EventType == irr::EET_KEY_INPUT_EVENT) {
                 KeyIsDown[event.KeyInput.Key] = event.KeyInput.PressedDown;
@@ -39,10 +51,14 @@ class MainEventReceiver : public irr::IEventReceiver {
                 switch(event.MouseInput.Event) {
                     case irr::EMIE_LMOUSE_PRESSED_DOWN:
                         MouseIsDown[0] = true;
+                        time2[0]=time1[0]; time1[0]=timer->getRealTime();
+                        if (time1[0]-time2[0]<=500) { MouseDoubleClick[0]=true; }
                     break;
 
                     case irr::EMIE_RMOUSE_PRESSED_DOWN:
                         MouseIsDown[1] = true;
+                        time2[1]=time1[1]; time1[1]=timer->getRealTime();
+                        if (time1[1]-time2[1]<=500) MouseDoubleClick[1]=true;
                     break;
 
                     case irr::EMIE_LMOUSE_LEFT_UP:
@@ -62,6 +78,7 @@ class MainEventReceiver : public irr::IEventReceiver {
 
                     break;
                 }
+                return true;
             }
             return false;
         }
@@ -72,20 +89,30 @@ class MainEventReceiver : public irr::IEventReceiver {
         virtual bool IsPrevKeyDown(irr::EKEY_CODE keyCode) const {
             return PrevKeyIsDown[keyCode];
         }
-        virtual void CopyToPrevKeys() {
-            memcpy(PrevKeyIsDown,KeyIsDown,sizeof(PrevKeyIsDown));
-        }
         virtual bool IsMouseDown(unsigned char keyCode) const {
             return MouseIsDown[keyCode];
+        }
+        virtual bool IsPrevMouseDown(unsigned char keyCode) const {
+            return PrevMouseIsDown[keyCode];
+        }
+        virtual bool IsDoubleClick(unsigned char keyCode) const {
+            return MouseDoubleClick[keyCode];
         }
         virtual irr::core::position2di getMousePos() const {
             return MousePosition;
         }
 
+		void perLoopUpdate() {
+			MouseDoubleClick[0]=MouseDoubleClick[1]=false;
+			memcpy(PrevKeyIsDown,KeyIsDown,sizeof(PrevKeyIsDown));
+            memcpy(PrevMouseIsDown,MouseIsDown,sizeof(PrevMouseIsDown));
+		}
+
         MainEventReceiver() {
             memset(KeyIsDown, false, sizeof(KeyIsDown));
             memset(PrevKeyIsDown, false, sizeof(PrevKeyIsDown));
             memset(MouseIsDown, false, sizeof(MouseIsDown));
+            memset(PrevMouseIsDown, false, sizeof(PrevMouseIsDown));
             MousePosition = irr::core::position2di(0,0);
         }
 };
@@ -147,6 +174,7 @@ class world {
         static const unsigned char PAUSEOPEN;
         static const unsigned char INVOPEN;
         irr::video::ITexture* invImgs[10];
+        unsigned char dragItem = 10;
 
         void draw3D();
         void drawHUD();

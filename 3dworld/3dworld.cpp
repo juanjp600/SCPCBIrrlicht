@@ -35,6 +35,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     irrFileSystem = irrDevice->getFileSystem();
 
     irrTimer = irrDevice->getTimer();
+    irrReceiver->setTimer(irrTimer);
 
 	font1 = irr::gui::CGUITTFont::createTTFont(irrEnv, "test/arial.ttf", 16, true, true);
 
@@ -295,6 +296,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     //dynamics->addTriMesh_static(node);
 
 	irrDevice->getCursorControl()->setVisible(false);
+	irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
 
 	for (int y=19;y>=0;y--) {
 		for (int x=19;x>=0;x--) {
@@ -366,9 +368,12 @@ world::~world() {
     //smgr->drop();
     //driver->drop();
     irrDevice->drop();
+    sound::killSounds();
 }
 
 bool world::run() {
+
+	std::cout<<irrReceiver->IsMouseDown(0)<<"\n";
 
 	if (prevTime==0) { FPSfactor = 1.0; } else {
 		FPSfactor = (irrTimer->getRealTime()-prevTime)/(1000.0/70.0);
@@ -458,6 +463,7 @@ bool world::run() {
 					invImgs[i]=irrDriver->getTexture(imgpath.c_str());
 				}
 			}
+			irrDevice->getCursorControl()->setVisible(true);
 		}
 	} else {
 		FPSfactor = 0.f;
@@ -475,6 +481,8 @@ bool world::run() {
 						invImgs[i]=nullptr;
 					}
 				}
+				irrDevice->getCursorControl()->setVisible(false);
+				irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
 			}
 		}
 	}
@@ -489,7 +497,7 @@ bool world::run() {
 	if (irrTimer->getRealTime()-prevTime<17) irrDevice->sleep(17-(irrTimer->getRealTime()-prevTime));
 
 	sound::processDrops();
-	irrReceiver->CopyToPrevKeys();
+	irrReceiver->perLoopUpdate();
     return irrDevice->run();
 }
 
@@ -503,13 +511,16 @@ void world::draw3D() {
 void world::drawHUD() {
 	float BlinkTimer = mainPlayer->BlinkTimer;
     if (BlinkTimer<0) {
-        double darkA;
-        if (mainPlayer->BlinkTimer>-0.44625) {
-            darkA = std::max(darkA,std::sin(-BlinkTimer*201.68));
-        } else if (mainPlayer->BlinkTimer>-1.33875) {
-            darkA = std::max(darkA,std::abs(std::sin(BlinkTimer*201.68)));
+        float darkA;
+        if (mainPlayer->BlinkTimer>=-0.5f) {
+			darkA = std::max(0.f,std::min(-mainPlayer->BlinkTimer*2.f,1.f));
+        } else if (mainPlayer->BlinkTimer>=-1.0f) {
+            darkA = std::max(0.f,std::min(1.f+(mainPlayer->BlinkTimer+0.5f)*2.f,1.f));
         }
-        irrDriver->draw2DRectangle(irr::video::SColor(std::min(255.0,darkA*255.0),0,0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight));
+        darkA = 1.f-darkA;
+        darkA *= darkA;
+        darkA = 1.f-darkA;
+        irrDriver->draw2DRectangle(irr::video::SColor(std::min(255.f,darkA*255.f),0,0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight));
     }
     irrDriver->draw2DImage(blurImage2,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(std::min(blurAlpha/FPSfactor,200.0f),255,255,255), false);
     irrDriver->setRenderTarget(0); //draw to screen
@@ -551,14 +562,80 @@ void world::drawHUD() {
 			w = 64;
 			h = 64;
 			irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,255),irr::core::recti(irr::core::position2di(x-2,y-2),irr::core::position2di(x+w+2,y+h+2)));
-			if (invImgs[i]!=nullptr) {
+			if (invImgs[i]!=nullptr && i!=dragItem) {
 				irrDriver->draw2DImage(invImgs[i],irr::core::position2di(x,y),irr::core::rect<irr::s32>(0,0,w,h));
 				if (irrReceiver->getMousePos().X>x && irrReceiver->getMousePos().X<x+w && irrReceiver->getMousePos().Y>y && irrReceiver->getMousePos().Y<y+h) {
+					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x+2,y+h+8),irr::core::position2di(x+w+2,y+h+24)),irr::video::SColor(100,0,0,0),true,true);
 					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x,y+h+6),irr::core::position2di(x+w,y+h+22)),irr::video::SColor(255,255,255,255),true,true);
+					if (irrReceiver->IsDoubleClick(0)) {
+						menusOpen=0;
+					} else if (irrReceiver->IsMouseDown(0) && dragItem>=inventory_size) {
+						dragItem = i;
+					}
 				}
 			} else {
 				irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(irr::core::position2di(x,y),irr::core::position2di(x+w,y+h)));
 			}
+		}
+		if (dragItem<inventory_size) {
+			if (invImgs[dragItem]==nullptr) {
+				dragItem = inventory_size;
+			} else {
+				int x,y,w,h;
+				unsigned int dist = 100;
+				unsigned char targetSlot = inventory_size;
+				for (unsigned char i=0;i<inventory_size;i++) {
+					x = mainWidth/2-(90*inventory_size/4)+(i%5*90);
+					y = mainHeight/2-(90*inventory_size/10)+(i/5*90);
+					w = 64;
+					h = 64;
+
+					int xd,yd;
+					xd = x+w/2-irrReceiver->getMousePos().X;
+					yd = y+h/2-irrReceiver->getMousePos().Y;
+
+					if ((irr::u32)irr::core::squareroot(xd*xd+yd*yd)<dist) {
+						std::cout<<irr::core::squareroot(xd*xd+yd*yd)<<"\n";
+						dist = irr::core::squareroot(xd*xd+yd*yd);
+						targetSlot = i;
+					}
+				}
+				if (targetSlot<inventory_size) {
+					x = mainWidth/2-(90*inventory_size/4)+(targetSlot%5*90);
+					y = mainHeight/2-(90*inventory_size/10)+(targetSlot/5*90);
+					w = 64;
+					h = 64;
+					irrDriver->draw2DImage(invImgs[dragItem],irr::core::position2di(x,y),irr::core::rect<irr::s32>(0,0,w,h),nullptr,irr::video::SColor(100,255,255,255));
+				}
+				x = irrReceiver->getMousePos().X-32;
+				y = irrReceiver->getMousePos().Y-32;
+				irrDriver->draw2DImage(invImgs[dragItem],irr::core::position2di(x,y),irr::core::rect<irr::s32>(0,0,w,h));
+				if (!irrReceiver->IsMouseDown(0)) {
+					if (targetSlot<inventory_size) {
+						if (mainPlayer->moveToSlot(dragItem,targetSlot)==1) {
+							invImgs[targetSlot] = invImgs[dragItem];
+							invImgs[dragItem] = nullptr;
+						}
+					} else {
+						mainPlayer->takeFromInventory(dragItem);
+						menusOpen=0;
+					}
+					dragItem = inventory_size;
+				}
+			}
+		}
+		if (menusOpen==0) {
+			for (unsigned char i=0;i<inventory_size;i++) {
+				if (invImgs[i]!=nullptr) {
+					irrDriver->removeTexture(invImgs[i]);
+					for (unsigned char j=0;j<inventory_size;j++) {
+						if (invImgs[j]==invImgs[i] && i!=j) invImgs[j]=nullptr;
+					}
+					invImgs[i]=nullptr;
+				}
+			}
+			irrDevice->getCursorControl()->setVisible(false);
+			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
 		}
 	}
 }

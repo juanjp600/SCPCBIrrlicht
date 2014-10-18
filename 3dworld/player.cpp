@@ -66,15 +66,15 @@ void player::update() {
 
 	float fpsFactor = owner->getFPSfactor();
 
-	BlinkTimer-=fpsFactor*0.09;
+	BlinkTimer-=fpsFactor*0.09f;
 
-    if (BlinkTimer<=-1.785) {
-        BlinkTimer = 100;
+    if (BlinkTimer<=-1.f) {
+        BlinkTimer = 100.f;
     }
 
     if (irrReceiver->IsKeyDown(irr::KEY_SPACE)) {
-        if (BlinkTimer>0) { BlinkTimer = 0.0; }
-        if (BlinkTimer<-0.8925) { BlinkTimer = -0.8925; }
+        if (BlinkTimer>0.f) { BlinkTimer = 0.f; }
+        if (BlinkTimer<-0.5f) { BlinkTimer = -0.5f; }
     }
 
     while (yaw>180.0) { yaw-=360.0; }
@@ -421,4 +421,17 @@ std::string player::getItemInvImg(unsigned char slot) {
 	slot%=inventory_size;
 	if (inventory[slot]==nullptr) return std::string("");
 	return inventory[slot]->getInvImgPath();
+}
+
+unsigned char player::moveToSlot(unsigned char srcSlot,unsigned char destSlot) {
+	srcSlot%=inventory_size; destSlot%=inventory_size;
+	if (inventory[srcSlot]==nullptr) return 0;
+	if (inventory[destSlot]==nullptr) {
+		inventory[destSlot]=inventory[srcSlot];
+		inventory[srcSlot]=nullptr;
+		return 1;
+	} else { //TODO: add item combination
+
+		return 2;
+	}
 }
