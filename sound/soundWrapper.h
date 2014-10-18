@@ -51,7 +51,7 @@ class sound {
 		static bool initSounds(); //initialize OpenAl
 		static void killSounds(); //Destroy context, device and sounds
 
-		static sound* getSound(const std::string &filename,bool isPanned=true); //load sound if it's not loaded
+		static sound* getSound(const std::string &filename,bool isPanned=true,unsigned char categ=0); //load sound if it's not loaded
 
 		void drop(); //when you don't use the sound, drop it
 		void grab(); //grab the sound when you want to keep it after it's been dropped
@@ -59,11 +59,14 @@ class sound {
 		bool isLoop() { return looped; } //is the sound looping?
 		bool isPanned() { return panned; } //can the sound use OpenAL's automatic attenuation and panning?
 
-		unsigned char playSound(bool isLooping=false); //start playing sound with no distance from the listener
-		unsigned char playSound(const irr::core::vector3df &sourcePos,float near,float far,bool isLooping=false); //start playing sound at a specific position and attenuation
+		unsigned char playSound(bool isLooping=false,float gain=1.f); //start playing sound with no distance from the listener
+		unsigned char playSound(const irr::core::vector3df &sourcePos,float near,float far,bool isLooping=false,float gain=1.f); //start playing sound at a specific position and attenuation
 
 		void pauseSound(unsigned char sourceNum); //pause the specified source
 		void pauseSound(); //pause all sources used by the sound
+
+		void setGain(unsigned char sourceNum); //set the gain for the specific source
+		void setGain(); //set the gain for all sources used by the sound
 
 		static void freezeCategory(unsigned char categ); //freeze a category of sounds
 		static void unfreezeCategory(unsigned char categ); //unfreeze a category of sounds, only sounds that were playing will be resumed

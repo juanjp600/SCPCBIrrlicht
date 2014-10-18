@@ -47,6 +47,7 @@ bool sound::initSounds() {
 				std::cout<<"Error generating source "<<i<<"\n";
 				return false;
 			}
+			sound::playingSounds[i] = nullptr;
 		}
 
 		alListener3f(AL_POSITION,0.0f,0.0f,0.0f);
@@ -137,7 +138,7 @@ bool sound::loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum
 sound::sound() {}
 sound::~sound() {}
 
-sound* sound::getSound(const std::string &filename,bool isPanned) {
+sound* sound::getSound(const std::string &filename,bool isPanned,unsigned char categ) {
 	if (!sound::isActive()) return nullptr;
 	for (unsigned int i=0;i<sound::loadedSounds.size();i++) {
 		if (sound::loadedSounds[i]->name == filename && isPanned==sound::loadedSounds[i]->panned) {
@@ -153,7 +154,7 @@ sound* sound::getSound(const std::string &filename,bool isPanned) {
 
 		newSound->grabs = 0;
 		newSound->grab();
-		newSound->category = 0; //default category
+		newSound->category = categ;
 
 		newSound->panned = isPanned;
 
@@ -207,7 +208,7 @@ void sound::grab() {
 	grabs++;
 }
 
-unsigned char sound::playSound(const irr::core::vector3df &sourcePos,float near,float far,bool isLooping) {
+unsigned char sound::playSound(const irr::core::vector3df &sourcePos,float near,float far,bool isLooping,float gain) {
 	if (!sound::isActive()) return 0;
 	if (this==nullptr) return 0;
 	if (sound::frozenCategories & (1<<category)) return 0;
@@ -231,6 +232,7 @@ unsigned char sound::playSound(const irr::core::vector3df &sourcePos,float near,
 		alSourcef(selectedSound, AL_MAX_DISTANCE, far);
 		alSource3f(selectedSound,AL_POSITION,sourcePos.X,sourcePos.Y,sourcePos.Z);
 		alSourcei(selectedSound,AL_LOOPING,isLooping);
+		alSourcef(sources[i],AL_GAIN,gain);
 		alSourceRewind(selectedSound);
 		alSourcePlay(selectedSound);
 		sound::playingSounds[i] = this;
@@ -242,7 +244,7 @@ unsigned char sound::playSound(const irr::core::vector3df &sourcePos,float near,
 	}
 }
 
-unsigned char sound::playSound(bool isLooping) {
+unsigned char sound::playSound(bool isLooping,float gain) {
 	if (!sound::isActive()) return 0;
 	if (this==nullptr) return 0;
 	if (sound::frozenCategories & (1<<category)) return 0;
@@ -266,6 +268,7 @@ unsigned char sound::playSound(bool isLooping) {
 		alSourcef(selectedSound, AL_MAX_DISTANCE, 200.f);
 		alSource3f(selectedSound,AL_POSITION,0.f,0.f,0.f);
 		alSourcei(selectedSound,AL_LOOPING,isLooping);
+		alSourcef(sources[i],AL_GAIN,gain);
 		alSourceRewind(selectedSound);
 		alSourcePlay(selectedSound);
 		sound::playingSounds[i] = this;
@@ -298,13 +301,15 @@ void sound::freezeCategory(unsigned char categ) {
 	if (!(sound::frozenCategories & (1<<categ))) {
 		sound::frozenCategories = (sound::frozenCategories | (1<<categ));
 		for (unsigned int i=0;i<sourceCount;i++) {
-			if (sound::playingSounds[i]->category==categ) {
-				ALint state;
+			if (sound::playingSounds[i]!=nullptr) {
+				if (sound::playingSounds[i]->category==categ) {
+					ALint state;
 
-				alGetSourcei(sound::sources[i], AL_SOURCE_STATE, &state);
+					alGetSourcei(sound::sources[i], AL_SOURCE_STATE, &state);
 
-				if (state == AL_PLAYING) {
-					alSourcePause(sound::sources[i]);
+					if (state == AL_PLAYING) {
+						alSourcePause(sound::sources[i]);
+					}
 				}
 			}
 		}
@@ -316,13 +321,15 @@ void sound::unfreezeCategory(unsigned char categ) {
 	if (sound::frozenCategories & (1<<categ)) {
 		sound::frozenCategories = (sound::frozenCategories ^ (1<<categ));
 		for (unsigned int i=0;i<sourceCount;i++) {
-			if (sound::playingSounds[i]->category==categ) {
-				ALint state;
+			if (sound::playingSounds[i]!=nullptr) {
+				if (sound::playingSounds[i]->category==categ) {
+					ALint state;
 
-				alGetSourcei(sound::sources[i], AL_SOURCE_STATE, &state);
+					alGetSourcei(sound::sources[i], AL_SOURCE_STATE, &state);
 
-				if (state == AL_PAUSED && sound::pauseState[i] == false) {
-					alSourcePlay(sound::sources[i]);
+					if (state == AL_PAUSED && sound::pauseState[i] == false) {
+						alSourcePlay(sound::sources[i]);
+					}
 				}
 			}
 		}

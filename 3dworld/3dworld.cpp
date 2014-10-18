@@ -59,6 +59,10 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     LightsShader = irrGpu->addHighLevelShaderMaterialFromFiles("LightingVert.txt", "main", irr::video::EVST_VS_1_1,"LightingFrag.txt", "main", irr::video::EPST_PS_1_1,LightsCallback, irr::video::EMT_SOLID);
     LightsCallback->fvAmbient = irr::video::SColor(255,20,20,20);
 
+	PostProcShader = irr::video::EMT_SOLID; // Fallback material type
+    PostProcCallback= new PostProcShaderCallBack;
+    PostProcShader = irrGpu->addHighLevelShaderMaterialFromFiles("PostProcessVert.txt", "main", irr::video::EVST_VS_1_1,"PostProcessFrag.txt", "main", irr::video::EPST_PS_1_1,NormalsCallback, irr::video::EMT_SOLID);
+
     blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
     blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
     BlinkMeterIMG = irrDriver->getTexture("test/BlinkMeter.jpg");
@@ -373,8 +377,6 @@ world::~world() {
 
 bool world::run() {
 
-	std::cout<<irrReceiver->IsMouseDown(0)<<"\n";
-
 	if (prevTime==0) { FPSfactor = 1.0; } else {
 		FPSfactor = (irrTimer->getRealTime()-prevTime)/(1000.0/70.0);
 	}
@@ -408,7 +410,6 @@ bool world::run() {
 				if (mainPlayer->takeFromInventory(i)) break;
 			}
 		}
-		//std::cout<<mainPlayer->seesMeshNode(mainPlayer->testNode)<<"\n";
 
 		mainPlayer->updateHead();
 
@@ -456,6 +457,7 @@ bool world::run() {
 
 		if (irrReceiver->IsKeyDown(irr::KEY_TAB) && !irrReceiver->IsPrevKeyDown(irr::KEY_TAB)) {
 			menusOpen = INVOPEN;
+			sound::freezeCategory(1);
 			for (unsigned char i=0;i<inventory_size;i++) {
 				invImgs[i]=nullptr;
 				std::string imgpath = mainPlayer->getItemInvImg(i);
@@ -466,12 +468,13 @@ bool world::run() {
 			irrDevice->getCursorControl()->setVisible(true);
 		}
 	} else {
-		FPSfactor = 0.f;
+		//FPSfactor = 0.f;
 
 		dynamics->resetTimer(irrTimer->getRealTime());
 		if (menusOpen==INVOPEN) {
 			if (irrReceiver->IsKeyDown(irr::KEY_TAB) && !irrReceiver->IsPrevKeyDown(irr::KEY_TAB)) {
 				menusOpen = 0;
+				sound::unfreezeCategory(1);
 				for (unsigned char i=0;i<inventory_size;i++) {
 					if (invImgs[i]!=nullptr) {
 						irrDriver->removeTexture(invImgs[i]);
@@ -506,10 +509,7 @@ void world::draw3D() {
     irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
     irrSmgr->drawAll();
-}
-
-void world::drawHUD() {
-	float BlinkTimer = mainPlayer->BlinkTimer;
+    float BlinkTimer = mainPlayer->BlinkTimer;
     if (BlinkTimer<0) {
         float darkA;
         if (mainPlayer->BlinkTimer>=-0.5f) {
@@ -525,12 +525,48 @@ void world::drawHUD() {
     irrDriver->draw2DImage(blurImage2,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(std::min(blurAlpha/FPSfactor,200.0f),255,255,255), false);
     irrDriver->setRenderTarget(0); //draw to screen
     irrDriver->clearZBuffer();
-    irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
-	std::string fpsStr;
+    /*irr::core::triangle3df tri1,tri2;
+    tri1.pointA.X = 0.f; tri1.pointA.Y = 0.f; tri1.pointA.Z = 100.f;
+    tri1.pointB.X = 0.f; tri1.pointB.Y = 1.f; tri1.pointB.Z = 100.f;
+    tri1.pointC.X = 1.f; tri1.pointC.Y = 0.f; tri1.pointC.Z = 100.f;*/
+    irr::video::SMaterial material;
+    material.MaterialType = (irr::video::E_MATERIAL_TYPE)PostProcShader;
+	material.setTexture(0,blurImage);
+	material.Lighting = false;
+	material.Wireframe=false;
+
+	irrDriver->setMaterial(material);
+	//irrDriver->setTransform(irr::video::ETS_WORLD, irr::core::IdentityMatrix);
+
+	irr::video::S3DVertex verts[4];
+	verts[0]=irr::video::S3DVertex(irr::core::vector3df(0.f,0.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,0,0),irr::core::vector2df(0.f,0.f));
+	verts[1]=irr::video::S3DVertex(irr::core::vector3df(1.f,0.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,0,0,255),irr::core::vector2df(1.f,0.f));
+	verts[2]=irr::video::S3DVertex(irr::core::vector3df(0.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,0),irr::core::vector2df(0.f,1.f));
+	verts[3]=irr::video::S3DVertex(irr::core::vector3df(1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,0,255,0),irr::core::vector2df(1.f,1.f));
+	irr::u16 inds[] {
+		1,0,2,
+		2,3,1
+	};
+
+	//irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
+	irrDriver->drawVertexPrimitiveList(verts,4,inds,2,irr::video::EVT_STANDARD);
+
+	//irrDriver->draw3DTriangle(tri1, irr::video::SColor(255,255,0,0));
+}
+
+void world::drawHUD() {
+	/*std::string fpsStr;
 	fpsStr = "FPS: ";
 	fpsStr += std::to_string(irrDriver->getFPS());
 	font1->draw(fpsStr.c_str(),irr::core::rect<irr::s32>(mainWidth/2+2,mainHeight+2,mainWidth/2+2,mainHeight/2+102),irr::video::SColor(150,0,0,0),true,true);
-	font1->draw(fpsStr.c_str(),irr::core::rect<irr::s32>(mainWidth/2,mainHeight,mainWidth/2,mainHeight/2+100),irr::video::SColor(255,255,255,255),true,true);
+	font1->draw(fpsStr.c_str(),irr::core::rect<irr::s32>(mainWidth/2,mainHeight,mainWidth/2,mainHeight/2+100),irr::video::SColor(255,255,255,255),true,true);*/
+	if (hudMsgTimer>0.f) {
+		hudMsgTimer-=getFPSfactor();
+
+		float alpha = std::min(std::max(hudMsgTimer*0.01f,0.f),1.f);
+		font1->draw(hudMsg.c_str(),irr::core::rect<irr::s32>(mainWidth/2+2,mainHeight+2,mainWidth/2+2,mainHeight/2+102),irr::video::SColor(150*alpha,0,0,0),true,true);
+		font1->draw(hudMsg.c_str(),irr::core::rect<irr::s32>(mainWidth/2,mainHeight,mainWidth/2,mainHeight/2+100),irr::video::SColor(255*alpha,255,255,255),true,true);
+	}
 
     //Blink meter
     irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80,mainHeight-95),irr::core::position2d<irr::s32>(284,mainHeight-95),irr::video::SColor(255,255,255,255));
@@ -595,7 +631,6 @@ void world::drawHUD() {
 					yd = y+h/2-irrReceiver->getMousePos().Y;
 
 					if ((irr::u32)irr::core::squareroot(xd*xd+yd*yd)<dist) {
-						std::cout<<irr::core::squareroot(xd*xd+yd*yd)<<"\n";
 						dist = irr::core::squareroot(xd*xd+yd*yd);
 						targetSlot = i;
 					}
@@ -611,20 +646,26 @@ void world::drawHUD() {
 				y = irrReceiver->getMousePos().Y-32;
 				irrDriver->draw2DImage(invImgs[dragItem],irr::core::position2di(x,y),irr::core::rect<irr::s32>(0,0,w,h));
 				if (!irrReceiver->IsMouseDown(0)) {
-					if (targetSlot<inventory_size) {
-						if (mainPlayer->moveToSlot(dragItem,targetSlot)==1) {
-							invImgs[targetSlot] = invImgs[dragItem];
-							invImgs[dragItem] = nullptr;
+					if (targetSlot!=dragItem) {
+						if (targetSlot<inventory_size) {
+							if (mainPlayer->moveToSlot(dragItem,targetSlot)==1) {
+								invImgs[targetSlot] = invImgs[dragItem];
+								invImgs[dragItem] = nullptr;
+							} else {
+								hudMsg = "This item can't be used this way";
+								hudMsgTimer = 70.f*2.f;
+							}
+						} else {
+							mainPlayer->takeFromInventory(dragItem);
+							menusOpen=0;
 						}
-					} else {
-						mainPlayer->takeFromInventory(dragItem);
-						menusOpen=0;
 					}
 					dragItem = inventory_size;
 				}
 			}
 		}
 		if (menusOpen==0) {
+			sound::unfreezeCategory(1);
 			for (unsigned char i=0;i<inventory_size;i++) {
 				if (invImgs[i]!=nullptr) {
 					irrDriver->removeTexture(invImgs[i]);

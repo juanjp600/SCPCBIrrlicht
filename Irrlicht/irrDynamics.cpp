@@ -52,6 +52,10 @@ void irrDynamics::simStep(u32 curTimeStamp,float prec) {
     lastStep = curTimeStamp;
 }
 
+void irrDynamics::resetTimer(u32 curTimeStamp) {
+	lastStep = curTimeStamp;
+}
+
 void irrDynamics::shutdown() {
     clearObjects();
     delete world;
@@ -506,15 +510,15 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     btConvexHullShape *mShape = new btConvexHullShape();
 
 	float oRadius = radius;
-	height-=oRadius*0.75f;
-	radius-=oRadius*0.75f;
+	height-=oRadius*0.6f;
+	radius-=oRadius*0.6f;
 	for (int i=0;i<90;i++) {
 		float fi = (float)i*4.f*irr::core::DEGTORAD;
 		mShape->addPoint(btVector3(std::cos(fi)*0.2f*radius,-height*0.5f,std::sin(fi)*0.2f*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.9f,std::sin(fi)*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
 	}
-	mShape->setMargin(oRadius-radius);
+	mShape->setMargin(oRadius*0.6f);
 
     // Add mass
     btVector3 localInertia;
@@ -522,8 +526,8 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
 
     // Create the rigid body object
     btRigidBody *rigidBody = new btRigidBody(mass, motionState, mShape, localInertia);
-    //rigidBody->setRestitution(10.0f);
-    //rigidBody->setContactProcessingThreshold(btScalar(3.0f));
+    rigidBody->setRestitution(0.0f);
+    rigidBody->setContactProcessingThreshold(btScalar(4.0f));
 
     // Add it to the world
     world->addRigidBody(rigidBody,group,mask);

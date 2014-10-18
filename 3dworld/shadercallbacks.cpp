@@ -18,6 +18,24 @@ void RoomShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* s
 	services->setPixelShaderConstant("Texture2", &TextureLayerID3, 1);
 }
 
+void PostProcShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+	//irr::video::IVideoDriver* driver = services->getVideoDriver();
+
+	/*irr::core::matrix4 worldViewProj;
+	worldViewProj = driver->getTransform(irr::video::ETS_PROJECTION);
+	worldViewProj *= driver->getTransform(irr::video::ETS_VIEW);
+	worldViewProj *= driver->getTransform(irr::video::ETS_WORLD);
+
+	services->setVertexShaderConstant("mWorldViewProj", worldViewProj.pointer(), 16);*/
+
+	irr::s32 TextureLayerID = 0;
+	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
+	/*irr::s32 TextureLayerID2 = 1;
+	services->setPixelShaderConstant("Texture1", &TextureLayerID2, 1);
+	irr::s32 TextureLayerID3 = 2;
+	services->setPixelShaderConstant("Texture2", &TextureLayerID3, 1);*/
+}
+
 void NormalsShaderCallBack::setLights(const std::vector<irr::video::SLight> &inList) {
 	lightList.resize(inList.size());
 	for (unsigned int i=0;i<lightList.size();i++) {

@@ -1,0 +1,23 @@
+uniform sampler2D Texture0;
+varying vec4 tcoords;
+void main(void) {
+	vec2 ntcoords = tcoords.xy;
+	
+	float dx = ntcoords.x-0.5;
+	float dy = ntcoords.y-0.5;
+	float dist = sqrt(dx*dx+dy*dy);
+	dist *= dist * 15.0;
+	
+	//ntcoords.x += mod(tcoords.y,0.01);
+	//ntcoords.y += mod(tcoords.x,0.01);
+	vec4 color = texture2D(Texture0, ntcoords) * 0.1;
+	color += texture2D(Texture0, clamp(ntcoords+vec2(0.001*dist),0.0,1.0)) * 0.225;
+	color += texture2D(Texture0, clamp(ntcoords-vec2(0.001*dist),0.0,1.0)) * 0.225;
+	color += texture2D(Texture0, clamp(ntcoords+vec2(0.001*dist,-0.001*dist),0.0,1.0)) * 0.225;
+	color += texture2D(Texture0, clamp(ntcoords-vec2(0.001*dist,-0.001*dist),0.0,1.0)) * 0.225;
+	//color *= 0.2;
+	
+	color = pow(color,vec4(1.0/1.5));
+	
+	gl_FragColor = vec4(color.xyz,1.0);
+}

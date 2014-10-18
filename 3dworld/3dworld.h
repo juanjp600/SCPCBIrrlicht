@@ -150,10 +150,11 @@ class world {
         irr::u32 prevTime = 0;
         float FPSfactor = 1;
 
-        irr::s32 RoomShader, NormalsShader, LightsShader;
+        irr::s32 RoomShader, NormalsShader, LightsShader, PostProcShader;
         RoomShaderCallBack* RoomCallback;
         NormalsShaderCallBack* NormalsCallback;
         LightsShaderCallBack* LightsCallback;
+        PostProcShaderCallBack* PostProcCallback;
 
         std::vector<item*> itemList;
         irr::scene::IMeshSceneNode* genItemNode(const std::string &meshPath,const std::string &texPath,float scale);
@@ -178,6 +179,9 @@ class world {
 
         void draw3D();
         void drawHUD();
+
+        std::string hudMsg = "";
+        float hudMsgTimer = 0.f;
     public:
         //main
         world(unsigned int width,unsigned int height,bool fullscreen = false);

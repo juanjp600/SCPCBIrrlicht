@@ -11,6 +11,12 @@ class RoomShaderCallBack : public irr::video::IShaderConstantSetCallBack {
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };
 
+class PostProcShaderCallBack : public irr::video::IShaderConstantSetCallBack {
+    public:
+
+		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
+};
+
 class NormalsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
     private:
 

@@ -13,18 +13,18 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     selfRotation.X = selfRotation.Y = selfRotation.Z = 0;
 
 	for (unsigned char i=0;i<5;i++) {
-		breathSound[i][0] = sound::getSound(std::string("SFX/9341/breath")+std::to_string(i)+std::string(".ogg"),false);
-		breathSound[i][1] = sound::getSound(std::string("SFX/9341/breath")+std::to_string(i)+std::string("gas.ogg"),false);
+		breathSound[i][0] = sound::getSound(std::string("SFX/9341/breath")+std::to_string(i)+std::string(".ogg"),false,1);
+		breathSound[i][1] = sound::getSound(std::string("SFX/9341/breath")+std::to_string(i)+std::string("gas.ogg"),false,1);
 	}
 
 	for (unsigned char i=0;i<4;i++) {
-		stepSound[0][0][i] = sound::getSound(std::string("SFX/Step")+std::to_string(i+1)+std::string(".ogg"),false);
-		stepSound[0][1][i] = sound::getSound(std::string("SFX/Run")+std::to_string(i+1)+std::string(".ogg"),false);
-		stepSound[1][0][i] = sound::getSound(std::string("SFX/StepMetal")+std::to_string(i+1)+std::string(".ogg"),false);
-		stepSound[1][1][i] = sound::getSound(std::string("SFX/RunMetal")+std::to_string(i+1)+std::string(".ogg"),false);
+		stepSound[0][0][i] = sound::getSound(std::string("SFX/Step")+std::to_string(i+1)+std::string(".ogg"),false,1);
+		stepSound[0][1][i] = sound::getSound(std::string("SFX/Run")+std::to_string(i+1)+std::string(".ogg"),false,1);
+		stepSound[1][0][i] = sound::getSound(std::string("SFX/StepMetal")+std::to_string(i+1)+std::string(".ogg"),false,1);
+		stepSound[1][1][i] = sound::getSound(std::string("SFX/RunMetal")+std::to_string(i+1)+std::string(".ogg"),false,1);
 		if (i<3) {
-			stepSound[2][0][i] = sound::getSound(std::string("SFX/StepPD")+std::to_string(i+1)+std::string(".ogg"),false);
-			stepSound[3][1][i] = sound::getSound(std::string("SFX/StepForest")+std::to_string(i+1)+std::string(".ogg"),false);
+			stepSound[2][0][i] = sound::getSound(std::string("SFX/StepPD")+std::to_string(i+1)+std::string(".ogg"),false,1);
+			stepSound[3][1][i] = sound::getSound(std::string("SFX/StepForest")+std::to_string(i+1)+std::string(".ogg"),false,1);
 		}
 	}
 
@@ -98,7 +98,7 @@ void player::update() {
     if (speed[1]-20.f>prevLinearVelocity[1]) {
 		if (dynamics->rayTest(Capsule->getCenterOfMassPosition(),Capsule->getCenterOfMassPosition()-btVector3(0,height/2.f,0))) {
 			unsigned char chosen = rand()%4;
-			stepSound[owner->pickPlayerTriangle()][1][chosen]->playSound(false);
+			stepSound[owner->pickPlayerTriangle()][1][chosen]->playSound(false,3.f);
 		}
     }
 
@@ -167,7 +167,7 @@ void player::update() {
 
 			if ((prevShake<=270.f && shake>270.f) || (prevShake<=630.f && shake>630.f)) {
 				unsigned char chosen = rand()%4;
-				stepSound[owner->pickPlayerTriangle()][walkSpeed>40.f][chosen]->playSound(false);
+				stepSound[owner->pickPlayerTriangle()][walkSpeed>40.f][chosen]->playSound(false,std::min(walkSpeed/40.f,1.f));
 			}
 
 			dir-=90;
@@ -178,8 +178,6 @@ void player::update() {
 			} else {
 				walkingSpeed=std::min(walkingSpeed+(walkSpeed-walkingSpeed)*0.05f*fpsFactor,walkSpeed);
 			}
-
-			std::cout<<walkingSpeed<<"\n";
 
 			shakeFactor = walkSpeed;
 		} else {
@@ -209,7 +207,7 @@ void player::update() {
 				}
 			}
 		}
-		Capsule->setLinearVelocity(dynSpeed+btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale,0.f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale));
+		Capsule->setLinearVelocity(dynSpeed+btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale,0.01f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale));
 	} else {
 		Capsule->setFriction(3.0f);
 		Capsule->setRollingFriction(25.0f);
@@ -273,11 +271,8 @@ void player::update() {
 			Capsule->setGravity(btVector3(0.f,-450.f*RoomScale,0.f));
 		}
 	}
-	//std::cout<<Capsule->getCollisionShape()->getLocalScaling()[1]<<" "<<crouchState<<"\n";
 
 	prevLinearVelocity = Capsule->getLinearVelocity();
-
-    //std::cout<<"seesNode: "<<seesMeshNode(testNode)<<"\n";
 }
 
 void player::updateHead() {
@@ -432,6 +427,6 @@ unsigned char player::moveToSlot(unsigned char srcSlot,unsigned char destSlot) {
 		return 1;
 	} else { //TODO: add item combination
 
-		return 2;
+		return 0;//return 2;
 	}
 }
