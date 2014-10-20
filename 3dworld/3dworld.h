@@ -142,6 +142,8 @@ class world {
 
         irr::video::ITexture* blurImage;
         irr::video::ITexture* blurImage2;
+        irr::scene::IMeshSceneNode* screenQuad;
+        irr::video::ITexture* ZBuffer;
         unsigned char blurAlpha = 0;
 
         irr::video::ITexture* BlinkMeterIMG;
@@ -150,11 +152,12 @@ class world {
         irr::u32 prevTime = 0;
         float FPSfactor = 1;
 
-        irr::s32 RoomShader, NormalsShader, LightsShader, PostProcShader;
+        irr::s32 RoomShader, NormalsShader, LightsShader, PostProcShader, ZBufferShader;
         RoomShaderCallBack* RoomCallback;
         NormalsShaderCallBack* NormalsCallback;
         LightsShaderCallBack* LightsCallback;
         PostProcShaderCallBack* PostProcCallback;
+        ZBufferShaderCallBack* ZBufferCallback;
 
         std::vector<item*> itemList;
         irr::scene::IMeshSceneNode* genItemNode(const std::string &meshPath,const std::string &texPath,float scale);

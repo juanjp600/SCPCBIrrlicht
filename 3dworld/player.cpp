@@ -104,10 +104,10 @@ void player::update() {
 
 	shakeFactor = 0.f;
 
-	Capsule->setGravity(btVector3(0.f,-450.f*RoomScale,0.f));
+	Capsule->setGravity(btVector3(0.f,-450.f*RoomScale/std::max(fpsFactor,1.f),0.f));
 
     if (!dead) {
-		Capsule->setFriction(0.01f);
+		Capsule->setFriction(0.01f/fpsFactor);
 		sprintTimer=std::min(std::max(0.f,sprintTimer-0.1f*fpsFactor),10.f);
 		resetSpeeds();
 		if ((irrReceiver->IsKeyDown(irr::KEY_KEY_W)
@@ -115,7 +115,7 @@ void player::update() {
 			|| irrReceiver->IsKeyDown(irr::KEY_KEY_A)
 			|| irrReceiver->IsKeyDown(irr::KEY_KEY_D)
 			) && std::abs(speed[1]) < 20.f) {
-
+			Capsule->setLinearVelocity(btVector3(speed[0],speed[1]-(speed[1]*0.5f*fpsFactor),speed[2]));
 			float walkSpeed = 40.f;
 			if (crouchState<0.015f) {
 				if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
@@ -133,8 +133,9 @@ void player::update() {
 					} else if (Stamina<50.f) {
 						if (!breathSound[currBreathSound][0]->isPlaying()) {
 							currBreathSound = (rand()%3)+1;
-							breathSound[currBreathSound][0]->playSound(false);
+							breathSound[currBreathSound][0]->playSound(false,(50.f-Stamina)/50.f);
 						}
+						//Stamina = 100.f;
 					}
 				} else {
 					Stamina=std::min(Stamina+0.15f*fpsFactor,100.f);
@@ -182,11 +183,11 @@ void player::update() {
 			shakeFactor = walkSpeed;
 		} else {
 			Stamina=std::min(Stamina+0.15*fpsFactor,100.0);
-			if (std::abs(speed[1])<10.f) {
+			if (std::abs(speed[1])<15.f) {
 				walkingSpeed = walkingSpeed-(walkingSpeed*0.5f*fpsFactor);
 				if (walkingSpeed<=0.02f) walkingSpeed = 0.f;
 			} else {
-				if (walkingSpeed>=60.f) walkingSpeed=std::max(60.f,walkingSpeed-(walkingSpeed*0.5f*fpsFactor));
+				if (walkingSpeed>=70.f) walkingSpeed=std::max(60.f,walkingSpeed-(walkingSpeed*0.1f*fpsFactor));
 			}
 		}
 		if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
@@ -207,7 +208,7 @@ void player::update() {
 				}
 			}
 		}
-		Capsule->setLinearVelocity(dynSpeed+btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale,0.01f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale));
+		Capsule->setLinearVelocity(dynSpeed+btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale,0.f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale));
 	} else {
 		Capsule->setFriction(3.0f);
 		Capsule->setRollingFriction(25.0f);

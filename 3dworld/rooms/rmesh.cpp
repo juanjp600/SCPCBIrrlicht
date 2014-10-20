@@ -361,7 +361,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
         mesh->recalculateBoundingBox();
         retRMesh->mesh = mesh;
         retRMesh->shape = new btBvhTriangleMeshShape(pTriMesh, true);
-        retRMesh->shape->setMargin(0.7f);
+        retRMesh->shape->setMargin(2.0f);
         file->drop();
         return retRMesh;
 

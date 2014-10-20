@@ -38,7 +38,7 @@ class player {
 
         bool lastMouseDown[2];
     public:
-        player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=26.0f,float radius=4.0f,float mass=5.0f);
+        player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=24.1f,float radius=3.2f,float mass=5.0f);
         //mass should stay low if you want the player to be able the climb up stairs
         ~player();
         void update(); void resetSpeeds(); void updateHead();
