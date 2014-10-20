@@ -129,5 +129,5 @@ void main(void)
 	if (Idiff4.z>1.0) fdiff4.yx += vec2(Idiff4.z-1.0);*/
 	
 	//gl_FragColor = vec4(1.0);
-	gl_FragColor = (fdiff1)*vec4(texture2D( baseMap, gl_TexCoord[0] ).xyz,1.0);
+	gl_FragColor = vec4(vec4(fdiff1)*vec4(texture2D( baseMap, gl_TexCoord[0].xy ).xyz,1.0));
 }
