@@ -142,6 +142,7 @@ class world {
 
         irr::video::ITexture* blurImage;
         irr::video::ITexture* blurImage2;
+        irr::video::ITexture* finalImage;
         irr::scene::IMeshSceneNode* screenQuad;
         irr::video::ITexture* ZBuffer;
         unsigned char blurAlpha = 0;
@@ -168,6 +169,7 @@ class world {
         room* addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone);
 
         irr::gui::CGUITTFont* font1;
+        irr::gui::CGUITTFont* font2;
 
         int ppx,ppy;
 
@@ -177,7 +179,11 @@ class world {
 
         static const unsigned char PAUSEOPEN;
         static const unsigned char INVOPEN;
+        irr::video::ITexture* pauseImgs[3];
         irr::video::ITexture* invImgs[10];
+
+        float scale2D = 1.f;
+
         unsigned char dragItem = 10;
 
         void draw3D();

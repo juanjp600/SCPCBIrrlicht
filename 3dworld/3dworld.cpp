@@ -13,6 +13,8 @@ const unsigned char world::INVOPEN = 2;
 world::world(unsigned int width,unsigned int height,bool fullscreen) {
     mainWidth = width; mainHeight = height;
 
+	scale2D = height/1024.f;
+
     irrDriverType = irr::video::EDT_OPENGL;
     irrReceiver = new MainEventReceiver;
     irrDevice = irr::createDevice(irrDriverType,irr::core::dimension2d<irr::u32>(width,height),32,fullscreen,false,true,irrReceiver);
@@ -24,7 +26,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	sound::initSounds();
 
-	menusOpen = INVOPEN;
+	menusOpen = 0;
 
 	//irrSmgr->setAmbientLight(irr::video::SColor(255,20,20,20));
 
@@ -37,7 +39,8 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     irrTimer = irrDevice->getTimer();
     irrReceiver->setTimer(irrTimer);
 
-	font1 = irr::gui::CGUITTFont::createTTFont(irrEnv, "test/arial.ttf", 16, true, true);
+	font1 = irr::gui::CGUITTFont::createTTFont(irrEnv, "GFX/cour.ttf", 16, true, true);
+	font2 = irr::gui::CGUITTFont::createTTFont(irrEnv, "GFX/cour.ttf", 64, true, true);
 
 	int seed = irrTimer->getRealTime();
 	std::cout<<"Seed: "<<seed<<"\n";
@@ -70,6 +73,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
     blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
     ZBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
+    finalImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
 
     irr::scene::SMesh* quadMesh = new irr::scene::SMesh();
 	irr::scene::SMeshBuffer* buf = new irr::scene::SMeshBuffer();
@@ -107,8 +111,8 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	screenQuad = irrSmgr->addMeshSceneNode(quadMesh);
 	screenQuad->setVisible(false);
 
-    BlinkMeterIMG = irrDriver->getTexture("test/BlinkMeter.jpg");
-    StaminaMeterIMG = irrDriver->getTexture("test/StaminaMeter.jpg");
+    BlinkMeterIMG = irrDriver->getTexture("GFX/BlinkMeter.jpg");
+    StaminaMeterIMG = irrDriver->getTexture("GFX/StaminaMeter.jpg");
 
     /*defItemParams.getNode = &irr::scene::ISceneManager::addMeshSceneNode;
     defItemParams.registerRBody = &irrDynamics::registerNewRBody;
@@ -351,7 +355,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 				//std::cout<<"Placed player at coords ["<<x<<"]["<<y<<"]\n";
 
 				//test node
-				irr::scene::IMesh* mesh1 = irrSmgr->getMesh("test/173_2.b3d");
+				irr::scene::IMesh* mesh1 = irrSmgr->getMesh("GFX/npcs/173_2.b3d");
 
 				node = irrSmgr->addMeshSceneNode(mesh1);
 
@@ -367,15 +371,15 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 				rbody->setAngularFactor(btVector3(0,0,0));
 				//rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
 
-				node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/173_norm.jpg"));
-				node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/173_Spec.jpg"));
+				node->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/npcs/173_norm.jpg"));
+				node->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/npcs/173_Spec.jpg"));
 
 				node->getMaterial(0).EmissiveColor = irr::video::SColor(100,100,100,100);
 
 				mainPlayer->testNode = node;
 				//------------
 
-				mesh1 = irrSmgr->getMesh("test/scp-066.b3d");
+				mesh1 = irrSmgr->getMesh("GFX/npcs/scp-066.b3d");
 
 				node = irrSmgr->addMeshSceneNode(mesh1);
 
@@ -388,11 +392,11 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 				rbody->setDamping(0,0);
 				node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
-				node->getMaterial(0).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
-				node->getMaterial(0).setTexture(2, irrDriver->getTexture("test/scp-066_specular.png"));
+				node->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/npcs/scp-066_normal.png"));
+				node->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/npcs/scp-066_specular.png"));
 				node->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
-				node->getMaterial(1).setTexture(1, irrDriver->getTexture("test/scp-066_normal.png"));
-				node->getMaterial(1).setTexture(2, irrDriver->getTexture("test/scp-066_specular.png"));
+				node->getMaterial(1).setTexture(1, irrDriver->getTexture("GFX/npcs/scp-066_normal.png"));
+				node->getMaterial(1).setTexture(2, irrDriver->getTexture("GFX/npcs/scp-066_specular.png"));
 				node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)NormalsShader;
 
 				node->getMaterial(0).SpecularColor.set(0,0,0,0);
@@ -407,6 +411,9 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 		}
 	}
 
+	for (unsigned char i=0;i<3;i++) {
+		pauseImgs[i]=nullptr;
+	}
 	for (unsigned char i=0;i<inventory_size;i++) {
 		invImgs[i]=nullptr;
 	}
@@ -513,6 +520,10 @@ bool world::run() {
 			}
 			irrDevice->getCursorControl()->setVisible(true);
 		}
+		if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) {
+			menusOpen = PAUSEOPEN;
+			irrReceiver->perLoopUpdate();
+		}
 	} else {
 		//FPSfactor = 0.f;
 
@@ -555,7 +566,7 @@ void world::draw3D() {
 	PostProcCallback->fpsFactor = FPSfactor;
 
 	irrDriver->setRenderTarget(blurImage2); //copy the old render
-    irrDriver->draw2DImage(blurImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
+    irrDriver->draw2DImage(finalImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
     irrSmgr->drawAll();
     float BlinkTimer = mainPlayer->BlinkTimer;
@@ -575,20 +586,23 @@ void world::draw3D() {
 		PostProcCallback->minBlur = 0.f;
 		if (menusOpen!=0) PostProcCallback->minBlur = 2.f;
     }
-    irrDriver->draw2DImage(blurImage2,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(std::min(blurAlpha/FPSfactor,200.0f),255,255,255), false);
 
-    irrDriver->setRenderTarget(ZBuffer);
+    irrDriver->setRenderTarget(ZBuffer,true,true,irr::video::SColor(255,255,255,255)); //white = far
+
     irrDriver->getOverrideMaterial().EnableFlags = irr::video::EMF_MATERIAL_TYPE;
 	irrDriver->getOverrideMaterial().EnablePasses = irr::scene::ESNRP_SOLID;
 	irrDriver->getOverrideMaterial().Material.MaterialType = (irr::video::E_MATERIAL_TYPE)ZBufferShader;
 	irrSmgr->drawAll();
 	irrDriver->getOverrideMaterial().EnablePasses = 0;
 
-    irrDriver->setRenderTarget(0); //draw to screen
-    irrDriver->clearZBuffer();
+    irrDriver->setRenderTarget(finalImage); //draw to screen
+    //irrDriver->clearZBuffer();
 
 	screenQuad->render();
+	irrDriver->draw2DImage(blurImage2,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(std::min(blurAlpha/FPSfactor,200.0f),255,255,255), false);
 
+	irrDriver->setRenderTarget(0);
+	irrDriver->draw2DImage(finalImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
 }
 
 void world::drawHUD() {
@@ -709,6 +723,28 @@ void world::drawHUD() {
 			}
 			irrDevice->getCursorControl()->setVisible(false);
 			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
+		}
+	} else if (menusOpen==PAUSEOPEN) {
+		if (pauseImgs[0]==nullptr) {
+			pauseImgs[0] = irrDriver->getTexture("GFX/menu/pausemenu.jpg");
+			pauseImgs[1] = irrDriver->getTexture("GFX/menu/menublack.jpg");
+			pauseImgs[2] = irrDriver->getTexture("GFX/menu/menuwhite.jpg");
+		}
+		irr::video::SColor corners[] {
+			irr::video::SColor(255,255,255,255),
+			irr::video::SColor(255,255,255,255),
+			irr::video::SColor(255,255,255,255),
+			irr::video::SColor(255,255,255,255)
+		};
+
+		irrDriver->draw2DImage(pauseImgs[0],irr::core::recti(mainWidth/2-300*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2+300*scale2D),irr::core::recti(0,0,600,600),nullptr,corners);
+
+		if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = 0;
+
+		if (menusOpen!=PAUSEOPEN) {
+			irrDriver->removeTexture(pauseImgs[0]); pauseImgs[0]=nullptr;
+			irrDriver->removeTexture(pauseImgs[1]); pauseImgs[1]=nullptr;
+			irrDriver->removeTexture(pauseImgs[2]); pauseImgs[2]=nullptr;
 		}
 	}
 }
