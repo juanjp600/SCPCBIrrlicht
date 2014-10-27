@@ -176,11 +176,15 @@ class world {
         sound* ambient[3];
 
         unsigned char menusOpen = 0;
+        unsigned char prevMenusOpen = 0;
 
         static const unsigned char PAUSEOPEN;
         static const unsigned char INVOPEN;
+        static const unsigned char OPTIONSOPEN;
         irr::video::ITexture* pauseImgs[3];
         irr::video::ITexture* invImgs[10];
+
+        bool button(const std::string &text,int x,int y,int w,int h);
 
         float scale2D = 1.f;
 

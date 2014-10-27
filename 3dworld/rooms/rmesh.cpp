@@ -1,7 +1,7 @@
 #include "rmesh.h"
 #include "../3dworld.h"
 
-RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver) {
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::E_MATERIAL_TYPE RoomShader) {
 
     irr::io::IReadFile* file = fs->createAndOpenFile(path.c_str());
 
@@ -134,9 +134,41 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                             bufLM->getMaterial().setTexture(0,driver->getTexture(textureRead[1].c_str()));
                             bufLM->getMaterial().setTexture(1,driver->getTexture(textureRead[0].c_str()));
 
-                            //bufLM->getMaterial().Lighting = false;
-
-                            bufLM->getMaterial().MaterialType = irr::video::EMT_LIGHTMAP;
+							bufLM->getMaterial().MaterialType = irr::video::EMT_LIGHTMAP;
+                            if (textureRead[1]==path+"tilefloor.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/tilebump.jpg"));
+                            } else if (textureRead[1]==path+"concretefloor.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/concretefloorbump.jpg"));
+                            } else if (textureRead[1]==path+"whitewall.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/whitewallbump.jpg"));
+                            } else if (textureRead[1]==path+"metal3.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/metal3bump.jpg"));
+                            } else if (textureRead[1]==path+"vent.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/ventbump.jpg"));
+                            } else if (textureRead[1]==path+"dirtymetal.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/dirtymetalbump.jpg"));
+                            } else if (textureRead[1]==path+"misc.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/miscbump.jpg"));
+                            } else if (textureRead[1]==path+"rockmoss.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/rockmossbump.jpg"));
+                            } else if (textureRead[1]==path+"metalpanels.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/metalpanelsbump.jpg"));
+                            } else if (textureRead[1]==path+"metalpanels2.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/metalpanels2bump.jpg"));
+                            } else if (textureRead[1]==path+"concretewall.jpg") {
+								bufLM->getMaterial().MaterialType = RoomShader;
+								bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/concretewallbump.jpg"));
+                            }
 
                             bufLM->recalculateBoundingBox();
                         } else { //only one texture

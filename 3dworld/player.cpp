@@ -50,6 +50,26 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     }
 }
 
+player::~player() {
+	dynamics->unregisterRBody(Capsule);
+	if (irrSmgr->getActiveCamera()==Camera) irrSmgr->setActiveCamera(nullptr);
+	Camera->remove();
+	for (unsigned char i=0;i<5;i++) {
+		if (breathSound[i][0]!=nullptr) breathSound[i][0]->drop();
+		if (breathSound[i][1]!=nullptr) breathSound[i][1]->drop();
+	}
+	for (unsigned char i=0;i<4;i++) {
+		if (stepSound[0][0][i]!=nullptr) stepSound[0][0][i]->drop();
+		if (stepSound[0][1][i]!=nullptr) stepSound[0][1][i]->drop();
+		if (stepSound[1][0][i]!=nullptr) stepSound[1][0][i]->drop();
+		if (stepSound[1][1][i]!=nullptr) stepSound[1][1][i]->drop();
+		if (i<3) {
+			if (stepSound[2][0][i]!=nullptr) stepSound[2][0][i]->drop();
+			if (stepSound[3][1][i]!=nullptr) stepSound[3][1][i]->drop();
+		}
+	}
+}
+
 void player::teleport(irr::core::vector3df position) {
 	btTransform oTrans = Capsule->getCenterOfMassTransform();
 	oTrans.setOrigin(btVector3(position.X,position.Y,position.Z));
@@ -187,7 +207,7 @@ void player::update() {
 				walkingSpeed = walkingSpeed-(walkingSpeed*0.5f*fpsFactor);
 				if (walkingSpeed<=0.02f) walkingSpeed = 0.f;
 			} else {
-				if (walkingSpeed>=70.f) walkingSpeed=std::max(60.f,walkingSpeed-(walkingSpeed*0.1f*fpsFactor));
+				if (walkingSpeed>=70.f) walkingSpeed=std::max(70.f,walkingSpeed-(walkingSpeed*0.1f*fpsFactor));
 			}
 		}
 		if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
