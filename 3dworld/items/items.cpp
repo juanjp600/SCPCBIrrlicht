@@ -47,7 +47,7 @@ void item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 	irr::scene::IMesh* irrMesh = node->getMesh();
 
 	//generate the collision shape
-	irr::core::vector3df scaling = node->getScale();//irr::core::vector3df(scale,scale,scale);
+	irr::core::vector3df scaling = node->getScale()*irr::core::vector3df(0.85f,0.85f,0.85f);
 	irr::u32 i,k,numVertices,precLoss;
 	btConvexHullShape* dynShape = new btConvexHullShape();
 
@@ -194,7 +194,7 @@ void item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 	}
 
 	outShape = dynShape;
-	outShape->setMargin(0.1f);
+	outShape->setMargin(0.3f);
 }
 
 void item::loadAssets(irr::scene::IMeshSceneNode* node,btConvexHullShape* shape) {

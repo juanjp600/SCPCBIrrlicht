@@ -6,14 +6,13 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-
-const unsigned char world::PAUSEOPEN = 1;
-const unsigned char world::INVOPEN = 2;
+#include <sstream>
 
 world::world(unsigned int width,unsigned int height,bool fullscreen) {
     mainWidth = width; mainHeight = height;
 
 	scale2D = height/1024.f;
+	scale2Db = height/720.f;
 
     irrDriverType = irr::video::EDT_OPENGL;
     irrReceiver = new MainEventReceiver;
@@ -26,9 +25,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	sound::initSounds();
 
-	menusOpen = 0;
-
-	//irrSmgr->setAmbientLight(irr::video::SColor(255,20,20,20));
+	menusOpen = menus::NONE;
 
     irrDriver->setTextureCreationFlag(irr::video::ETCF_ALWAYS_32_BIT, true);
 
@@ -70,10 +67,10 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     ZBufferCallback= new ZBufferShaderCallBack;
     ZBufferShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/ZBufferVert.txt", "main", irr::video::EVST_VS_1_1,"GFX/shaders/ZBufferFrag.txt", "main", irr::video::EPST_PS_1_1,ZBufferCallback, irr::video::EMT_SOLID);
 
-    blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
-    blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
-    ZBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
-    finalImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_A8R8G8B8);
+    blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
+    blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
+    ZBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
+    finalImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
 
     irr::scene::SMesh* quadMesh = new irr::scene::SMesh();
 	irr::scene::SMeshBuffer* buf = new irr::scene::SMeshBuffer();
@@ -107,53 +104,20 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	buf->recalculateBoundingBox();
 
 	buf->drop();
-	//quadMesh->drop();
 	screenQuad = irrSmgr->addMeshSceneNode(quadMesh);
 	screenQuad->setVisible(false);
 
     BlinkMeterIMG = irrDriver->getTexture("GFX/BlinkMeter.jpg");
     StaminaMeterIMG = irrDriver->getTexture("GFX/StaminaMeter.jpg");
 
-    /*defItemParams.getNode = &irr::scene::ISceneManager::addMeshSceneNode;
-    defItemParams.registerRBody = &irrDynamics::registerNewRBody;
-    defItemParams.unregisterRBody = &irrDynamics::unregisterRBody;*/
-
-    // Add camera
-	/*irr::scene::ICameraSceneNode *Camera = irrSmgr->addCameraSceneNodeFPS(0, 50, 0.02);
-	Camera->setPosition(irr::core::vector3df(0, 5, -5));
-	Camera->setTarget(irr::core::vector3df(0, 0, 0));*/
-
 	//Add test model
 
-    dynamics = new irrDynamics();//irrDynamics::getInstance();
+    dynamics = new irrDynamics();
     dynamics->setGravity(-100*RoomScale);
 
 	irr::scene::IMeshSceneNode* node = nullptr;
     dynRegister* itemDyn = new dynRegister(dynamics);
 	item::setDynamics(itemDyn);
-
-    /*node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/eyedrops.b3d"));
-    node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
-
-    node->setScale(irr::core::vector3df(0.06*RoomScale,0.06*RoomScale,0.06*RoomScale));
-    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
-    itemEyedrops::setMeshNode(node);
-
-    node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("test/gasmask.b3d"));
-    //node->setDebugDataVisible(irr::scene::EDS_NORMALS);
-    node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
-
-    node->setScale(irr::core::vector3df(0.6*RoomScale,0.6*RoomScale,0.6*RoomScale));
-    node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
-    itemGasMask::setMeshNode(node);
-
-    for (irr::u32 ui=0;ui<10;ui++) {
-        item* it = itemEyedrops::createItemEyedrops();
-        itemList.push_back(it);
-
-        it = itemGasMask::createItemGasMask();
-        itemList.push_back(it);
-    }*/
 
     item420::setMeshNode(genItemNode(std::string("GFX/items/420.x"),std::string(""),0.015f*RoomScale));
 	itemKey1::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/keycard1.jpg"),0.012f*RoomScale));
@@ -232,25 +196,9 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
         it = itemKey6::createItemKey6();
         itemList.push_back(it);
-
-        /*it = item18vbat::createItem18vbat();
-        itemList.push_back(it);*/
     }
 
 	btRigidBody* rbody;
-
-	/*btTransform Transform;
-	Transform.setIdentity();
-	btDefaultMotionState *MotionState = new btDefaultMotionState(Transform);
-	btVector3 localInertia(0,0,0);
-	btRigidBody* rbody = new btRigidBody(0.f, MotionState, rme->shape,localInertia);
-	//rbody->setActivationState(DISABLE_DEACTIVATION);
-	dynamics->registerNewRBody(node,rbody,0);
-	//all rigid bodies must have a friction value for friction to work
-	rbody->setFriction(1.f);
-	rbody->setRollingFriction(1.f);*/
-
-	//node->setScale(irr::core::vector3df(0.1f*RoomScale));
 
 	room::setDynamics(itemDyn);
 
@@ -335,15 +283,6 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	mainPlayer->update();
 
 	createMap();
-	/*room2::createNew(irr::core::vector3df(0,0,0),0);
-	room2c::createNew(irr::core::vector3df(0,0,204.8f*RoomScale),1);
-	room3::createNew(irr::core::vector3df(0,0,-204.8f*RoomScale),2);
-	room4::createNew(irr::core::vector3df(-204.8f*RoomScale,0,-204.8f*RoomScale),2);
-	room1::createNew(irr::core::vector3df(204.8f*RoomScale,0,-204.8f*RoomScale),1);*/
-
-    //node->setPosition(irr::core::vector3df(0,0*RoomScale,0));
-
-    //dynamics->addTriMesh_static(node);
 
 	irrDevice->getCursorControl()->setVisible(false);
 	irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
@@ -351,9 +290,6 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	for (int y=19;y>=0;y--) {
 		for (int x=19;x>=0;x--) {
 			if (roomArray[x][y]!=nullptr) {
-				//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
-				//std::cout<<"Placed player at coords ["<<x<<"]["<<y<<"]\n";
-
 				//test node
 				irr::scene::IMesh* mesh1 = irrSmgr->getMesh("GFX/npcs/173_2.b3d");
 
@@ -369,7 +305,6 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 				rbody = dynamics->addTriMesh_moving(node,16000.f,20,1,1);
 				rbody->setAngularFactor(btVector3(0,0,0));
-				//rbody->setLinearFactor(btVector3(0.1,0.1,0.1));
 
 				node->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/npcs/173_norm.jpg"));
 				node->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/npcs/173_Spec.jpg"));
@@ -420,10 +355,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 }
 
 world::~world() {
-    //fileSystem->drop();
-    //env->drop();
-    //smgr->drop();
-    //driver->drop();
+
 
     if (mainPlayer!=nullptr) { delete mainPlayer; mainPlayer=nullptr; }
     for (unsigned char i=0;i<inventory_size;i++) {
@@ -443,7 +375,7 @@ bool world::run() {
 	}
 	prevTime = irrTimer->getRealTime();
 
-	if (menusOpen==0) {
+	if (menusOpen==menus::NONE) {
 
 		float prec = 0.65f;
 
@@ -517,10 +449,10 @@ bool world::run() {
 		}
 
 		if (irrReceiver->IsKeyDown(irr::KEY_TAB)==false && irrReceiver->IsPrevKeyDown(irr::KEY_TAB)==true) {
-			menusOpen = INVOPEN;
+			menusOpen = menus::INVOPEN;
 		}
 		if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) {
-			menusOpen = PAUSEOPEN;
+			menusOpen = menus::PAUSEOPEN;
 		}
 	} else {
 		dynamics->resetTimer(irrTimer->getRealTime());
@@ -564,7 +496,7 @@ void world::draw3D() {
         PostProcCallback->minBlur = darkA*6.f;
     } else {
 		PostProcCallback->minBlur = 0.f;
-		if (menusOpen!=0) PostProcCallback->minBlur = 2.f;
+		if (menusOpen!=menus::NONE) PostProcCallback->minBlur = 2.f;
     }
 
     irrDriver->setRenderTarget(ZBuffer,true,true,irr::video::SColor(255,255,255,255)); //white = far
@@ -595,28 +527,28 @@ void world::drawHUD() {
 	}
 
     //Blink meter
-    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80,mainHeight-95),irr::core::position2d<irr::s32>(284,mainHeight-95),irr::video::SColor(255,255,255,255));
-    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80,mainHeight-75),irr::core::position2d<irr::s32>(284,mainHeight-75),irr::video::SColor(255,255,255,255));
-    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80,mainHeight-95),irr::core::position2d<irr::s32>(80,mainHeight-75),irr::video::SColor(255,255,255,255));
-    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(284,mainHeight-95),irr::core::position2d<irr::s32>(284,mainHeight-75),irr::video::SColor(255,255,255,255));
+    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-95*scale2Db),irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-95*scale2Db),irr::video::SColor(255,255,255,255));
+    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-75*scale2Db),irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-75*scale2Db),irr::video::SColor(255,255,255,255));
+    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-95*scale2Db),irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-75*scale2Db),irr::video::SColor(255,255,255,255));
+    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-95*scale2Db),irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-75*scale2Db),irr::video::SColor(255,255,255,255));
 
     for (int i=0;i<mainPlayer->BlinkTimer/100*20;i++) {
-        irrDriver->draw2DImage(BlinkMeterIMG,irr::core::position2d<irr::s32>(83+i*10,mainHeight-92),irr::core::rect<irr::s32>(0,0,8,14), 0,irr::video::SColor(255,255,255,255), false);
+        irrDriver->draw2DImage(BlinkMeterIMG,irr::core::recti((83+i*10)*scale2Db,mainHeight-92*scale2Db,(91+i*10)*scale2Db,mainHeight-78*scale2Db),irr::core::recti(0,0,8,14));
     }
 
     //Stamina meter
-    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80,mainHeight-55),irr::core::position2d<irr::s32>(284,mainHeight-55),irr::video::SColor(255,255,255,255));
-    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80,mainHeight-35),irr::core::position2d<irr::s32>(284,mainHeight-35),irr::video::SColor(255,255,255,255));
-    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80,mainHeight-55),irr::core::position2d<irr::s32>(80,mainHeight-35),irr::video::SColor(255,255,255,255));
-    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(284,mainHeight-55),irr::core::position2d<irr::s32>(284,mainHeight-35),irr::video::SColor(255,255,255,255));
+    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-55*scale2Db),irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-55*scale2Db),irr::video::SColor(255,255,255,255));
+    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-35*scale2Db),irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-35*scale2Db),irr::video::SColor(255,255,255,255));
+    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-55*scale2Db),irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-35*scale2Db),irr::video::SColor(255,255,255,255));
+    irrDriver->draw2DLine(irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-55*scale2Db),irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-35*scale2Db),irr::video::SColor(255,255,255,255));
 
     for (int i=0;i<mainPlayer->Stamina/100*20;i++) {
-        irrDriver->draw2DImage(StaminaMeterIMG,irr::core::position2d<irr::s32>(83+i*10,mainHeight-52),irr::core::rect<irr::s32>(0,0,8,14), 0,irr::video::SColor(255,255,255,255), false);
+        irrDriver->draw2DImage(StaminaMeterIMG,irr::core::recti((83+i*10)*scale2Db,mainHeight-52*scale2Db,(91+i*10)*scale2Db,mainHeight-38*scale2Db),irr::core::recti(0,0,8,14));
     }
 
     blurAlpha = 100;
 
-    if (menusOpen==INVOPEN) {
+    if (menusOpen==menus::INVOPEN) {
 		if (prevMenusOpen!=menusOpen) {
 			sound::freezeCategory(1);
 			irrReceiver->perLoopUpdate();
@@ -630,24 +562,24 @@ void world::drawHUD() {
 		}
 		for (unsigned char i=0;i<inventory_size;i++) {
 			int x,y,w,h;
-			x = mainWidth/2-(90*inventory_size/4)+(i%5*90);
-			y = mainHeight/2-(90*inventory_size/10)+(i/5*90);
+			x = mainWidth/2-(90*scale2Db*inventory_size/4)+(i%5*90*scale2Db);
+			y = mainHeight/2-(90*scale2Db*inventory_size/10)+(i/5*90*scale2Db);
 			w = 64;
 			h = 64;
-			irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,255),irr::core::recti(irr::core::position2di(x-2,y-2),irr::core::position2di(x+w+2,y+h+2)));
+			irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,255),irr::core::recti(irr::core::position2di(x-2*scale2Db,y-2*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+2)*scale2Db)));
 			if (invImgs[i]!=nullptr && i!=dragItem) {
-				irrDriver->draw2DImage(invImgs[i],irr::core::position2di(x,y),irr::core::rect<irr::s32>(0,0,w,h));
-				if (irrReceiver->getMousePos().X>x && irrReceiver->getMousePos().X<x+w && irrReceiver->getMousePos().Y>y && irrReceiver->getMousePos().Y<y+h) {
-					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x+2,y+h+8),irr::core::position2di(x+w+2,y+h+24)),irr::video::SColor(100,0,0,0),true,true);
-					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x,y+h+6),irr::core::position2di(x+w,y+h+22)),irr::video::SColor(255,255,255,255),true,true);
+				irrDriver->draw2DImage(invImgs[i],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::rect<irr::s32>(0,0,w,h));
+				if (irrReceiver->getMousePos().X>x && irrReceiver->getMousePos().X<x+w*scale2Db && irrReceiver->getMousePos().Y>y && irrReceiver->getMousePos().Y<y+h*scale2Db) {
+					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x+2,y+(h+8)*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+24)*scale2Db)),irr::video::SColor(100,0,0,0),true,true);
+					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x,y+(h+6)*scale2Db),irr::core::position2di(x+w*scale2Db,y+(h+22)*scale2Db)),irr::video::SColor(255,255,255,255),true,true);
 					if (irrReceiver->IsDoubleClick(0)) {
-						menusOpen=0;
+						menusOpen=menus::NONE;
 					} else if (irrReceiver->IsMouseDown(0) && dragItem>=inventory_size) {
 						dragItem = i;
 					}
 				}
 			} else {
-				irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(irr::core::position2di(x,y),irr::core::position2di(x+w,y+h)));
+				irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(irr::core::position2di(x,y),irr::core::position2di(x+w*scale2Db,y+h*scale2Db)));
 			}
 		}
 		if (dragItem<inventory_size) {
@@ -655,17 +587,17 @@ void world::drawHUD() {
 				dragItem = inventory_size;
 			} else {
 				int x,y,w,h;
-				unsigned int dist = 100;
+				unsigned int dist = 100*scale2Db;
 				unsigned char targetSlot = inventory_size;
 				for (unsigned char i=0;i<inventory_size;i++) {
-					x = mainWidth/2-(90*inventory_size/4)+(i%5*90);
-					y = mainHeight/2-(90*inventory_size/10)+(i/5*90);
+					x = mainWidth/2-(90*scale2Db*inventory_size/4)+(i%5*90*scale2Db);
+					y = mainHeight/2-(90*scale2Db*inventory_size/10)+(i/5*90*scale2Db);
 					w = 64;
 					h = 64;
 
 					int xd,yd;
-					xd = x+w/2-irrReceiver->getMousePos().X;
-					yd = y+h/2-irrReceiver->getMousePos().Y;
+					xd = x+w*scale2Db/2-irrReceiver->getMousePos().X;
+					yd = y+h*scale2Db/2-irrReceiver->getMousePos().Y;
 
 					if ((irr::u32)irr::core::squareroot(xd*xd+yd*yd)<dist) {
 						dist = irr::core::squareroot(xd*xd+yd*yd);
@@ -673,15 +605,22 @@ void world::drawHUD() {
 					}
 				}
 				if (targetSlot<inventory_size) {
-					x = mainWidth/2-(90*inventory_size/4)+(targetSlot%5*90);
-					y = mainHeight/2-(90*inventory_size/10)+(targetSlot/5*90);
+					x = mainWidth/2-(90*scale2Db*inventory_size/4)+(targetSlot%5*90*scale2Db);
+					y = mainHeight/2-(90*scale2Db*inventory_size/10)+(targetSlot/5*90*scale2Db);
 					w = 64;
 					h = 64;
-					irrDriver->draw2DImage(invImgs[dragItem],irr::core::position2di(x,y),irr::core::rect<irr::s32>(0,0,w,h),nullptr,irr::video::SColor(100,255,255,255));
+
+					irr::video::SColor colors[4];
+					colors[0]=irr::video::SColor(100,255,255,255);
+					colors[1]=colors[0];
+					colors[2]=colors[0];
+					colors[3]=colors[0];
+
+					irrDriver->draw2DImage(invImgs[dragItem],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::recti(0,0,w,h),nullptr,colors);
 				}
 				x = irrReceiver->getMousePos().X-32;
 				y = irrReceiver->getMousePos().Y-32;
-				irrDriver->draw2DImage(invImgs[dragItem],irr::core::position2di(x,y),irr::core::rect<irr::s32>(0,0,w,h));
+				irrDriver->draw2DImage(invImgs[dragItem],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::rect<irr::s32>(0,0,w,h));
 				if (!irrReceiver->IsMouseDown(0)) {
 					if (targetSlot!=dragItem) {
 						if (targetSlot<inventory_size) {
@@ -694,15 +633,15 @@ void world::drawHUD() {
 							}
 						} else {
 							mainPlayer->takeFromInventory(dragItem);
-							menusOpen=0;
+							menusOpen=menus::NONE;
 						}
 					}
 					dragItem = inventory_size;
 				}
 			}
 		}
-		if (irrReceiver->IsKeyDown(irr::KEY_TAB)==false && irrReceiver->IsPrevKeyDown(irr::KEY_TAB)==true) menusOpen = 0;
-		if (menusOpen!=INVOPEN) {
+		if (irrReceiver->IsKeyDown(irr::KEY_TAB)==false && irrReceiver->IsPrevKeyDown(irr::KEY_TAB)==true) menusOpen = menus::NONE;
+		if (menusOpen!=menus::INVOPEN) {
 			sound::unfreezeCategory(1);
 			for (unsigned char i=0;i<inventory_size;i++) {
 				if (invImgs[i]!=nullptr) {
@@ -716,7 +655,7 @@ void world::drawHUD() {
 			irrDevice->getCursorControl()->setVisible(false);
 			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
 		}
-	} else if (menusOpen==PAUSEOPEN) {
+	} else if (menusOpen==menus::PAUSEOPEN || menusOpen==menus::OPTIONSOPEN) {
 		if (pauseImgs[0]==nullptr) {
 			pauseImgs[0] = irrDriver->getTexture("GFX/menu/pausemenu.jpg");
 			pauseImgs[1] = irrDriver->getTexture("GFX/menu/menublack.jpg");
@@ -734,15 +673,80 @@ void world::drawHUD() {
 
 		irrDriver->draw2DImage(pauseImgs[0],irr::core::recti(mainWidth/2-300*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2+300*scale2D),irr::core::recti(0,0,600,600),nullptr,corners);
 
-		font2->draw("PAUSED",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
+		if (menusOpen==menus::PAUSEOPEN) {
+			font2->draw("PAUSED",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
 
-		if (button(std::string("Resume"),mainWidth/2-180*scale2D,mainHeight/2,455*scale2D,70*scale2D)) menusOpen = 0;
-		button(std::string("Options"),mainWidth/2-180*scale2D,mainHeight/2+80*scale2D,455*scale2D,70*scale2D);
-		if (button(std::string("Quit"),mainWidth/2-180*scale2D,mainHeight/2+160*scale2D,455*scale2D,70*scale2D)) irrDevice->closeDevice(); //TODO: add main menu
+			if (button(std::string("Resume"),mainWidth/2-180*scale2D,mainHeight/2,455*scale2D,70*scale2D)) menusOpen = menus::NONE;
+			if (button(std::string("Options"),mainWidth/2-180*scale2D,mainHeight/2+80*scale2D,455*scale2D,70*scale2D)) menusOpen = menus::OPTIONSOPEN;
+			if (button(std::string("Quit"),mainWidth/2-180*scale2D,mainHeight/2+160*scale2D,455*scale2D,70*scale2D)) irrDevice->closeDevice(); //TODO: add main menu
 
-		if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = 0;
+			if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = menus::NONE;
+		} else {
+			font2->draw("OPTIONS",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
 
-		if (menusOpen!=PAUSEOPEN) {
+			if (button(std::string("Graphics"),mainWidth/2-175*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) subMenusOpen=0;
+			if (button(std::string("Audio"),mainWidth/2-20*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) subMenusOpen=1;
+			if (button(std::string("Controls"),mainWidth/2+135*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) subMenusOpen=2;
+
+			irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-150*scale2D,mainWidth/2+280*scale2D,mainHeight/2+200*scale2D),irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-150*scale2D,mainWidth/2+280*scale2D,mainHeight/2+200*scale2D));
+			irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-177*scale2D,mainHeight/2-147*scale2D,mainWidth/2+277*scale2D,mainHeight/2+197*scale2D),irr::core::recti(mainWidth/2-177*scale2D,mainHeight/2-147*scale2D,mainWidth/2+277*scale2D,mainHeight/2+197*scale2D));
+
+			irr::core::recti outline;
+			std::stringstream ss;
+			std::string s;
+			unsigned char color;
+			switch (subMenusOpen) {
+				case 0:
+					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-175*scale2D,mainHeight/2-167*scale2D,mainWidth/2-36*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2-175*scale2D,mainHeight/2-167*scale2D,mainWidth/2-36*scale2D,mainHeight/2-150*scale2D));
+					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-173*scale2D,mainHeight/2-170*scale2D,mainWidth/2-39*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2-172*scale2D,mainHeight/2-170*scale2D,mainWidth/2-33*scale2D,mainHeight/2-147*scale2D));
+
+					ss << "Gamma: ";
+					ss << PostProcCallback->gammaFactor;
+					s = ss.str();
+
+					font1->draw(s.c_str(),irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-125*scale2D,mainWidth/2+100*scale2D,mainHeight/2-110*scale2D),irr::video::SColor(255,255,255,255),false,false);
+
+					outline = irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-100*scale2D,mainWidth/2+260*scale2D,mainHeight/2-86*scale2D);
+					irrDriver->draw2DRectangleOutline(irr::core::recti(outline.UpperLeftCorner.X-3*scale2D,outline.UpperLeftCorner.Y-3*scale2D,outline.LowerRightCorner.X+3*scale2D,outline.LowerRightCorner.Y+3*scale2D));
+
+					if (irrReceiver->IsMouseDown(0)) {
+						if (irrReceiver->getMousePos().X>outline.UpperLeftCorner.X && irrReceiver->getMousePos().Y>outline.UpperLeftCorner.Y &&
+							irrReceiver->getMousePos().X<outline.LowerRightCorner.X && irrReceiver->getMousePos().Y<outline.LowerRightCorner.Y) {
+							PostProcCallback->gammaFactor = ((irrReceiver->getMousePos().X-outline.UpperLeftCorner.X)/(float)(outline.LowerRightCorner.X-outline.UpperLeftCorner.X))*1.5f+0.5f;
+							PostProcCallback->gammaFactor = ((int)(PostProcCallback->gammaFactor*100.f))*0.01f;
+							PostProcCallback->invGammaFactor = 1.f/PostProcCallback->gammaFactor;
+						}
+					}
+
+					irrDriver->draw2DImage(BlinkMeterIMG,irr::core::recti(
+						mainWidth/2-150*scale2D+(PostProcCallback->gammaFactor-0.5f)/1.5f*406*scale2D,
+						mainHeight/2-100*scale2D,
+						mainWidth/2-142*scale2D+(PostProcCallback->gammaFactor-0.5f)/1.5f*406*scale2D,mainHeight/2-86*scale2D),
+						irr::core::recti(0,0,8,14));
+
+					irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-65*scale2D,mainWidth/2+250*scale2D,mainHeight/2+100*scale2D));
+
+					color = std::pow(2.5f/255.f,PostProcCallback->invGammaFactor)*255;
+					irrDriver->draw2DRectangle(irr::video::SColor(255,color,color,color),irr::core::recti(mainWidth/2-100*scale2D,mainHeight/2-20*scale2D,mainWidth/2-32*scale2D,mainHeight/2+48*scale2D));
+					color = std::pow(1.25f/255.f,PostProcCallback->invGammaFactor)*255;
+					irrDriver->draw2DRectangle(irr::video::SColor(255,color,color,color),irr::core::recti(mainWidth/2+132*scale2D,mainHeight/2-20*scale2D,mainWidth/2+200*scale2D,mainHeight/2+48*scale2D));
+					font1->draw("Drag the slider so that the left square",irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2+105*scale2D,mainWidth/2+100*scale2D,mainHeight/2+120*scale2D),irr::video::SColor(255,255,255,255),false,false);
+					font1->draw("is visible but the right square isn't",irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2+120*scale2D,mainWidth/2+100*scale2D,mainHeight/2+135*scale2D),irr::video::SColor(255,255,255,255),false,false);
+				break;
+				case 1:
+					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-20*scale2D,mainHeight/2-167*scale2D,mainWidth/2+119*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2-20*scale2D,mainHeight/2-167*scale2D,mainWidth/2+119*scale2D,mainHeight/2-150*scale2D));
+					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-18*scale2D,mainHeight/2-170*scale2D,mainWidth/2+116*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2-18*scale2D,mainHeight/2-170*scale2D,mainWidth/2+116*scale2D,mainHeight/2-147*scale2D));
+				break;
+				case 2:
+					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2+135*scale2D,mainHeight/2-167*scale2D,mainWidth/2+274*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2+135*scale2D,mainHeight/2-167*scale2D,mainWidth/2+274*scale2D,mainHeight/2-150*scale2D));
+					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2+137*scale2D,mainHeight/2-170*scale2D,mainWidth/2+271*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2+137*scale2D,mainHeight/2-170*scale2D,mainWidth/2+271*scale2D,mainHeight/2-147*scale2D));
+				break;
+			};
+
+			if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = menus::PAUSEOPEN;
+		}
+
+		if (menusOpen!=menus::PAUSEOPEN && menusOpen!=menus::OPTIONSOPEN) {
 			irrDriver->removeTexture(pauseImgs[0]); pauseImgs[0]=nullptr;
 			irrDriver->removeTexture(pauseImgs[1]); pauseImgs[1]=nullptr;
 			irrDriver->removeTexture(pauseImgs[2]); pauseImgs[2]=nullptr;

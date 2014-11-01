@@ -175,18 +175,20 @@ class world {
 
         sound* ambient[3];
 
-        unsigned char menusOpen = 0;
-        unsigned char prevMenusOpen = 0;
+		enum class menus {
+			NONE,PAUSEOPEN,INVOPEN,OPTIONSOPEN
+		};
 
-        static const unsigned char PAUSEOPEN;
-        static const unsigned char INVOPEN;
-        static const unsigned char OPTIONSOPEN;
+		menus menusOpen = menus::NONE; unsigned char subMenusOpen = 0;
+        menus prevMenusOpen = menus::NONE;
+
         irr::video::ITexture* pauseImgs[3];
         irr::video::ITexture* invImgs[10];
 
         bool button(const std::string &text,int x,int y,int w,int h);
 
         float scale2D = 1.f;
+        float scale2Db = 1.f;
 
         unsigned char dragItem = 10;
 

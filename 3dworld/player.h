@@ -1,6 +1,8 @@
 #ifndef PLAYER_H_INCLUDED
 #define PLAYER_H_INCLUDED
 
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
+
 const unsigned int inventory_size = 10;
 
 class player {
@@ -13,6 +15,9 @@ class player {
         float walkingSpeed;
         irr::scene::ICameraSceneNode* Camera;
         btRigidBody* Capsule;
+#ifdef PLAYER_PENETRATION_RECOVER
+        btPairCachingGhostObject* ghostObject;
+#endif
         irr::core::vector3df selfRotation;
 
         item* inventory[inventory_size];
@@ -37,6 +42,8 @@ class player {
         float dir = 0;
 
         bool lastMouseDown[2];
+
+        bool recoverFromPenetration();
     public:
         player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=24.1f,float radius=3.2f,float mass=5.0f);
         //mass should stay low if you want the player to be able the climb up stairs

@@ -30,7 +30,7 @@ irr::scene::IMeshSceneNode* room::getNewNode(irr::scene::IMesh* mesh) {
 void room::setActivation(bool s) {
 	if (s!=isActivated) {
 		if (s) {
-			dynamics->sharedRegisterRBody(node,rbody,-1);
+			dynamics->sharedRegisterRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-1.6f,0));
 			node->setVisible(true);
 		} else {
 			dynamics->sharedUnregisterRBody(rbody);
@@ -65,7 +65,7 @@ void room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 	rme->shape->calculateLocalInertia(0.0, localInertia);
 
 	rbody = new btRigidBody(0.0, MotionState, rme->shape, localInertia);
-	room::dynamics->sharedRegisterRBody(node,rbody,0.f);
+	room::dynamics->sharedRegisterRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-1.6f,0));
 
 	rbody->setFriction(1.f);
 	rbody->setRollingFriction(1.f);

@@ -23,6 +23,7 @@
 
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include "irrDynamics.h"
 
 #include <iostream>
@@ -35,11 +36,16 @@ irrDynamics::irrDynamics() : lastStep(0) {
 	// Initialize bullet
     collisionConfiguration = new btDefaultCollisionConfiguration();
     broadPhase = new btAxisSweep3(btVector3(-1000, -1000, -1000), btVector3(1000, 1000, 1000));
+    broadPhase->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
     solver = new btSequentialImpulseConstraintSolver();
     world = new btDiscreteDynamicsWorld(dispatcher, broadPhase, solver, collisionConfiguration);
 }
 
+
+btDiscreteDynamicsWorld* irrDynamics::getCollisionWorld() {
+	return world;
+}
 
 void irrDynamics::simStep(u32 curTimeStamp,float prec) {
     if (lastStep == 0)
@@ -207,6 +213,7 @@ void irrDynamics::registerNewRBody(irr::scene::ISceneNode* node,btRigidBody* rbo
 	}
 
     irr::core::vector3df* mOffset = new irr::core::vector3df(nOffset);
+    *mOffset = nOffset;
 	objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rbody));
 	offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
 }
@@ -351,27 +358,27 @@ void irrDynamics::updateObjects()
     for (std::map<scene::ISceneNode*, btRigidBody*>::iterator iter = objects.begin(); iter != objects.end() && iter2 != offset.end(); iter++)
     {
 		btTransform Transform;
-        if (iter->second->getLinearVelocity()!=btVector3(0,0,0) || iter->second->getAngularVelocity()!=btVector3(0,0,0)) {
-            iter->second->getMotionState()->getWorldTransform(Transform);
-			btVector3 Point = Transform.getOrigin();
+        //if (iter->second->getLinearVelocity()!=btVector3(0,0,0) || iter->second->getAngularVelocity()!=btVector3(0,0,0)) {
+		iter->second->getMotionState()->getWorldTransform(Transform);
+		btVector3 Point = Transform.getOrigin();
 
-            // Set rotation
-            core::vector3df euler;
-            const btQuaternion& quat = Transform.getRotation();
-            core::quaternion q(quat.getX(), quat.getY(), quat.getZ(), quat.getW());
-            q.toEuler(euler);
+		// Set rotation
+		core::vector3df euler;
+		const btQuaternion& quat = Transform.getRotation();
+		core::quaternion q(quat.getX(), quat.getY(), quat.getZ(), quat.getW());
+		q.toEuler(euler);
 
-            euler *= core::RADTODEG;
+		euler *= core::RADTODEG;
 
-            iter->first->setRotation(euler);
+		iter->first->setRotation(euler);
 
-            core::vector3df dir = *iter2->second;
-            core::matrix4 rotMatrix;
-            rotMatrix.setRotationDegrees(euler);
-            rotMatrix.transformVect(dir);
-            Point -= btVector3(dir.X,dir.Y,dir.Z);
-            iter->first->setPosition(core::vector3df((f32)Point[0], (f32)Point[1], (f32)Point[2]));
-        }
+		core::vector3df dir = *iter2->second;
+		core::matrix4 rotMatrix;
+		rotMatrix.setRotationDegrees(euler);
+		rotMatrix.transformVect(dir);
+		Point -= btVector3(dir.X,dir.Y,dir.Z);
+		iter->first->setPosition(core::vector3df((f32)Point[0], (f32)Point[1], (f32)Point[2]));
+        //}
         iter2++;
     }
 }
@@ -510,15 +517,15 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     btConvexHullShape *mShape = new btConvexHullShape();
 
 	float oRadius = radius;
-	height-=oRadius*0.4f;
-	radius-=oRadius*0.4f;
+	height-=oRadius*0.1f;
+	radius-=oRadius*0.1f;
 	for (int i=0;i<90;i++) {
 		float fi = (float)i*4.f*irr::core::DEGTORAD;
 		mShape->addPoint(btVector3(std::cos(fi)*0.2f*radius,-height*0.5f,std::sin(fi)*0.2f*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.9f,std::sin(fi)*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
 	}
-	mShape->setMargin(oRadius*0.4f);
+	mShape->setMargin(oRadius*0.1f);
 
     // Add mass
     btVector3 localInertia;

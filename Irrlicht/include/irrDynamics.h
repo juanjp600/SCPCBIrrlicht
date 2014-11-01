@@ -135,6 +135,8 @@ class irrDynamics
 
 		irrDynamics();
 
+		class btDiscreteDynamicsWorld* getCollisionWorld();
+
     private:
 
 		irrDynamics(const irrDynamics& other);

@@ -44,11 +44,104 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     Capsule->setGravity(btVector3(0.f,-450.f*RoomScale,0.f));
 	Capsule->setActivationState(DISABLE_DEACTIVATION);
 
+#ifdef PLAYER_PENETRATION_RECOVER
+	ghostObject = new btPairCachingGhostObject();
+	ghostObject->setWorldTransform(Capsule->getCenterOfMassTransform());
+	ghostObject->setCollisionShape(Capsule->getCollisionShape());
+	ghostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+	dynamics->getCollisionWorld()->addCollisionObject(ghostObject,btBroadphaseProxy::CharacterFilter,btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter);
+#endif
+
     //clear inventory
     for (irr::u32 i=0;i<inventory_size;i++) {
         inventory[i]=nullptr;
     }
 }
+
+#ifdef PLAYER_PENETRATION_RECOVER
+bool player::recoverFromPenetration (){
+	// Here we must refresh the overlapping paircache as the penetrating movement itself or the
+	// previous recovery iteration might have used setWorldTransform and pushed us into an object
+	// that is not in the previous cache contents from the last timestep, as will happen if we
+	// are pushed into a new AABB overlap. Unhandled this means the next convex sweep gets stuck.
+	//
+	// Do this by calling the broadphase's setAabb with the moved AABB, this will update the broadphase
+	// paircache and the ghostobject's internal paircache at the same time.    /BW
+
+	btCollisionWorld* collisionWorld = dynamics->getCollisionWorld();
+
+	btVector3 minAabb, maxAabb;
+	Capsule->getCollisionShape()->getAabb(ghostObject->getWorldTransform(), minAabb,maxAabb);
+	collisionWorld->getBroadphase()->setAabb(ghostObject->getBroadphaseHandle(),
+						 minAabb,
+						 maxAabb,
+						 collisionWorld->getDispatcher());
+
+	bool penetration = false;
+
+	//collisionWorld->getBroadphase()->getOverlappingPairCache()->cleanProxyFromPairs(ghostObject->getBroadphaseHandle(),collisionWorld->getDispatcher());
+
+	collisionWorld->getDispatcher()->dispatchAllCollisionPairs(ghostObject->getOverlappingPairCache(), collisionWorld->getDispatchInfo(), collisionWorld->getDispatcher());
+
+	btVector3 m_currentPosition = ghostObject->getWorldTransform().getOrigin();
+	btManifoldArray	m_manifoldArray;
+	btVector3 m_touchingNormal;
+
+	btScalar maxPen = btScalar(0.0);
+	for (int i = 0; i < ghostObject->getOverlappingPairCache()->getNumOverlappingPairs(); i++)
+	{
+		m_manifoldArray.resize(0);
+
+		btBroadphasePair* collisionPair = &ghostObject->getOverlappingPairCache()->getOverlappingPairArray()[i];
+
+		btCollisionObject* obj0 = static_cast<btCollisionObject*>(collisionPair->m_pProxy0->m_clientObject);
+		btCollisionObject* obj1 = static_cast<btCollisionObject*>(collisionPair->m_pProxy1->m_clientObject);
+
+		btCollisionObject* compare = static_cast<btCollisionObject*>(Capsule);
+
+		if ((obj0 && !obj0->hasContactResponse()) || (obj1 && !obj1->hasContactResponse()) || (obj0==compare) || (obj1==compare))
+			continue;
+
+		if (collisionPair->m_algorithm)
+			collisionPair->m_algorithm->getAllContactManifolds(m_manifoldArray);
+
+
+		for (int j=0;j<m_manifoldArray.size();j++)
+		{
+			btPersistentManifold* manifold = m_manifoldArray[j];
+			if (manifold->getBody0()==compare || manifold->getBody1()==compare) continue;
+			btScalar directionSign = manifold->getBody0() == ghostObject ? btScalar(-1.0) : btScalar(1.0);
+			for (int p=0;p<manifold->getNumContacts();p++)
+			{
+				const btManifoldPoint&pt = manifold->getContactPoint(p);
+
+				btScalar dist = pt.getDistance();
+
+				if (dist < 0.0)
+				{
+					if (dist < maxPen)
+					{
+						maxPen = dist;
+						m_touchingNormal = pt.m_normalWorldOnB * directionSign;//??
+
+					}
+					m_currentPosition += pt.m_normalWorldOnB * directionSign * dist * btScalar(0.2);
+					penetration = true;
+				} else {
+					//printf("touching %f\n", dist);
+				}
+			}
+
+			//manifold->clearManifold();
+		}
+	}
+	btTransform newTrans = ghostObject->getWorldTransform();
+	newTrans.setOrigin(m_currentPosition);
+	ghostObject->setWorldTransform(newTrans);
+//	printf("m_touchingNormal = %f,%f,%f\n",m_touchingNormal[0],m_touchingNormal[1],m_touchingNormal[2]);
+	return penetration;
+}
+#endif
 
 player::~player() {
 	dynamics->unregisterRBody(Capsule);
@@ -74,6 +167,7 @@ void player::teleport(irr::core::vector3df position) {
 	btTransform oTrans = Capsule->getCenterOfMassTransform();
 	oTrans.setOrigin(btVector3(position.X,position.Y,position.Z));
 	Capsule->setCenterOfMassTransform(oTrans);
+	Capsule->setLinearVelocity(btVector3(0,0,0));
 }
 
 void player::resetSpeeds() {
@@ -297,8 +391,27 @@ void player::update() {
 }
 
 void player::updateHead() {
+
+	if (!dead) {
+#ifdef PLAYER_PENETRATION_RECOVER
+		if (crouchState<=0.f) {
+			ghostObject->setWorldTransform(Capsule->getCenterOfMassTransform());
+			unsigned char rfp = 0;
+			while (rfp++<8 && recoverFromPenetration()) {}
+			Capsule->setCenterOfMassTransform(ghostObject->getWorldTransform());
+			btTransform Transform;
+			Capsule->getMotionState()->getWorldTransform(Transform);
+			btVector3 Point = Transform.getOrigin();
+			Camera->setPosition(irr::core::vector3df(Point[0],Point[1]+(height/2.f)-(radius/1.5f),Point[2]));
+		}
+#endif
+
+		Camera->updateAbsolutePosition();
+		Camera->setPosition(Camera->getAbsolutePosition()+irr::core::vector3df(0.f,std::sin(shake*irr::core::DEGTORAD)*(0.4f-(crouchState*0.4f)),0.f));
+	}
 	Camera->updateAbsolutePosition();
-    Camera->setPosition(Camera->getAbsolutePosition()+irr::core::vector3df(0.f,std::sin(shake*irr::core::DEGTORAD)*(0.4f-(crouchState*0.4f)),0.f));
+
+	//std::cout<<Camera->getAbsolutePosition().X<<" "<<Camera->getAbsolutePosition().Y<<" "<<Camera->getAbsolutePosition().Z<<"\n";
 
     irr::core::vector3df cdir(0,1,0);
     irr::core::matrix4 rotMatrix;

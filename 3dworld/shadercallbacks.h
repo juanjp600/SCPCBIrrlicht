@@ -20,6 +20,9 @@ class PostProcShaderCallBack : public irr::video::IShaderConstantSetCallBack {
 		irr::f32 fpsFactor = 1.f;
 		irr::f32 currmBlur = 0.f;
 		irr::f32 currMBlur = 15.f;
+
+		irr::f32 gammaFactor = 1.f;
+		irr::f32 invGammaFactor = 1.f;
 };
 
 class ZBufferShaderCallBack : public irr::video::IShaderConstantSetCallBack {
