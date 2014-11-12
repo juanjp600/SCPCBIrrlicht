@@ -162,7 +162,700 @@ room* world::addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char
 	return retRoom;
 }
 
-void world::createMap() {
+void world::createMap(unsigned char zone) {
+	short x,y,temp;
+	short x2,y2;
+	short width,height;
+
+	struct tempRoom {
+		roomTypes type;
+		char angle;
+	};
+
+	tempRoom roomTemp[20][20];
+	for (x=0;x<20;x++) {
+		for (y=0;y<20;y++) {
+			roomArray[x][y] = nullptr;
+			roomTemp[x][y].type = roomTypes::ROOM1;
+			roomTemp[x][y].angle = -1;
+		}
+	}
+
+	x = 10;
+	y = 18;
+
+	for (int i = y;i<20;i++) {
+		roomTemp[x][i].angle = 0;
+	}
+
+	while (y>=2) {
+		width = (rand() % 6) + 10;
+
+		if (x>12) {
+			width = -width;
+		} else if (x>8) {
+			x = x-10;
+		}
+
+		//make sure the hallway doesn't go outside the array
+		if (x+width > 17) {
+			width=17-x;
+		} else if (x+width < 2) {
+			width=-x+2;
+		}
+
+
+		x = std::min(x,short(x + width));
+		width = std::abs(width);
+		for (int i = x;i<=x+width;i++) {
+			roomTemp[std::min(i,19)][y].angle = 0;
+		}
+
+		height = (rand() % 2) + 3;
+		if (y - height < 1) height = y;
+
+		int yhallways = (rand() % 2) + 4;
+
+		//if (getZone(y-height)!=getZone(y-height+1)) height--;
+
+		for (int i=1;i<=yhallways;i++) {
+			x2 = std::max(std::min((rand() % (width-1)) + x,18),2);
+			while (roomTemp[x2][y-1].angle>=0 || roomTemp[x2-1][y-1].angle>=0 || roomTemp[x2+1][y-1].angle>=0) {
+				x2++;
+				if (x2>18) break;
+			}
+
+			if (x2<x+width) {
+				short tempheight;
+				if (i==1) {
+					tempheight = height;
+					if (rand()%2 == 0) x2 = x; else x2 = x+width;
+				} else {
+					tempheight = (rand()%height) + 1;
+				}
+
+				for (y2 = y - tempheight;y2<=y;y2++) {
+					/*if (getZone(y2)!=getZone(y2+1)) { //a room leading from zone to another
+						roomTemp[x2][y2].angle = 127;
+					} else {*/
+					roomTemp[x2][y2].angle = 0;
+					//}
+				}
+
+				if (tempheight == height) temp = x2;
+			}
+		}
+
+		x = temp;
+		y -= height;
+	}
+
+	unsigned short room1amount;
+	unsigned short room2amount;
+	unsigned short room2camount;
+	unsigned short room3amount;
+	unsigned short room4amount;
+
+	room1amount=0;
+	room2amount=0;
+	room2camount=0;
+	room3amount=0;
+	room4amount=0;
+
+	for (x=0;x<20;x++) {
+		for (y=0;y<20;y++) {
+			bool hasNorth,hasSouth,hasEast,hasWest;
+			hasNorth = hasSouth = hasEast = hasWest = false;
+			/*if (roomTemp[x][y].angle==127) {
+				//get rid of this checkpoint room if it leads to nothing
+				if (roomTemp[x][y-1].angle<0) roomTemp[x][y].angle = -1;
+			} else if (roomTemp[x][y].angle==0) { //this is not a checkpoint room*/
+			if (roomTemp[x][y].angle>=0) {
+				if (x>0) {
+					hasWest = (roomTemp[x-1][y].angle>-1);
+				}
+				if (x<19) {
+					hasEast = (roomTemp[x+1][y].angle>-1);
+				}
+				if (y>0) {
+					hasNorth = (roomTemp[x][y-1].angle>-1);
+				}
+				if (y<19) {
+					hasSouth = (roomTemp[x][y+1].angle>-1);
+				}
+				if (hasNorth && hasSouth) {
+					if (hasEast && hasWest) { //room4
+						roomTemp[x][y].type = roomTypes::ROOM4;
+						roomTemp[x][y].angle = rand()%4;
+					} else if (hasEast && !hasWest) { //room3, pointing east
+						roomTemp[x][y].type = roomTypes::ROOM3;
+						roomTemp[x][y].angle = 3;
+					} else if (!hasEast && hasWest) { //room3, pointing west
+						roomTemp[x][y].type = roomTypes::ROOM3;
+						roomTemp[x][y].angle = 1;
+					} else { //vertical room2
+						roomTemp[x][y].type = roomTypes::ROOM2;
+						roomTemp[x][y].angle = (rand()%2)*2;
+					}
+				} else if (hasEast && hasWest) {
+					if (hasNorth && !hasSouth) { //room3, pointing north
+						roomTemp[x][y].type = roomTypes::ROOM3;
+						roomTemp[x][y].angle = 0;
+					} else if (!hasNorth && hasSouth) { //room3, pointing south
+						roomTemp[x][y].type = roomTypes::ROOM3;
+						roomTemp[x][y].angle = 2;
+					} else { //horizontal room2
+						roomTemp[x][y].type = roomTypes::ROOM2;
+						roomTemp[x][y].angle = ((rand()%2)*2)+1;
+					}
+				} else if (hasNorth) {
+					if (hasEast) { //room2c, north-east
+						roomTemp[x][y].type = roomTypes::ROOM2C;
+						roomTemp[x][y].angle = 0;
+					} else if (hasWest) { //room2c, north-west
+						roomTemp[x][y].type = roomTypes::ROOM2C;
+						roomTemp[x][y].angle = 1;
+					} else { //room1, north
+						roomTemp[x][y].type = roomTypes::ROOM1;
+						roomTemp[x][y].angle = 0;
+					}
+				} else if (hasSouth) {
+					if (hasEast) { //room2c, south-east
+						roomTemp[x][y].type = roomTypes::ROOM2C;
+						roomTemp[x][y].angle = 3;
+					} else if (hasWest) { //room2c, south-west
+						roomTemp[x][y].type = roomTypes::ROOM2C;
+						roomTemp[x][y].angle = 2;
+					} else { //room1, south
+						roomTemp[x][y].type = roomTypes::ROOM1;
+						roomTemp[x][y].angle = 2;
+					}
+				} else if (hasEast) { //room1, east
+					roomTemp[x][y].type = roomTypes::ROOM1;
+					roomTemp[x][y].angle = 3;
+				} else { //room1, west
+					roomTemp[x][y].type = roomTypes::ROOM1;
+					roomTemp[x][y].angle = 1;
+				}
+				switch (roomTemp[x][y].type) {
+					case roomTypes::ROOM1:
+						room1amount++;
+					break;
+					case roomTypes::ROOM2:
+						room2amount++;
+					break;
+					case roomTypes::ROOM2C:
+						room2camount++;
+					break;
+					case roomTypes::ROOM3:
+						room3amount++;
+					break;
+					case roomTypes::ROOM4:
+						room4amount++;
+					break;
+				}
+			}
+			//}
+		}
+	}
+
+	//force some rooms in there
+	//for (int i = 0;i<3;i++) {
+	if (room1amount<5) {
+		std::cout<<"Forcing some ROOM1s\n";
+		for (y=2;y<19 && room1amount<5;y++) {
+			//if (getZone(y+2) == i && getZone(y-2) == i) {
+			for (x=2;x<19 && room1amount<5;x++) {
+				if (roomTemp[x][y].angle<0) {
+					bool freeSpace = ((roomTemp[x+1][y].angle>=0) != (roomTemp[x-1][y].angle>=0)) != ((roomTemp[x][y+1].angle>=0) != (roomTemp[x][y-1].angle>=0));
+					freeSpace = freeSpace && (((roomTemp[x+2][y].angle>=0) != (roomTemp[x-2][y].angle>=0)) != ((roomTemp[x][y+2].angle>=0) != (roomTemp[x][y-2].angle>=0)));
+					freeSpace = freeSpace && (((roomTemp[x+1][y+1].angle>=0) != (roomTemp[x-1][y-1].angle>=0)) != ((roomTemp[x-1][y+1].angle>=0) != (roomTemp[x+1][y-1].angle>=0)));
+					if (freeSpace) {
+						tempRoom* adjRoom = nullptr;
+						if (roomTemp[x+1][y].angle>=0) {
+							adjRoom = &roomTemp[x+1][y];
+							roomTemp[x][y].angle = 3;
+						} else if (roomTemp[x-1][y].angle>=0) {
+							adjRoom = &roomTemp[x-1][y];
+							roomTemp[x][y].angle = 1;
+						} else if (roomTemp[x][y+1].angle>=0) {
+							adjRoom = &roomTemp[x][y+1];
+							roomTemp[x][y].angle = 2;
+						} else {
+							adjRoom = &roomTemp[x][y-1];
+							roomTemp[x][y].angle = 0;
+						}
+
+						switch (adjRoom->type) {
+							case roomTypes::ROOM2:
+								roomTemp[x][y].type = roomTypes::ROOM1;
+								room1amount++;
+								room2amount--;
+								room3amount++;
+								adjRoom->type = roomTypes::ROOM3;
+								switch (roomTemp[x][y].angle) {
+									case 0:
+										adjRoom->angle = 2;
+									break;
+									case 1:
+										adjRoom->angle = 3;
+									break;
+									case 2:
+										adjRoom->angle = 0;
+									break;
+									case 3:
+										adjRoom->angle = 1;
+									break;
+								}
+							break;
+							case roomTypes::ROOM3:
+								roomTemp[x][y].type = roomTypes::ROOM1;
+								adjRoom->type = roomTypes::ROOM4;
+								room1amount++;
+								room3amount--;
+								room4amount++;
+							break;
+							default:
+								roomTemp[x][y].angle = -1;
+							break;
+						}
+					}
+				}
+			}
+			//}
+		}
+	}
+	if (room4amount<3) {
+		std::cout<<"Forcing some ROOM4s\n";
+		for (y=2;y<19 && room4amount<3;y++) {
+			//if (getZone(y+2) == i && getZone(y-2) == i) {
+			for (x=2;x<19 && room4amount<3;x++) {
+				if (roomTemp[x][y].angle<0) {
+					bool freeSpace = ((roomTemp[x+1][y].angle>=0) != (roomTemp[x-1][y].angle>=0)) != ((roomTemp[x][y+1].angle>=0) != (roomTemp[x][y-1].angle>=0));
+					freeSpace = freeSpace && (((roomTemp[x+2][y].angle>=0) != (roomTemp[x-2][y].angle>=0)) != ((roomTemp[x][y+2].angle>=0) != (roomTemp[x][y-2].angle>=0)));
+					freeSpace = freeSpace && (((roomTemp[x+1][y+1].angle>=0) != (roomTemp[x-1][y-1].angle>=0)) != ((roomTemp[x-1][y+1].angle>=0) != (roomTemp[x+1][y-1].angle>=0)));
+					if (freeSpace) {
+						tempRoom* adjRoom = nullptr;
+
+						if (roomTemp[x+1][y].angle>=0) {
+							adjRoom = &roomTemp[x+1][y];
+							roomTemp[x][y].angle = 3;
+						} else if (roomTemp[x-1][y].angle>=0) {
+							adjRoom = &roomTemp[x-1][y];
+							roomTemp[x][y].angle = 1;
+						} else if (roomTemp[x][y+1].angle>=0) {
+							adjRoom = &roomTemp[x][y+1];
+							roomTemp[x][y].angle = 2;
+						} else {
+							adjRoom = &roomTemp[x][y-1];
+							roomTemp[x][y].angle = 0;
+						}
+
+						switch (adjRoom->type) {
+							case roomTypes::ROOM3:
+								roomTemp[x][y].type = roomTypes::ROOM1;
+								adjRoom->type = roomTypes::ROOM4;
+								room1amount++;
+								room3amount--;
+								room4amount++;
+							break;
+							default:
+								roomTemp[x][y].angle = -1;
+							break;
+						}
+					}
+				}
+			}
+			//}
+		}
+	}
+	if (room2camount<3) {
+		std::cout<<"Forcing some ROOM2Cs\n";
+		for (y=2;y<19 && room2camount<3;y++) {
+			//if (getZone(y+2) == i && getZone(y-2) == i) {
+			for (x=2;x<19 && room2camount<3;x++) {
+				if (roomTemp[x][y].angle<0) {
+					bool freeSpace = ((roomTemp[x+1][y].angle>=0) != (roomTemp[x-1][y].angle>=0)) != ((roomTemp[x][y+1].angle>=0) != (roomTemp[x][y-1].angle>=0));
+					freeSpace = freeSpace && (((roomTemp[x+2][y].angle>=0) != (roomTemp[x-2][y].angle>=0)) != ((roomTemp[x][y+2].angle>=0) != (roomTemp[x][y-2].angle>=0)));
+					freeSpace = freeSpace && (((roomTemp[x+1][y+1].angle>=0) != (roomTemp[x-1][y-1].angle>=0)) != ((roomTemp[x-1][y+1].angle>=0) != (roomTemp[x+1][y-1].angle>=0)));
+					if (freeSpace) {
+						tempRoom* adjRoom = nullptr;
+
+						if (roomTemp[x+1][y].angle>=0) {
+							adjRoom = &roomTemp[x+1][y];
+							roomTemp[x][y].angle = 3;
+						} else if (roomTemp[x-1][y].angle>=0) {
+							adjRoom = &roomTemp[x-1][y];
+							roomTemp[x][y].angle = 1;
+						} else if (roomTemp[x][y+1].angle>=0) {
+							adjRoom = &roomTemp[x][y+1];
+							roomTemp[x][y].angle = 2;
+						} else {
+							adjRoom = &roomTemp[x][y-1];
+							roomTemp[x][y].angle = 0;
+						}
+
+						switch (adjRoom->type) {
+							case roomTypes::ROOM1:
+								roomTemp[x][y].type = roomTypes::ROOM1;
+								adjRoom->type = roomTypes::ROOM2C;
+								switch (roomTemp[x][y].angle) {
+									case 0:
+										if (adjRoom->angle == 1) adjRoom->angle = 2; //south-west
+										else if (adjRoom->angle == 3) adjRoom->angle = 3; //south-east
+										else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
+									break;
+									case 1:
+										if (adjRoom->angle == 0) adjRoom->angle = 1; //north-east
+										else if (adjRoom->angle == 2) adjRoom->angle = 3; //south-east
+										else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
+									break;
+									case 2:
+										if (adjRoom->angle == 1) adjRoom->angle = 1; //north-east
+										else if (adjRoom->angle == 3) adjRoom->angle = 0; //north-west
+										else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
+									break;
+									case 3:
+										if (adjRoom->angle == 0) adjRoom->angle = 0; //north-west
+										else if (adjRoom->angle == 2) adjRoom->angle = 2; //south-west
+										else { roomTemp[x][y].angle = -1; adjRoom->type = roomTypes::ROOM1; }
+									break;
+								}
+								if (roomTemp[x][y].angle > -1) {
+									room2camount++;
+								}
+							break;
+							default:
+								roomTemp[x][y].angle = -1;
+							break;
+						}
+					}
+				}
+			}
+			//}
+		}
+	}
+	//}
+
+	for (x=0;x<20;x++) {
+		for (y=0;y<20;y++) {
+			std::cout<<(roomTemp[y][x].angle>-1);
+		}
+		std::cout<<"\n";
+	}
+
+	roomTypes actualType; char angle;
+	for (x=0;x<20;x++) {
+		for (y=0;y<20;y++) {
+			if (roomTemp[x][y].angle>-1) {
+				bool hasNorth,hasSouth,hasEast,hasWest;
+				hasNorth = hasSouth = hasEast = hasWest = false;
+				if (x>0) {
+					hasWest = (roomTemp[x-1][y].angle>-1);
+				}
+				if (x<19) {
+					hasEast = (roomTemp[x+1][y].angle>-1);
+				}
+				if (y>0) {
+					hasNorth = (roomTemp[x][y-1].angle>-1);
+				}
+				if (y<19) {
+					hasSouth = (roomTemp[x][y+1].angle>-1);
+				}
+				if (hasNorth && hasSouth) {
+					if (hasEast && hasWest) { //room4
+						actualType = roomTypes::ROOM4;
+						angle = rand()%4;
+					} else if (hasEast && !hasWest) { //room3, pointing east
+						actualType = roomTypes::ROOM3;
+						angle = 3;
+					} else if (!hasEast && hasWest) { //room3, pointing west
+						actualType = roomTypes::ROOM3;
+						angle = 1;
+					} else { //vertical room2
+						actualType = roomTypes::ROOM2;
+						angle = (rand()%2)*2;
+					}
+				} else if (hasEast && hasWest) {
+					if (hasNorth && !hasSouth) { //room3, pointing north
+						actualType = roomTypes::ROOM3;
+						angle = 0;
+					} else if (!hasNorth && hasSouth) { //room3, pointing south
+						actualType = roomTypes::ROOM3;
+						angle = 2;
+					} else { //horizontal room2
+						actualType = roomTypes::ROOM2;
+						angle = ((rand()%2)*2)+1;
+					}
+				} else if (hasNorth) {
+					if (hasEast) { //room2c, north-east
+						actualType = roomTypes::ROOM2C;
+						angle = 0;
+					} else if (hasWest) { //room2c, north-west
+						actualType = roomTypes::ROOM2C;
+						angle = 1;
+					} else { //room1, north
+						actualType = roomTypes::ROOM1;
+						angle = 0;
+					}
+				} else if (hasSouth) {
+					if (hasEast) { //room2c, south-east
+						actualType = roomTypes::ROOM2C;
+						angle = 3;
+					} else if (hasWest) { //room2c, south-west
+						actualType = roomTypes::ROOM2C;
+						angle = 2;
+					} else { //room1, south
+						actualType = roomTypes::ROOM1;
+						angle = 2;
+					}
+				} else if (hasEast) { //room1, east
+					actualType = roomTypes::ROOM1;
+					angle = 3;
+				} else { //room1, west
+					actualType = roomTypes::ROOM1;
+					angle = 1;
+				}
+				if (actualType!=roomTemp[x][y].type) {
+					std::cout<<"MapGen error at ["<<x<<","<<y<<"]: ";
+					switch (actualType) {
+						case roomTypes::ROOM1:
+							std::cout<<"ROOM1";
+						break;
+						case roomTypes::ROOM2:
+							std::cout<<"ROOM2";
+						break;
+						case roomTypes::ROOM2C:
+							std::cout<<"ROOM2C";
+						break;
+						case roomTypes::ROOM3:
+							std::cout<<"ROOM3";
+						break;
+						case roomTypes::ROOM4:
+							std::cout<<"ROOM4";
+						break;
+					}
+					std::cout<<" doesn't match ";
+					switch (roomTemp[x][y].type) {
+						case roomTypes::ROOM1:
+							std::cout<<"ROOM1";
+						break;
+						case roomTypes::ROOM2:
+							std::cout<<"ROOM2";
+						break;
+						case roomTypes::ROOM2C:
+							std::cout<<"ROOM2C";
+						break;
+						case roomTypes::ROOM3:
+							std::cout<<"ROOM3";
+						break;
+						case roomTypes::ROOM4:
+							std::cout<<"ROOM4";
+						break;
+					}
+					std::cout<<"\n";
+					std::terminate();
+				} else if (angle!=roomTemp[x][y].angle) {
+					switch (actualType) {
+						case roomTypes::ROOM2:
+							if (std::abs(angle-roomTemp[x][y].angle)%2==1) {
+								std::cout<<"MapGen error at ["<<x<<","<<y<<"]: ROOM2 incorrect angle\n";
+								std::terminate();
+							}
+						break;
+						case roomTypes::ROOM4:
+							//any angle is correct for a room4
+						break;
+						default:
+							std::cout<<"MapGen error at ["<<x<<","<<y<<"]: ";
+							switch (roomTemp[x][y].type) {
+								case roomTypes::ROOM1:
+									std::cout<<"ROOM1";
+								break;
+								case roomTypes::ROOM2C:
+									std::cout<<"ROOM2C";
+								break;
+								case roomTypes::ROOM3:
+									std::cout<<"ROOM3";
+								break;
+								default:
+								break;
+							}
+							std::cout<<" incorrect angle\n";
+							std::terminate();
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	unsigned short currentRoom1,currentRoom2,currentRoom2c,currentRoom3,currentRoom4;
+	currentRoom1 = currentRoom2 = currentRoom2c = currentRoom3 = currentRoom4 = 0;
+	//short prevZone = getZone(19);
+	for (y=19;y>=0;y--) {
+		/*if (getZone(y)!=prevZone) {
+			currentRoom1 = currentRoom2 = currentRoom2c = currentRoom3 = currentRoom4 = 0;
+		}*/
+		for (x=19;x>=0;x--) {
+			if (roomTemp[x][y].angle>-1 && roomTemp[x][y].angle<127) {
+				switch (roomTemp[x][y].type) {
+					case roomTypes::ROOM1:
+						switch (zone) {
+							case 0: //LCZ
+								if (currentRoom1==0) {
+									roomArray[x][y] = start::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+
+									for (unsigned int i=0;i<itemList.size();i++) {
+										itemList[i]->Unpick(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+									}
+
+								} else if (currentRoom1==(int)(0.4f*(float)room1amount)) {
+									roomArray[x][y] = roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.8f*(float)room1amount)) {
+									roomArray[x][y] = r_914::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+								}
+							break;
+							case 1: //HCZ
+								if (currentRoom1==(int)(0.1f*(float)room1amount)) {
+									roomArray[x][y] = room079::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.3f*(float)room1amount)) {
+									roomArray[x][y] = room106::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10,y*204.8f*RoomScale));
+								} else if (currentRoom1==(int)(0.5f*(float)room1amount)) {
+									roomArray[x][y] = coffin::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.7f*(float)room1amount)) {
+									roomArray[x][y] = room035::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.9f*(float)room1amount)) {
+									roomArray[x][y] = r_008::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 2: //EZ
+								if (currentRoom1==room1amount-1) {
+									roomArray[x][y] = gateaentrance::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==room1amount-2) {
+									roomArray[x][y] = exit1::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+						}
+						currentRoom1++;
+					break;
+					case roomTypes::ROOM2:
+						switch (zone) {
+							case 0: //LCZ
+								if (currentRoom2==0) {
+									roomArray[x][y] = room2closets::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.2f*(float)room2amount)) {
+									roomArray[x][y] = room2testroom2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.4f*(float)room2amount)) {
+									roomArray[x][y] = room2scps::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.8f*(float)room2amount)) {
+									roomArray[x][y] = room2storage::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.9f*(float)room2amount)) {
+									roomArray[x][y] = room012::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 1: //HCZ
+								if (currentRoom2==(int)(0.2f*(float)room2amount)) {
+									roomArray[x][y] = room2nuke::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.25f*(float)room2amount)) {
+									roomArray[x][y] = room2tunnel::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.4f*(float)room2amount)) {
+									roomArray[x][y] = room049::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.7f*(float)room2amount)) {
+									roomArray[x][y] = room2servers::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.9f*(float)room2amount)) {
+									roomArray[x][y] = testroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 2: //EZ
+								if (currentRoom2==(int)(0.1f*(float)room2amount)) {
+									roomArray[x][y] = room2poffices::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.2f*(float)room2amount)) {
+									roomArray[x][y] = room2cafeteria::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.3f*(float)room2amount)) {
+									roomArray[x][y] = room2sroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.45f*(float)room2amount)) {
+									roomArray[x][y] = room2offices::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.6f*(float)room2amount)) {
+									roomArray[x][y] = room860::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.8f*(float)room2amount)) {
+									roomArray[x][y] = room2poffices2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.9f*(float)room2amount)) {
+									roomArray[x][y] = room2offices2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+						}
+						currentRoom2++;
+					break;
+					case roomTypes::ROOM2C:
+						switch (zone) {
+							case 0: //LCZ
+								if (currentRoom2c==0) {
+									roomArray[x][y] = lockroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 1: //HCZ
+
+							break;
+							case 2: //EZ
+								if (currentRoom2c==0) {
+									roomArray[x][y] = room2ccont::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2c==1) {
+									roomArray[x][y] = lockroom2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+						}
+						currentRoom2c++;
+					break;
+					case roomTypes::ROOM3:
+						switch (zone) {
+							case 0: //LCZ
+								if (currentRoom3==(int)((((rand()%1000)*0.001f)+0.2f)*(float)room3amount)) {
+									roomArray[x][y] = room3storage::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 1: //HCZ
+								if (currentRoom3==(int)(0.5f*(float)room3amount)) {
+									roomArray[x][y] = room513::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+							case 2: //EZ
+								if (currentRoom3==(int)(0.3f*(float)room3amount)) {
+									roomArray[x][y] = room3servers::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom3==(int)(0.7f*(float)room3amount)) {
+									roomArray[x][y] = room3servers2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								}
+							break;
+						}
+						currentRoom3++;
+					break;
+					case roomTypes::ROOM4:
+						switch (zone) {
+							case 0: //LCZ
+
+							break;
+							case 1: //HCZ
+
+							break;
+							case 2: //EZ
+
+							break;
+						}
+						currentRoom4++;
+					break;
+				}
+				if (roomArray[x][y]==nullptr) {
+					addRandomRoom(x,y,roomTemp[x][y].type,roomTemp[x][y].angle,zone);
+				}
+			}
+		}
+	}
+}
+
+/*void world::createMap() {
 	auto getZone = [] (short y) -> int { return std::max(std::min(std::floor((float)(20-y)/20.f*3.f),2.f),0.f); };
 
 	short x,y,temp;
@@ -707,4 +1400,4 @@ void world::createMap() {
 		}
 		prevZone = getZone(y);
 	}
-}
+}*/

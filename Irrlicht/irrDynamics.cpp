@@ -35,11 +35,12 @@ using namespace irr;
 irrDynamics::irrDynamics() : lastStep(0) {
 	// Initialize bullet
     collisionConfiguration = new btDefaultCollisionConfiguration();
-    broadPhase = new btAxisSweep3(btVector3(-1000, -1000, -1000), btVector3(1000, 1000, 1000));
+    broadPhase = new btAxisSweep3(btVector3(-10000, -10000, -10000), btVector3(10000, 10000, 10000));
     broadPhase->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
     solver = new btSequentialImpulseConstraintSolver();
     world = new btDiscreteDynamicsWorld(dispatcher, broadPhase, solver, collisionConfiguration);
+    world->getDispatchInfo().m_allowedCcdPenetration=0.0001f;
 }
 
 
@@ -526,6 +527,7 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
 	}
 	mShape->setMargin(oRadius*0.1f);
+	//mShape->initializePolyhedralFeatures();
 
     // Add mass
     btVector3 localInertia;

@@ -113,6 +113,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	//Add test model
 
     dynamics = new irrDynamics();
+    //gContactAddedCallback = CustomMaterialCombinerCallback;
     dynamics->setGravity(-100*RoomScale);
 
 	irr::scene::IMeshSceneNode* node = nullptr;
@@ -209,80 +210,82 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	RMesh* rme;
 	//LCZ
-	/*lockroom*/rme = loadRMesh(std::string("GFX/map/lockroom_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); lockroom::setBase(rme);
-	/*start*/rme = loadRMesh(std::string("GFX/map/173_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); start::setBase(rme);
-	/*room2storage*/rme = loadRMesh(std::string("GFX/map/room2storage_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2storage::setBase(rme);
-	/*room3storage*/rme = loadRMesh(std::string("GFX/map/room3storage_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3storage::setBase(rme);
-	/*endroom*/rme = loadRMesh(std::string("GFX/map/endroom_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); endroom::setBase(rme);
-	/*room012*/rme = loadRMesh(std::string("GFX/map/room012_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room012::setBase(rme);
-	/*room2*/rme = loadRMesh(std::string("GFX/map/room2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2::setBase(rme);
-	/*room2_2*/rme = loadRMesh(std::string("GFX/map/room2_2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2_2::setBase(rme);
-	/*room2c*/rme = loadRMesh(std::string("GFX/map/room2C_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2c::setBase(rme);
-	/*room2closets*/rme = loadRMesh(std::string("GFX/map/room2closets_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2closets::setBase(rme);
-	/*room2elevator*/rme = loadRMesh(std::string("GFX/map/room2elevator_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2elevator::setBase(rme);
-	/*room2doors*/rme = loadRMesh(std::string("GFX/map/room2doors_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2doors::setBase(rme);
-	/*room2scps*/rme = loadRMesh(std::string("GFX/map/room2scps_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2scps::setBase(rme);
-	/*room3storage*/rme = loadRMesh(std::string("GFX/map/room3storage_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3storage::setBase(rme);
-	/*room2testroom2*/rme = loadRMesh(std::string("GFX/map/room2testroom2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2testroom2::setBase(rme);
-	/*room3*/rme = loadRMesh(std::string("GFX/map/room3_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3::setBase(rme);
-	/*room3_2*/rme = loadRMesh(std::string("GFX/map/room3_2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3_2::setBase(rme);
-	/*room4*/rme = loadRMesh(std::string("GFX/map/room4_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room4::setBase(rme);
-	/*roompj*/rme = loadRMesh(std::string("GFX/map/roompj_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); roompj::setBase(rme);
-	/*r_914*/rme = loadRMesh(std::string("GFX/map/machineroom_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); r_914::setBase(rme);
+	/*lockroom*/rme = loadRMesh(std::string("GFX/map/lockroom_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); lockroom::setBase(rme);
+	/*start*/rme = loadRMesh(std::string("GFX/map/173_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); start::setBase(rme);
+	/*room2storage*/rme = loadRMesh(std::string("GFX/map/room2storage_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2storage::setBase(rme);
+	/*room3storage*/rme = loadRMesh(std::string("GFX/map/room3storage_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3storage::setBase(rme);
+	/*endroom*/rme = loadRMesh(std::string("GFX/map/endroom_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); endroom::setBase(rme);
+	/*room012*/rme = loadRMesh(std::string("GFX/map/room012_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room012::setBase(rme);
+	/*room2*/rme = loadRMesh(std::string("GFX/map/room2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2::setBase(rme);
+	/*room2_2*/rme = loadRMesh(std::string("GFX/map/room2_2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2_2::setBase(rme);
+	/*room2c*/rme = loadRMesh(std::string("GFX/map/room2C_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2c::setBase(rme);
+	/*room2closets*/rme = loadRMesh(std::string("GFX/map/room2closets_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2closets::setBase(rme);
+	/*room2elevator*/rme = loadRMesh(std::string("GFX/map/room2elevator_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2elevator::setBase(rme);
+	/*room2doors*/rme = loadRMesh(std::string("GFX/map/room2doors_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2doors::setBase(rme);
+	/*room2scps*/rme = loadRMesh(std::string("GFX/map/room2scps_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2scps::setBase(rme);
+	/*room3storage*/rme = loadRMesh(std::string("GFX/map/room3storage_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3storage::setBase(rme);
+	/*room2testroom2*/rme = loadRMesh(std::string("GFX/map/room2testroom2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2testroom2::setBase(rme);
+	/*room3*/rme = loadRMesh(std::string("GFX/map/room3_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3::setBase(rme);
+	/*room3_2*/rme = loadRMesh(std::string("GFX/map/room3_2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3_2::setBase(rme);
+	/*room4*/rme = loadRMesh(std::string("GFX/map/room4_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room4::setBase(rme);
+	/*roompj*/rme = loadRMesh(std::string("GFX/map/roompj_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); roompj::setBase(rme);
+	/*r_914*/rme = loadRMesh(std::string("GFX/map/machineroom_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); r_914::setBase(rme);
+	#if 0
 	//HCZ
-	/*r_008*/rme = loadRMesh(std::string("GFX/map/008_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); r_008::setBase(rme);
-	/*coffin*/rme = loadRMesh(std::string("GFX/map/coffin_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); coffin::setBase(rme);
-	/*endroom2*/rme = loadRMesh(std::string("GFX/map/endroom2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); endroom2::setBase(rme);
-	/*testroom*/rme = loadRMesh(std::string("GFX/map/testroom_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); testroom::setBase(rme);
-	/*tunnel*/rme = loadRMesh(std::string("GFX/map/tunnel_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); tunnel::setBase(rme);
-	/*tunnel2*/rme = loadRMesh(std::string("GFX/map/tunnel2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); tunnel2::setBase(rme);
-	/*room035*/rme = loadRMesh(std::string("GFX/map/room035_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room035::setBase(rme);
-	/*room049*/rme = loadRMesh(std::string("GFX/map/room049_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room049::setBase(rme);
-	/*room106*/rme = loadRMesh(std::string("GFX/map/room106_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room106::setBase(rme);
-	/*room2ctunnel*/rme = loadRMesh(std::string("GFX/map/room2Ctunnel_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2ctunnel::setBase(rme);
-	/*room2nuke*/rme = loadRMesh(std::string("GFX/map/room2nuke_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2nuke::setBase(rme);
-	/*room2pipes*/rme = loadRMesh(std::string("GFX/map/room2pipes_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2pipes::setBase(rme);
-	/*room2pit*/rme = loadRMesh(std::string("GFX/map/room2pit_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2pit::setBase(rme);
-	/*room3pit*/rme = loadRMesh(std::string("GFX/map/room3pit_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3pit::setBase(rme);
-	/*room2servers*/rme = loadRMesh(std::string("GFX/map/room2servers_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2servers::setBase(rme);
-	/*room2tunnel*/rme = loadRMesh(std::string("GFX/map/room2tunnel_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2tunnel::setBase(rme);
-	/*room3tunnel*/rme = loadRMesh(std::string("GFX/map/room3tunnel_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3tunnel::setBase(rme);
-	/*room4tunnels*/rme = loadRMesh(std::string("GFX/map/4tunnels_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room4tunnels::setBase(rme);
-	/*room513*/rme = loadRMesh(std::string("GFX/map/room513_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room513::setBase(rme);
+	/*r_008*/rme = loadRMesh(std::string("GFX/map/008_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); r_008::setBase(rme);
+	/*coffin*/rme = loadRMesh(std::string("GFX/map/coffin_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); coffin::setBase(rme);
+	/*endroom2*/rme = loadRMesh(std::string("GFX/map/endroom2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); endroom2::setBase(rme);
+	/*testroom*/rme = loadRMesh(std::string("GFX/map/testroom_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); testroom::setBase(rme);
+	/*tunnel*/rme = loadRMesh(std::string("GFX/map/tunnel_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); tunnel::setBase(rme);
+	/*tunnel2*/rme = loadRMesh(std::string("GFX/map/tunnel2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); tunnel2::setBase(rme);
+	/*room035*/rme = loadRMesh(std::string("GFX/map/room035_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room035::setBase(rme);
+	/*room049*/rme = loadRMesh(std::string("GFX/map/room049_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room049::setBase(rme);
+	/*room106*/rme = loadRMesh(std::string("GFX/map/room106_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room106::setBase(rme);
+	/*room2ctunnel*/rme = loadRMesh(std::string("GFX/map/room2Ctunnel_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2ctunnel::setBase(rme);
+	/*room2nuke*/rme = loadRMesh(std::string("GFX/map/room2nuke_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2nuke::setBase(rme);
+	/*room2pipes*/rme = loadRMesh(std::string("GFX/map/room2pipes_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2pipes::setBase(rme);
+	/*room2pit*/rme = loadRMesh(std::string("GFX/map/room2pit_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2pit::setBase(rme);
+	/*room3pit*/rme = loadRMesh(std::string("GFX/map/room3pit_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3pit::setBase(rme);
+	/*room2servers*/rme = loadRMesh(std::string("GFX/map/room2servers_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2servers::setBase(rme);
+	/*room2tunnel*/rme = loadRMesh(std::string("GFX/map/room2tunnel_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2tunnel::setBase(rme);
+	/*room3tunnel*/rme = loadRMesh(std::string("GFX/map/room3tunnel_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3tunnel::setBase(rme);
+	/*room4tunnels*/rme = loadRMesh(std::string("GFX/map/4tunnels_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room4tunnels::setBase(rme);
+	/*room513*/rme = loadRMesh(std::string("GFX/map/room513_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room513::setBase(rme);
 	//EZ
-	/*room860*/rme = loadRMesh(std::string("GFX/map/room860_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room860::setBase(rme);
-	/*exit1*/rme = loadRMesh(std::string("GFX/map/exit1_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); exit1::setBase(rme);
-	/*gateaentrance*/rme = loadRMesh(std::string("GFX/map/gateaentrance_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); gateaentrance::setBase(rme);
-	/*lockroom2*/rme = loadRMesh(std::string("GFX/map/lockroom2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); lockroom2::setBase(rme);
-	/*room079*/rme = loadRMesh(std::string("GFX/map/room079_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room079::setBase(rme);
-	/*room2z3*/rme = loadRMesh(std::string("GFX/map/room2z3_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2z3::setBase(rme);
-	/*room2cafeteria*/rme = loadRMesh(std::string("GFX/map/room2cafeteria_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2cafeteria::setBase(rme);
-	/*room2cz3*/rme = loadRMesh(std::string("GFX/map/room2Cz3_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2cz3::setBase(rme);
-	/*room2ccont*/rme = loadRMesh(std::string("GFX/map/room2ccont_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2ccont::setBase(rme);
-	/*room2offices*/rme = loadRMesh(std::string("GFX/map/room2offices_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2offices::setBase(rme);
-	/*room2offices2*/rme = loadRMesh(std::string("GFX/map/room2offices2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2offices2::setBase(rme);
-	/*room2offices3*/rme = loadRMesh(std::string("GFX/map/room2offices3_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2offices3::setBase(rme);
-	/*room2poffices*/rme = loadRMesh(std::string("GFX/map/room2poffices_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2poffices::setBase(rme);
-	/*room2poffices2*/rme = loadRMesh(std::string("GFX/map/room2poffices2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2poffices2::setBase(rme);
-	/*room2sroom*/rme = loadRMesh(std::string("GFX/map/room2sroom_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2sroom::setBase(rme);
-	/*room2toilets*/rme = loadRMesh(std::string("GFX/map/room2toilets_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2toilets::setBase(rme);
-	/*room2tesla*/rme = loadRMesh(std::string("GFX/map/room2tesla_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2tesla::setBase(rme);
-	/*room3servers*/rme = loadRMesh(std::string("GFX/map/room3servers_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3servers::setBase(rme);
-	/*room3servers2*/rme = loadRMesh(std::string("GFX/map/room3servers2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3servers2::setBase(rme);
-	/*room3z3*/rme = loadRMesh(std::string("GFX/map/room3z3_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3z3::setBase(rme);
-	/*room4z3*/rme = loadRMesh(std::string("GFX/map/room4z3_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room4z3::setBase(rme);
+	/*room860*/rme = loadRMesh(std::string("GFX/map/room860_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room860::setBase(rme);
+	/*exit1*/rme = loadRMesh(std::string("GFX/map/exit1_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); exit1::setBase(rme);
+	/*gateaentrance*/rme = loadRMesh(std::string("GFX/map/gateaentrance_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); gateaentrance::setBase(rme);
+	/*lockroom2*/rme = loadRMesh(std::string("GFX/map/lockroom2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); lockroom2::setBase(rme);
+	/*room079*/rme = loadRMesh(std::string("GFX/map/room079_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room079::setBase(rme);
+	/*room2z3*/rme = loadRMesh(std::string("GFX/map/room2z3_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2z3::setBase(rme);
+	/*room2cafeteria*/rme = loadRMesh(std::string("GFX/map/room2cafeteria_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2cafeteria::setBase(rme);
+	/*room2cz3*/rme = loadRMesh(std::string("GFX/map/room2Cz3_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2cz3::setBase(rme);
+	/*room2ccont*/rme = loadRMesh(std::string("GFX/map/room2ccont_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2ccont::setBase(rme);
+	/*room2offices*/rme = loadRMesh(std::string("GFX/map/room2offices_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2offices::setBase(rme);
+	/*room2offices2*/rme = loadRMesh(std::string("GFX/map/room2offices2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2offices2::setBase(rme);
+	/*room2offices3*/rme = loadRMesh(std::string("GFX/map/room2offices3_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2offices3::setBase(rme);
+	/*room2poffices*/rme = loadRMesh(std::string("GFX/map/room2poffices_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2poffices::setBase(rme);
+	/*room2poffices2*/rme = loadRMesh(std::string("GFX/map/room2poffices2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2poffices2::setBase(rme);
+	/*room2sroom*/rme = loadRMesh(std::string("GFX/map/room2sroom_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2sroom::setBase(rme);
+	/*room2toilets*/rme = loadRMesh(std::string("GFX/map/room2toilets_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2toilets::setBase(rme);
+	/*room2tesla*/rme = loadRMesh(std::string("GFX/map/room2tesla_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room2tesla::setBase(rme);
+	/*room3servers*/rme = loadRMesh(std::string("GFX/map/room3servers_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3servers::setBase(rme);
+	/*room3servers2*/rme = loadRMesh(std::string("GFX/map/room3servers2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3servers2::setBase(rme);
+	/*room3z3*/rme = loadRMesh(std::string("GFX/map/room3z3_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room3z3::setBase(rme);
+	/*room4z3*/rme = loadRMesh(std::string("GFX/map/room4z3_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room4z3::setBase(rme);
 	//Misc
-	/*r_173*/rme = loadRMesh(std::string("GFX/map/173bright_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); r_173::setBase(rme);
-	/*checkpoint1*/rme = loadRMesh(std::string("GFX/map/checkpoint1_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); checkpoint1::setBase(rme);
-	/*checkpoint2*/rme = loadRMesh(std::string("GFX/map/checkpoint2_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); checkpoint2::setBase(rme);
-	/*gatea*/rme = loadRMesh(std::string("GFX/map/gatea_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); gatea::setBase(rme);
-	/*pocketdimension*/rme = loadRMesh(std::string("GFX/map/pocketdimension1_opt.rmesh"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); pocketdimension::setBase(rme);
+	/*r_173*/rme = loadRMesh(std::string("GFX/map/173bright_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); r_173::setBase(rme);
+	/*checkpoint1*/rme = loadRMesh(std::string("GFX/map/checkpoint1_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); checkpoint1::setBase(rme);
+	/*checkpoint2*/rme = loadRMesh(std::string("GFX/map/checkpoint2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); checkpoint2::setBase(rme);
+	/*gatea*/rme = loadRMesh(std::string("GFX/map/gatea_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); gatea::setBase(rme);
+	/*pocketdimension*/rme = loadRMesh(std::string("GFX/map/pocketdimension1_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); pocketdimension::setBase(rme);
+	#endif
 
 	mainPlayer = new player(this,irrSmgr,dynamics,irrReceiver);
 
 	mainPlayer->update();
 
-	createMap();
+	createMap(0);
 
 	irrDevice->getCursorControl()->setVisible(false);
 	irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);

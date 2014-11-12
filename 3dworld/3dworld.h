@@ -165,7 +165,8 @@ class world {
 
 		room* roomArray[20][20];
 
-        void createMap();
+        void createMap(unsigned char zone);
+        unsigned char currentZone = 0;
         room* addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone);
 
         irr::gui::CGUITTFont* font1;

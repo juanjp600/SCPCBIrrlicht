@@ -15,7 +15,7 @@ class player {
         float walkingSpeed;
         irr::scene::ICameraSceneNode* Camera;
         btRigidBody* Capsule;
-#ifdef PLAYER_PENETRATION_RECOVER
+#if defined(PLAYER_PENETRATION_RECOVER)
         btPairCachingGhostObject* ghostObject;
 #endif
         irr::core::vector3df selfRotation;
@@ -76,6 +76,8 @@ class player {
 
 		std::string getItemName(unsigned char slot);
 		std::string getItemInvImg(unsigned char slot);
+
+		bool noclip = false;
 };
 
 #endif // PLAYER_H_INCLUDED

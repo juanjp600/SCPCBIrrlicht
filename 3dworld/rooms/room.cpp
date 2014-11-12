@@ -2,6 +2,39 @@
 
 #include <cmath>
 
+#include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
+#include <BulletCollision/CollisionShapes/btTriangleShape.h>
+
+/*bool CustomMaterialCombinerCallback(btManifoldPoint& cp,const btCollisionObjectWrapper* colObj0,int partId0,int index0,const btCollisionObjectWrapper* colObj1,int partId1,int index1)
+{
+	std::cout<<"called custom callback\n";
+	btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1);
+
+	float friction0 = colObj0->getCollisionObject()->getFriction();
+	float friction1 = colObj1->getCollisionObject()->getFriction();
+	float restitution0 = colObj0->getCollisionObject()->getRestitution();
+	float restitution1 = colObj1->getCollisionObject()->getRestitution();
+
+	if (colObj0->getCollisionObject()->getCollisionFlags() & btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK)
+	{
+		friction0 = 1.0;//partId0,index0
+		restitution0 = 0.f;
+	}
+	if (colObj1->getCollisionObject()->getCollisionFlags() & btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK)
+	{
+		friction1 = 1.0f;//partId1,index1
+		restitution1 = 0.f;
+	}
+
+	cp.m_combinedFriction = friction0*friction1;
+	cp.m_combinedRestitution = restitution0*restitution1;
+
+	//this return value is currently ignored, but to be on the safe side: return false if you don't calculate friction
+	return true;
+}
+
+extern ContactAddedCallback gContactAddedCallback;*/
+
 dynRegister* room::dynamics = nullptr;
 irr::scene::ISceneManager* room::smgr = nullptr;
 
@@ -30,7 +63,7 @@ irr::scene::IMeshSceneNode* room::getNewNode(irr::scene::IMesh* mesh) {
 void room::setActivation(bool s) {
 	if (s!=isActivated) {
 		if (s) {
-			dynamics->sharedRegisterRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-1.6f,0));
+			dynamics->sharedRegisterRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
 			node->setVisible(true);
 		} else {
 			dynamics->sharedUnregisterRBody(rbody);
@@ -65,8 +98,17 @@ void room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 	rme->shape->calculateLocalInertia(0.0, localInertia);
 
 	rbody = new btRigidBody(0.0, MotionState, rme->shape, localInertia);
-	room::dynamics->sharedRegisterRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-1.6f,0));
+	room::dynamics->sharedRegisterRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
 
 	rbody->setFriction(1.f);
 	rbody->setRollingFriction(1.f);
+	rbody->setContactProcessingThreshold(1.f);
+
+	rbody->setCollisionFlags(rbody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+}
+
+void room::destroy() {
+	node->drop();
+	dynamics->sharedUnregisterRBody(rbody);
+	delete rbody;
 }

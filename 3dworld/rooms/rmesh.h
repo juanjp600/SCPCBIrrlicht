@@ -19,7 +19,13 @@ struct RMesh {
     irr::scene::IMesh* mesh;
     btBvhTriangleMeshShape* shape;
     std::vector<irr::video::SLight> pointlights;
-    std::vector<irr::core::vector3df> waypoints;
+
+    struct waypoint {
+		irr::core::vector3df position;
+		waypoint* connected[10];
+    };
+
+    std::vector<waypoint*> waypoints;
 };
 
 RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::E_MATERIAL_TYPE RoomShader);

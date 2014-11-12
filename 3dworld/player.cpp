@@ -200,113 +200,135 @@ void player::update() {
     if (pitch>70.0) pitch = 70.0;
     if (pitch<-70.0) pitch = -70.0;
 
-	float prevShake = shake;
-	if (shakeFactor>0.f) {
-		shake+=std::max(std::min(shakeFactor*0.15f,10.0f),6.f)*fpsFactor;
-	}
-    while (shake>720.f) shake-=720.f;
-    while (shake<0.f) shake+=720.f;
-
-    btVector3 speed = Capsule->getLinearVelocity();
-
-    if (speed[1]-20.f>prevLinearVelocity[1]) {
-		if (dynamics->rayTest(Capsule->getCenterOfMassPosition(),Capsule->getCenterOfMassPosition()-btVector3(0,height/2.f,0))) {
-			unsigned char chosen = rand()%4;
-			stepSound[owner->pickPlayerTriangle()][1][chosen]->playSound(false,3.f);
+	if (!noclip) {
+		float prevShake = shake;
+		if (shakeFactor>0.f) {
+			shake+=std::max(std::min(shakeFactor*0.15f,10.0f),6.f)*fpsFactor;
 		}
-    }
+		while (shake>720.f) shake-=720.f;
+		while (shake<0.f) shake+=720.f;
 
-	shakeFactor = 0.f;
+		btVector3 speed = Capsule->getLinearVelocity();
 
-	Capsule->setGravity(btVector3(0.f,-450.f*RoomScale/std::max(fpsFactor,1.f),0.f));
+		if (speed[1]-20.f>prevLinearVelocity[1]) {
+			if (dynamics->rayTest(Capsule->getCenterOfMassPosition(),Capsule->getCenterOfMassPosition()-btVector3(0,height/2.f,0))) {
+				unsigned char chosen = rand()%4;
+				stepSound[owner->pickPlayerTriangle()][1][chosen]->playSound(false,3.f);
+			}
+		}
 
-    if (!dead) {
-		Capsule->setFriction(0.01f/fpsFactor);
-		sprintTimer=std::min(std::max(0.f,sprintTimer-0.1f*fpsFactor),10.f);
-		resetSpeeds();
-		if ((irrReceiver->IsKeyDown(irr::KEY_KEY_W)
-			|| irrReceiver->IsKeyDown(irr::KEY_KEY_S)
-			|| irrReceiver->IsKeyDown(irr::KEY_KEY_A)
-			|| irrReceiver->IsKeyDown(irr::KEY_KEY_D)
-			) && std::abs(speed[1]) < 20.f) {
-			Capsule->setLinearVelocity(btVector3(speed[0],speed[1]-(speed[1]*0.5f*fpsFactor),speed[2]));
-			float walkSpeed = 40.f;
-			if (crouchState<0.015f) {
-				if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
-					if (sprintTimer>0.f && sprintTimer<10.f) Stamina-=5.f;
-					sprintTimer = 20.f;
-					if (Stamina>0) walkSpeed=120.f-((100.f-Stamina)*(100.f-Stamina)*0.004);
-					Stamina-=0.2*fpsFactor;
-					if (Stamina<0) Stamina = -10.f;
+		shakeFactor = 0.f;
 
-					if (Stamina<5.f) {
-						if (!breathSound[currBreathSound][0]->isPlaying()) {
-							currBreathSound = 0;
-							breathSound[currBreathSound][0]->playSound(false);
+		Capsule->setGravity(btVector3(0.f,-450.f*RoomScale/std::max(fpsFactor,1.f),0.f));
+		Capsule->setFriction(speed.distance(btVector3(0,speed[1],0))*50.f/std::max(fpsFactor,1.f));
+
+		if (!dead) {
+			//Capsule->setFriction(0.01f/fpsFactor);
+			sprintTimer=std::min(std::max(0.f,sprintTimer-0.1f*fpsFactor),10.f);
+			resetSpeeds();
+			if ((irrReceiver->IsKeyDown(irr::KEY_KEY_W)
+				|| irrReceiver->IsKeyDown(irr::KEY_KEY_S)
+				|| irrReceiver->IsKeyDown(irr::KEY_KEY_A)
+				|| irrReceiver->IsKeyDown(irr::KEY_KEY_D)
+				) && std::abs(speed[1]) < 20.f) {
+				Capsule->setLinearVelocity(btVector3(speed[0],speed[1]-(speed[1]*0.5f*fpsFactor),speed[2]));
+				float walkSpeed = 40.f;
+				if (crouchState<0.015f) {
+					if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
+						if (sprintTimer>0.f && sprintTimer<10.f) Stamina-=5.f;
+						sprintTimer = 20.f;
+						if (Stamina>0) walkSpeed=120.f-((100.f-Stamina)*(100.f-Stamina)*0.004);
+						Stamina-=0.2*fpsFactor;
+						if (Stamina<0) Stamina = -10.f;
+
+						if (Stamina<5.f) {
+							if (!breathSound[currBreathSound][0]->isPlaying()) {
+								currBreathSound = 0;
+								breathSound[currBreathSound][0]->playSound(false);
+							}
+						} else if (Stamina<50.f) {
+							if (!breathSound[currBreathSound][0]->isPlaying()) {
+								currBreathSound = (rand()%3)+1;
+								breathSound[currBreathSound][0]->playSound(false,(50.f-Stamina)/50.f);
+							}
+							//Stamina = 100.f;
 						}
-					} else if (Stamina<50.f) {
-						if (!breathSound[currBreathSound][0]->isPlaying()) {
-							currBreathSound = (rand()%3)+1;
-							breathSound[currBreathSound][0]->playSound(false,(50.f-Stamina)/50.f);
-						}
-						//Stamina = 100.f;
+					} else {
+						Stamina=std::min(Stamina+0.15f*fpsFactor,100.f);
 					}
 				} else {
+					if (crouchState>0.5f) walkSpeed = 10.f; else walkSpeed = 20.f;
 					Stamina=std::min(Stamina+0.15f*fpsFactor,100.f);
 				}
-			} else {
-				if (crouchState>0.5f) walkSpeed = 10.f; else walkSpeed = 20.f;
-				Stamina=std::min(Stamina+0.15f*fpsFactor,100.f);
-			}
-			if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
-				dir = 0.f;
-				if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
-					dir -= 45;
-				} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
-					dir += 45;
+				if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
+					dir = 0.f;
+					if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+						dir -= 45;
+					} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+						dir += 45;
+					}
+				} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) {
+					dir = 180;
+					if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+						dir += 45;
+					} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+						dir -= 45;
+					}
+				} else {
+					if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+						dir = -90;
+					} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+						dir = 90;
+					}
 				}
-			} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) {
-				dir = 180;
-				if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
-					dir += 45;
-				} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
-					dir -= 45;
+
+				if ((prevShake<=270.f && shake>270.f) || (prevShake<=630.f && shake>630.f)) {
+					unsigned char chosen = rand()%4;
+					stepSound[owner->pickPlayerTriangle()][walkSpeed>40.f][chosen]->playSound(false,std::min(walkSpeed/40.f,1.f));
 				}
+
+				dir-=90;
+				dir *= irr::core::DEGTORAD;
+
+				if (walkingSpeed>walkSpeed) {
+					walkingSpeed=std::max(walkSpeed,walkingSpeed+(walkSpeed-walkingSpeed)*0.25f*fpsFactor);
+				} else {
+					walkingSpeed=std::min(walkingSpeed+(walkSpeed-walkingSpeed)*0.05f*fpsFactor,walkSpeed);
+				}
+
+				shakeFactor = walkSpeed;
 			} else {
-				if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
-					dir = -90;
-				} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
-					dir = 90;
+				Stamina=std::min(Stamina+0.15*fpsFactor,100.0);
+				if (std::abs(speed[1])<15.f) {
+					walkingSpeed = walkingSpeed-(walkingSpeed*0.5f*fpsFactor);
+					if (walkingSpeed<=0.02f) walkingSpeed = 0.f;
+				} else {
+					if (walkingSpeed>=70.f) walkingSpeed=std::max(70.f,walkingSpeed-(walkingSpeed*0.1f*fpsFactor));
 				}
 			}
-
-			if ((prevShake<=270.f && shake>270.f) || (prevShake<=630.f && shake>630.f)) {
-				unsigned char chosen = rand()%4;
-				stepSound[owner->pickPlayerTriangle()][walkSpeed>40.f][chosen]->playSound(false,std::min(walkSpeed/40.f,1.f));
-			}
-
-			dir-=90;
-			dir *= irr::core::DEGTORAD;
-
-			if (walkingSpeed>walkSpeed) {
-				walkingSpeed=std::max(walkSpeed,walkingSpeed+(walkSpeed-walkingSpeed)*0.25f*fpsFactor);
+			if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
+				crouched = true;
 			} else {
-				walkingSpeed=std::min(walkingSpeed+(walkSpeed-walkingSpeed)*0.05f*fpsFactor,walkSpeed);
+				btVector3 start = Capsule->getCenterOfMassPosition();
+				btVector3 finish = start + btVector3(0,height*0.85f,0);
+				start += btVector3(0,(height * 0.25f),0);
+				if (!dynamics->rayTest(start,finish)) {
+					if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,radius*1.15f),finish+btVector3(radius*1.15f,0,radius*1.15f))) {
+						if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,radius*1.15f),finish+btVector3(-radius*1.15f,0,radius*1.15f))) {
+							if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,-radius*1.15f),finish+btVector3(radius*1.15f,0,-radius*1.15f))) {
+								if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,-radius*1.15f),finish+btVector3(-radius*1.15f,0,-radius*1.15f))) {
+									crouched = false; //don't stand up if there's something above your head
+								}
+							}
+						}
+					}
+				}
 			}
-
-			shakeFactor = walkSpeed;
+			Capsule->setLinearVelocity(dynSpeed+btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale,0.f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale));
 		} else {
-			Stamina=std::min(Stamina+0.15*fpsFactor,100.0);
-			if (std::abs(speed[1])<15.f) {
-				walkingSpeed = walkingSpeed-(walkingSpeed*0.5f*fpsFactor);
-				if (walkingSpeed<=0.02f) walkingSpeed = 0.f;
-			} else {
-				if (walkingSpeed>=70.f) walkingSpeed=std::max(70.f,walkingSpeed-(walkingSpeed*0.1f*fpsFactor));
-			}
-		}
-		if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
-			crouched = true;
-		} else {
+			//Capsule->setFriction(3.0f);
+			Capsule->setRollingFriction(25.0f);
+			Capsule->setRestitution(0.f);
 			btVector3 start = Capsule->getCenterOfMassPosition();
 			btVector3 finish = start + btVector3(0,height*0.85f,0);
 			start += btVector3(0,(height * 0.25f),0);
@@ -322,72 +344,97 @@ void player::update() {
 				}
 			}
 		}
-		Capsule->setLinearVelocity(dynSpeed+btVector3(std::cos(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale,0.f,-std::sin(dir+yaw*irr::core::DEGTORAD)*walkingSpeed*RoomScale));
-	} else {
-		Capsule->setFriction(3.0f);
-		Capsule->setRollingFriction(25.0f);
-		Capsule->setRestitution(0.f);
-		btVector3 start = Capsule->getCenterOfMassPosition();
-		btVector3 finish = start + btVector3(0,height*0.85f,0);
-		start += btVector3(0,(height * 0.25f),0);
-		if (!dynamics->rayTest(start,finish)) {
-			if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,radius*1.15f),finish+btVector3(radius*1.15f,0,radius*1.15f))) {
-				if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,radius*1.15f),finish+btVector3(-radius*1.15f,0,radius*1.15f))) {
-					if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,-radius*1.15f),finish+btVector3(radius*1.15f,0,-radius*1.15f))) {
-						if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,-radius*1.15f),finish+btVector3(-radius*1.15f,0,-radius*1.15f))) {
-							crouched = false; //don't stand up if there's something above your head
-						}
-					}
-				}
+
+		if (irrReceiver->IsKeyDown(irr::KEY_KEY_Q)) {
+			Capsule->setAngularFactor(btVector3(1,1,1)); dead = true;
+		}
+		if (irrReceiver->IsKeyDown(irr::KEY_KEY_E)) {
+			dead = false;
+			Capsule->setAngularFactor(btVector3(0,0,0));
+			const btQuaternion identity(0,0,0,1);
+			btTransform Transform = Capsule->getCenterOfMassTransform();
+			Transform.setRotation(identity);
+			Capsule->setCenterOfMassTransform(Transform);
+			Capsule->setAngularVelocity(btVector3(0,0,0));
+		}
+
+		bool changed = false;
+		if (crouched) {
+			if (crouchState<0.5f) changed = true;
+
+			float prevState = crouchState;
+			crouchState=std::min(0.5f,crouchState+(0.5f-crouchState)*fpsFactor*0.2f);
+			if (crouchState>0.4998f) crouchState = 0.5f;
+
+			if (changed) { //must unregister body to perform changes to its shape
+				dynamics->unregisterRBody(Capsule);
+				Capsule->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
+				Capsule->translate(btVector3(0.f,(prevState-crouchState)*height*0.49f,0.f));
+				dynamics->registerNewRBody(Camera,Capsule,-1,1,1,irr::core::vector3df(0,(-(height/2.f)*(1.f-crouchState))+(radius/1.5f),0));
+				Capsule->setGravity(btVector3(0.f,-450.f*RoomScale,0.f));
+			}
+		} else {
+			if (crouchState>0.0f) changed = true;
+
+			float prevState = crouchState;
+			crouchState=std::max(0.f,crouchState+(-crouchState)*fpsFactor*0.1f);
+			if (crouchState<0.002f) crouchState = 0.f;
+
+			if (changed) { //must unregister body to perform changes to its shape
+				dynamics->unregisterRBody(Capsule);
+				Capsule->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
+				Capsule->translate(btVector3(0.f,(prevState-crouchState)*height*0.49f,0.f));
+				dynamics->registerNewRBody(Camera,Capsule,-1,1,1,irr::core::vector3df(0,(-(height/2.f)*(1.f-crouchState))+(radius/1.5f),0));
+				Capsule->setGravity(btVector3(0.f,-450.f*RoomScale,0.f));
 			}
 		}
-	}
 
-    if (irrReceiver->IsKeyDown(irr::KEY_KEY_Q)) {
-		Capsule->setAngularFactor(btVector3(1,1,1)); dead = true;
-	}
-    if (irrReceiver->IsKeyDown(irr::KEY_KEY_E)) {
-		dead = false;
-		Capsule->setAngularFactor(btVector3(0,0,0));
-		const btQuaternion identity(0,0,0,1);
-		btTransform Transform = Capsule->getCenterOfMassTransform();
-		Transform.setRotation(identity);
-		Capsule->setCenterOfMassTransform(Transform);
-		Capsule->setAngularVelocity(btVector3(0,0,0));
-	}
+		prevLinearVelocity = Capsule->getLinearVelocity();
 
-	bool changed = false;
-	if (crouched) {
-		if (crouchState<0.5f) changed = true;
-
-		float prevState = crouchState;
-		crouchState=std::min(0.5f,crouchState+(0.5f-crouchState)*fpsFactor*0.2f);
-		if (crouchState>0.4998f) crouchState = 0.5f;
-
-		if (changed) { //must unregister body to perform changes to its shape
+		if (irrReceiver->IsKeyDown(irr::KEY_KEY_N) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_N)) {
+			noclip = true;
+			Capsule->setLinearVelocity(btVector3(0.f,0.f,0.f));
 			dynamics->unregisterRBody(Capsule);
-			Capsule->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
-			Capsule->translate(btVector3(0.f,(prevState-crouchState)*height*0.49f,0.f));
-			dynamics->registerNewRBody(Camera,Capsule,-1,1,1,irr::core::vector3df(0,(-(height/2.f)*(1.f-crouchState))+(radius/1.5f),0));
-			Capsule->setGravity(btVector3(0.f,-450.f*RoomScale,0.f));
+			irrReceiver->perLoopUpdate();
 		}
 	} else {
-		if (crouchState>0.0f) changed = true;
 
-		float prevState = crouchState;
-		crouchState=std::max(0.f,crouchState+(-crouchState)*fpsFactor*0.1f);
-		if (crouchState<0.002f) crouchState = 0.f;
+		if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
+			dir = 0.f;
+			if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+				dir -= 45;
+			} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+				dir += 45;
+			}
+		} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) {
+			dir = 180;
+			if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+				dir += 45;
+			} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+				dir -= 45;
+			}
+		} else {
+			if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+				dir = -90;
+			} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+				dir = 90;
+			}
+		}
+		dir+=yaw;
+		dir-=90;
+		dir *= irr::core::DEGTORAD;
+		shake = 0.f;
+		Camera->setPosition(Camera->getAbsolutePosition()+irr::core::vector3df(std::cos(dir)*std::cos(pitch*irr::core::DEGTORAD),-std::sin(pitch*irr::core::DEGTORAD),-std::sin(dir)*std::cos(pitch*irr::core::DEGTORAD)));
 
-		if (changed) { //must unregister body to perform changes to its shape
-			dynamics->unregisterRBody(Capsule);
-			Capsule->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
-			Capsule->translate(btVector3(0.f,(prevState-crouchState)*height*0.49f,0.f));
-			dynamics->registerNewRBody(Camera,Capsule,-1,1,1,irr::core::vector3df(0,(-(height/2.f)*(1.f-crouchState))+(radius/1.5f),0));
-			Capsule->setGravity(btVector3(0.f,-450.f*RoomScale,0.f));
+		if (irrReceiver->IsKeyDown(irr::KEY_KEY_N) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_N)) {
+			noclip = false;
+			dynamics->registerNewRBody(Camera,Capsule,-1,1,1,irr::core::vector3df(0,-(height/2.f)+(radius/1.5f),0));
+			btTransform newTrans = Capsule->getCenterOfMassTransform();
+			newTrans.setOrigin(btVector3(Camera->getAbsolutePosition().X,Camera->getAbsolutePosition().Y,Camera->getAbsolutePosition().Z));
+			Capsule->setCenterOfMassTransform(newTrans);
+			irrReceiver->perLoopUpdate();
 		}
 	}
-
-	prevLinearVelocity = Capsule->getLinearVelocity();
 }
 
 void player::updateHead() {
@@ -405,7 +452,6 @@ void player::updateHead() {
 			Camera->setPosition(irr::core::vector3df(Point[0],Point[1]+(height/2.f)-(radius/1.5f),Point[2]));
 		}
 #endif
-
 		Camera->updateAbsolutePosition();
 		Camera->setPosition(Camera->getAbsolutePosition()+irr::core::vector3df(0.f,std::sin(shake*irr::core::DEGTORAD)*(0.4f-(crouchState*0.4f)),0.f));
 	}

@@ -33,7 +33,10 @@ class room {
 		virtual bool disableDecals() { return false; }
 		static void setDynamics(dynRegister* inDyn);
 		static void setSmgr(irr::scene::ISceneManager* inSmgr);
+		virtual void destroy();
 };
+
+//extern bool CustomMaterialCombinerCallback(btManifoldPoint& cp,const btCollisionObjectWrapper* colObj0,int partId0,int index0,const btCollisionObjectWrapper* colObj1,int partId1,int index1);
 
 //LCZ
 #include "LCZ/lockroom.h"
