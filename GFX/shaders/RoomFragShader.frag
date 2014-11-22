@@ -1,3 +1,4 @@
+#version 110
 
 uniform sampler2D Texture0; //base texture
 uniform sampler2D Texture1; //lightmap

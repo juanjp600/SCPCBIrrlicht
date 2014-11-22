@@ -24,13 +24,18 @@ class room {
 		bool isActivated = true;
 
 		void loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle);
+
+		signed char linkedTurnDists[4];
 	public:
-		virtual roomTypes getType() =0;
-		virtual char getAngle() { return angle; };
+		room();
+		virtual roomTypes getType() const =0;
+		virtual char getAngle() const { return angle; };
 		virtual void updateEvent() =0;
 		virtual void setActivation(bool s);
 		virtual const std::vector<irr::video::SLight>& getPointLights()=0;
-		virtual bool disableDecals() { return false; }
+		virtual bool disableDecals() const { return false; }
+		virtual void setLinkedTurnDist(unsigned char index,signed char value);
+		virtual char getLinkedTurnDist(unsigned char index) const;
 		static void setDynamics(dynRegister* inDyn);
 		static void setSmgr(irr::scene::ISceneManager* inSmgr);
 		virtual void destroy();

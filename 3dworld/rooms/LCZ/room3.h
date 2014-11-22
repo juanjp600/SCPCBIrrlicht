@@ -6,7 +6,7 @@ class room3 : public room {
 		static RMesh* baseRMesh;
 		room3() {};
 	public:
-		virtual roomTypes getType() { return roomTypes::ROOM3; }
+		virtual roomTypes getType() const { return roomTypes::ROOM3; }
 		virtual void updateEvent() { return; }
 		virtual const std::vector<irr::video::SLight>& getPointLights();
 		static void setBase(RMesh* inRme);

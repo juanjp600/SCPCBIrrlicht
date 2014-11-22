@@ -6,7 +6,7 @@ class room2ctunnel : public room {
 		static RMesh* baseRMesh;
 		room2ctunnel() {};
 	public:
-		virtual roomTypes getType() { return roomTypes::ROOM2C; }
+		virtual roomTypes getType() const { return roomTypes::ROOM2C; }
 		virtual void updateEvent() { return; }
 		virtual const std::vector<irr::video::SLight>& getPointLights();
 		static void setBase(RMesh* inRme);

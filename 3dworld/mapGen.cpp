@@ -169,7 +169,8 @@ void world::createMap(unsigned char zone) {
 
 	struct tempRoom {
 		roomTypes type;
-		char angle;
+		signed char angle;
+		signed char linkedTurns[4];
 	};
 
 	tempRoom roomTemp[20][20];
@@ -178,6 +179,10 @@ void world::createMap(unsigned char zone) {
 			roomArray[x][y] = nullptr;
 			roomTemp[x][y].type = roomTypes::ROOM1;
 			roomTemp[x][y].angle = -1;
+			roomTemp[x][y].linkedTurns[0]=-1;
+			roomTemp[x][y].linkedTurns[1]=-1;
+			roomTemp[x][y].linkedTurns[2]=-1;
+			roomTemp[x][y].linkedTurns[3]=-1;
 		}
 	}
 
@@ -239,7 +244,7 @@ void world::createMap(unsigned char zone) {
 						roomTemp[x2][y2].angle = 127;
 					} else {*/
 					roomTemp[x2][y2].angle = 0;
-					//}
+					//\}
 				}
 
 				if (tempheight == height) temp = x2;
@@ -355,7 +360,7 @@ void world::createMap(unsigned char zone) {
 					break;
 				}
 			}
-			//}
+			//\}
 		}
 	}
 
@@ -422,7 +427,7 @@ void world::createMap(unsigned char zone) {
 					}
 				}
 			}
-			//}
+			//\}
 		}
 	}
 	if (room4amount<3) {
@@ -466,7 +471,7 @@ void world::createMap(unsigned char zone) {
 					}
 				}
 			}
-			//}
+			//\}
 		}
 	}
 	if (room2camount<3) {
@@ -532,14 +537,52 @@ void world::createMap(unsigned char zone) {
 					}
 				}
 			}
-			//}
+			//\}
 		}
 	}
-	//}
+	//\}
 
 	for (x=0;x<20;x++) {
 		for (y=0;y<20;y++) {
 			std::cout<<(roomTemp[y][x].angle>-1);
+			if (roomTemp[x][y].angle>-1 && roomTemp[x][y].type!=roomTypes::ROOM1 && roomTemp[x][y].type!=roomTypes::ROOM2) {
+                unsigned char dist = 0;
+                for (unsigned char ix = 1;roomTemp[x+ix][y].angle>-1;ix++) {
+                    //dist++;
+                    if (roomTemp[x+ix][y].type!=roomTypes::ROOM1 && roomTemp[x+ix][y].type!=roomTypes::ROOM2) {
+						dist = ix;
+						break;
+                    }
+                }
+                if (dist>0) { roomTemp[x][y].linkedTurns[0]=dist; }
+                dist = 0;
+                for (unsigned char ix = 1;roomTemp[x-ix][y].angle>-1;ix++) {
+                    //dist++;
+                    if (roomTemp[x-ix][y].type!=roomTypes::ROOM1 && roomTemp[x-ix][y].type!=roomTypes::ROOM2) {
+						dist = ix;
+						break;
+                    }
+                }
+                if (dist>0) { roomTemp[x][y].linkedTurns[2]=dist; }
+                dist = 0;
+                for (unsigned char iy = 1;roomTemp[x][y-iy].angle>-1;iy++) {
+                    //dist++;
+                    if (roomTemp[x][y-iy].type!=roomTypes::ROOM1 && roomTemp[x][y-iy].type!=roomTypes::ROOM2) {
+						dist = iy;
+						break;
+                    }
+                }
+                if (dist>0) { roomTemp[x][y].linkedTurns[1]=dist; }
+                dist = 0;
+                for (unsigned char iy = 1;roomTemp[x][y+iy].angle>-1;iy++) {
+                    //dist++;
+                    if (roomTemp[x][y+iy].type!=roomTypes::ROOM1 && roomTemp[x][y+iy].type!=roomTypes::ROOM2) {
+						dist = iy;
+						break;
+                    }
+                }
+                if (dist>0) { roomTemp[x][y].linkedTurns[3]=dist; }
+			}
 		}
 		std::cout<<"\n";
 	}
@@ -849,6 +892,12 @@ void world::createMap(unsigned char zone) {
 				}
 				if (roomArray[x][y]==nullptr) {
 					addRandomRoom(x,y,roomTemp[x][y].type,roomTemp[x][y].angle,zone);
+				}
+				if (roomArray[x][y]!=nullptr) {
+					roomArray[x][y]->setLinkedTurnDist(0,roomTemp[x][y].linkedTurns[0]);
+					roomArray[x][y]->setLinkedTurnDist(1,roomTemp[x][y].linkedTurns[1]);
+					roomArray[x][y]->setLinkedTurnDist(2,roomTemp[x][y].linkedTurns[2]);
+					roomArray[x][y]->setLinkedTurnDist(3,roomTemp[x][y].linkedTurns[3]);
 				}
 			}
 		}

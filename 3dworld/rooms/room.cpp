@@ -38,6 +38,12 @@ extern ContactAddedCallback gContactAddedCallback;*/
 dynRegister* room::dynamics = nullptr;
 irr::scene::ISceneManager* room::smgr = nullptr;
 
+room::room() {
+	for (unsigned char i=0;i<4;i++) {
+		linkedTurnDists[i]=-1;
+	}
+}
+
 void room::setDynamics(dynRegister* inDyn) {
 	if (room::dynamics==nullptr) room::dynamics = inDyn;
 }
@@ -111,4 +117,16 @@ void room::destroy() {
 	node->drop();
 	dynamics->sharedUnregisterRBody(rbody);
 	delete rbody;
+}
+
+void room::setLinkedTurnDist(unsigned char index,signed char value) {
+	index = index % 4;
+    if (linkedTurnDists[index]<0) {
+		linkedTurnDists[index]=value;
+    }
+}
+
+char room::getLinkedTurnDist(unsigned char index) const {
+	index = index % 4;
+	return linkedTurnDists[index];
 }

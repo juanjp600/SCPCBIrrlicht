@@ -1,3 +1,4 @@
+#version 110
 
 uniform mat4 mWorldViewProj;
 //uniform mat4 mInvWorld;

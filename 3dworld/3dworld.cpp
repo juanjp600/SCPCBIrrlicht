@@ -1,7 +1,8 @@
 #include "3dworld.h"
 #include "player.h"
-//#include "rooms/rmesh.h"
+
 #include "rooms/room.h"
+#include "rooms/rmesh.h"
 
 #include <iostream>
 #include <cmath>
@@ -47,25 +48,25 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     irr::video::IGPUProgrammingServices* irrGpu = irrDriver->getGPUProgrammingServices();
     RoomShader = irr::video::EMT_LIGHTMAP; // Fallback material type
     RoomCallback = new RoomShaderCallBack;
-    RoomShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/RoomVertShader.txt", "main", irr::video::EVST_VS_1_1,"GFX/shaders/RoomFragShader.txt", "main", irr::video::EPST_PS_1_1,RoomCallback, irr::video::EMT_LIGHTMAP);
+    RoomShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/RoomVertShader.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/RoomFragShader.frag", "main", irr::video::EPST_PS_1_1,RoomCallback, irr::video::EMT_LIGHTMAP);
 
     NormalsShader = irr::video::EMT_SOLID; // Fallback material type
     NormalsCallback= new NormalsShaderCallBack;
-    NormalsShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/NewNormalVert.txt", "main", irr::video::EVST_VS_1_1,"GFX/shaders/NewNormalFrag.txt", "main", irr::video::EPST_PS_1_1,NormalsCallback, irr::video::EMT_SOLID);
+    NormalsShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/NewNormalVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/NewNormalFrag.frag", "main", irr::video::EPST_PS_1_1,NormalsCallback, irr::video::EMT_SOLID);
     NormalsCallback->fvAmbient = irr::video::SColor(255,20,20,20);
 
 	LightsShader = irr::video::EMT_SOLID; // Fallback material type
     LightsCallback= new LightsShaderCallBack;
-    LightsShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/LightingVert.txt", "main", irr::video::EVST_VS_1_1,"GFX/shaders/LightingFrag.txt", "main", irr::video::EPST_PS_1_1,LightsCallback, irr::video::EMT_SOLID);
+    LightsShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/LightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/LightingFrag.frag", "main", irr::video::EPST_PS_1_1,LightsCallback, irr::video::EMT_SOLID);
     LightsCallback->fvAmbient = irr::video::SColor(255,20,20,20);
 
 	PostProcShader = irr::video::EMT_SOLID; // Fallback material type
     PostProcCallback= new PostProcShaderCallBack;
-    PostProcShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/PostProcessVert.txt", "main", irr::video::EVST_VS_1_1,"GFX/shaders/PostProcessFrag.txt", "main", irr::video::EPST_PS_1_1,PostProcCallback, irr::video::EMT_SOLID);
+    PostProcShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/PostProcessVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/PostProcessFrag.frag", "main", irr::video::EPST_PS_1_1,PostProcCallback, irr::video::EMT_SOLID);
 
 	ZBufferShader = irr::video::EMT_SOLID; // Fallback material type
     ZBufferCallback= new ZBufferShaderCallBack;
-    ZBufferShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/ZBufferVert.txt", "main", irr::video::EVST_VS_1_1,"GFX/shaders/ZBufferFrag.txt", "main", irr::video::EPST_PS_1_1,ZBufferCallback, irr::video::EMT_SOLID);
+    ZBufferShader = irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/ZBufferVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/ZBufferFrag.frag", "main", irr::video::EPST_PS_1_1,ZBufferCallback, irr::video::EMT_SOLID);
 
     blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
     blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);

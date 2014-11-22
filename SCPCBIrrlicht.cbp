@@ -37,10 +37,12 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-std=c++11" />
 					<Add directory="Bullet/include" />
 					<Add directory="FreeType/include" />
 					<Add directory="Irrlicht/include" />
 					<Add directory="oggVorbis/include" />
+					<Add directory="OpenAL-Soft/include/AL" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -290,6 +292,7 @@
 		<Unit filename="3dworld/rooms/room.h" />
 		<Unit filename="3dworld/shadercallbacks.cpp" />
 		<Unit filename="3dworld/shadercallbacks.h" />
+		<Unit filename="3dworld/sharedAI.cpp" />
 		<Unit filename="Irrlicht/CGUITTFont.cpp" />
 		<Unit filename="Irrlicht/irrDynamics.cpp" />
 		<Unit filename="main.cpp" />

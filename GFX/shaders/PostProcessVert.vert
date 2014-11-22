@@ -1,3 +1,5 @@
+#version 110
+
 varying vec4 tcoords;
 varying float iminBlur;
 varying float imaxBlur;

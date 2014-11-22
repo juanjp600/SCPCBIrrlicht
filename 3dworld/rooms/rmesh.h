@@ -22,7 +22,7 @@ struct RMesh {
 
     struct waypoint {
 		irr::core::vector3df position;
-		waypoint* connected[10];
+		waypoint* connected[20];
     };
 
     std::vector<waypoint*> waypoints;

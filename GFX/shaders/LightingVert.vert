@@ -1,4 +1,5 @@
 #version 110
+
 uniform vec3 lightPos1;
 uniform vec3 lightPos2;
 uniform vec3 lightPos3;

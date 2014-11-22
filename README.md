@@ -16,3 +16,4 @@ Libraries used:
   - Bullet Physics: http://bulletphysics.org/
   - OpenAL-Soft: http://kcat.strangesoft.net/openal.html
   - FreeType: http://www.freetype.org/
+  - libogg & libvorbis: http://www.xiph.org/downloads/

@@ -169,6 +169,9 @@ class world {
         unsigned char currentZone = 0;
         room* addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone);
 
+        //pathfinding
+        void getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath);
+
         irr::gui::CGUITTFont* font1;
         irr::gui::CGUITTFont* font2;
 

@@ -9,7 +9,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 	if (!file) { std::cout<<"Could not load \""<<path<<"\""<<"\n"; return nullptr; }
 
-    int readInt1,readInt2;
+    int readInt1;//,readInt2;
     int i1,i2,i3;
     unsigned char readChar1,readChar2,readChar3;
     unsigned char cr,cg,cb;
@@ -19,6 +19,15 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
     float fu1,fv1,fu2,fv2;
 
     std::string readString1,readString2,readString3;
+
+    struct tempWaypoint {
+		irr::core::vector3df pos;
+		unsigned char connected[10];
+		unsigned char id;
+    };
+
+	std::vector<tempWaypoint> tempWaypoints;
+	tempWaypoint newWP;
 
     readString1 = "";
     //int = 4 octets
@@ -53,6 +62,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
         irr::scene::SMeshBuffer* buf = nullptr;
 
         btTriangleMesh *pTriMesh = new btTriangleMesh();
+		pTriMesh->m_weldingThreshold = 3.f;
 
 		struct loadedTexture {
 			irr::video::ITexture* tex;
@@ -106,9 +116,9 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
         file->read(&entAmount,sizeof(unsigned char));
 
         for (unsigned char i=0;i<entAmount;i++) {
-            /*file->read(&readInt2,sizeof(int));
+            /*file->read(&readInt1,sizeof(int));
             readString1="";
-            for (int j=0;j<readInt2;j++) {
+            for (int j=0;j<readInt1;j++) {
                 file->read(&readChar1,sizeof(unsigned char));
                 readString1+=readChar1;
             }*/
@@ -149,8 +159,8 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 							}
 						}
 
-						file->read(&readInt2,sizeof(int));
-						for (int j=0;j<readInt2;j++) { //vertices
+						file->read(&readInt1,sizeof(int));
+						for (int j=0;j<readInt1;j++) { //vertices
 							file->read(&fx,sizeof(float));
 							file->read(&fy,sizeof(float));
 							file->read(&fz,sizeof(float));
@@ -166,8 +176,8 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 							vertices.push_back(irr::video::S3DVertex2TCoords(fx*RoomScale*0.1f,fy*RoomScale*0.1f,fz*RoomScale*0.1f,0,0,0,irr::video::SColor(255,cr,cg,cb),fu1,fv1,fu2,fv2));
 						}
 
-						file->read(&readInt2,sizeof(int));
-						for (int j=0;j<readInt2;j++) { //polys
+						file->read(&readInt1,sizeof(int));
+						for (int j=0;j<readInt1;j++) { //polys
 							file->read(&i1,sizeof(int));
 							file->read(&i2,sizeof(int));
 							file->read(&i3,sizeof(int));
@@ -193,7 +203,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 								btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i3].Pos.Y,vertices[i3].Pos.Z);
 								//faces that barely make a difference to the shape of the object are removed
 								if (btVertices[0].distance(btVertices[1])>5.f || btVertices[1].distance(btVertices[2])>5.f || btVertices[0].distance(btVertices[2])>5.f) {
-									pTriMesh->addTriangle(btVertices[0], btVertices[1], btVertices[2]);
+									pTriMesh->addTriangle(btVertices[0], btVertices[1], btVertices[2],true);
 								}
 							}
 						}
@@ -348,33 +358,31 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 					//for (unsigned k=0;k<readChar1;k++) {
 					{
-						file->read(&readInt2,sizeof(int)); //vertices
+						file->read(&readInt1,sizeof(int)); //vertices
 
 						std::vector<btVector3> vertices;
 
-						for (int j=0;j<readInt2;j++) {
+						for (int j=0;j<readInt1;j++) {
 							file->read(&fx,sizeof(float));
 							file->read(&fy,sizeof(float));
 							file->read(&fz,sizeof(float));
 
 							fx*=RoomScale*0.1; fy*=RoomScale*0.1; fz*=RoomScale*0.1;
 							vertices.push_back(btVector3(fx,fy,fz));
-							//now do something with that
 						}
 
-						file->read(&readInt2,sizeof(int)); //polys
-						for (int j=0;j<readInt2;j++) {
+						file->read(&readInt1,sizeof(int)); //polys
+						for (int j=0;j<readInt1;j++) {
 							file->read(&i1,sizeof(int));
 							file->read(&i2,sizeof(int));
 							file->read(&i3,sizeof(int));
 
 							if (vertices[i1].distance(vertices[i2])>5.f || vertices[i2].distance(vertices[i3])>5.f || vertices[i1].distance(vertices[i3])>5.f) {
-								pTriMesh->addTriangle(vertices[i1], vertices[i2], vertices[i3]);
+								pTriMesh->addTriangle(vertices[i1], vertices[i2], vertices[i3],true);
 							}
-							//now do something with that
 						}
 					}
-					//}
+					//\}
 				break;
 				case 3: //screen
 					file->read(&fx,sizeof(float));
@@ -393,10 +401,17 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 					file->read(&fy,sizeof(float));
 					file->read(&fz,sizeof(float));
 
+					newWP.pos = irr::core::vector3df(fx,fy,fz);
+
 					file->read(&readChar1,sizeof(unsigned char));
+					for (unsigned char j=0;j<10;j++) {
+						newWP.connected[j]=0;
+					}
 					for (unsigned char j=0;j<readChar1;j++) {
 						file->read(&readChar2,sizeof(unsigned char));
+						newWP.connected[j]=readChar2;
 					}
+					tempWaypoints.push_back(newWP);
 				break;
 				case 5: //light
 					file->read(&fx,sizeof(float));
@@ -454,6 +469,29 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 				break;
 			}
         }
+
+
+		for (unsigned char i=0;i<tempWaypoints.size();i++) {
+			RMesh::waypoint* finalWP;
+			finalWP = new RMesh::waypoint;
+			finalWP->position = tempWaypoints[i].pos;
+			retRMesh->waypoints.push_back(finalWP);
+		}
+
+		for (unsigned char i=0;i<retRMesh->waypoints.size();i++) {
+			for (unsigned char j=0;j<20;j++) {
+				retRMesh->waypoints[i]->connected[j]=nullptr;
+			}
+			unsigned char shift = 0;
+			while (retRMesh->waypoints[i]->connected[shift]!=nullptr) { shift++; }
+			for (unsigned char j=0;j<10;j++) {
+				if (tempWaypoints[i].connected[j+shift]==0) { break; }
+				retRMesh->waypoints[i]->connected[j+shift]=retRMesh->waypoints[tempWaypoints[i].connected[j]-1];
+				unsigned char shift2 = 0;
+				while (retRMesh->waypoints[i]->connected[j+shift]->connected[shift2]!=nullptr) { shift2++; }
+				retRMesh->waypoints[i]->connected[j+shift]->connected[shift2]=retRMesh->waypoints[i];
+			}
+		}
 
         mesh->recalculateBoundingBox();
         retRMesh->mesh = mesh;
