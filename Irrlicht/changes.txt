@@ -9,3 +9,4 @@
 	- CTriangleSelector uses the index member to store the mesh buffer index number ( mesh->getMeshBuffer(triangle.index) )
 	- Added new headers to irrlicht.h
 	- Added EMF_MATERIAL_TYPE as material flag ( http://sourceforge.net/p/irrlicht/patches/221/ )
+	- Added LeakHunter class, taken from the official Irrlicht repository: http://sourceforge.net/p/irrlicht/code/4425
