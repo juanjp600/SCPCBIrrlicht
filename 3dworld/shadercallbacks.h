@@ -35,7 +35,9 @@ class NormalsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
     private:
 
 		struct sortHelper {
-			irr::video::SLight light;
+            irr::video::SColorf color;
+            irr::f32 pos[4];
+			//irr::video::SLight light;
 			irr::f32 dist;
 			bool operator < (const sortHelper &other) const {
 				return (dist<other.dist);

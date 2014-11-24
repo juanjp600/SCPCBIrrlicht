@@ -171,6 +171,7 @@ class world {
 
         //pathfinding
         void getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath);
+        short stepPath(const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath,unsigned char x,unsigned char y);
 
         irr::gui::CGUITTFont* font1;
         irr::gui::CGUITTFont* font2;

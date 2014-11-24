@@ -370,6 +370,19 @@ world::~world() {
     }
     sound::killSounds();
     irrDevice->drop();
+
+	auto a = irr::LeakHunter::getReferenceCountedObjects();
+	std::cout<<"Leaked IReferenceCount: "<<a.size()<<"\n";
+
+	for (unsigned int i=0;i<a.size();i++) {
+		if (a[i]->getDebugName()) {
+			std::cout<<a[i]->getDebugName();
+			if (std::string(a[i]->getDebugName())==std::string("COpenGLTexture")) {
+				std::cout<<" -> "<<dynamic_cast<const irr::video::ITexture*>(a[i])->getName().getPath().c_str();
+			}
+			std::cout<<"\n";
+		}
+	}
 }
 
 bool world::run() {
