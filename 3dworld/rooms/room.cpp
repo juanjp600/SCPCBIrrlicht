@@ -121,9 +121,9 @@ void room::destroy() {
 
 void room::setLinkedTurnDist(unsigned char index,signed char value) {
 	index = index % 4;
-    if (linkedTurnDists[index]<0) {
-		linkedTurnDists[index]=value;
-    }
+    //if (linkedTurnDists[index]<=0) {
+    linkedTurnDists[index]=value;
+    //}
 }
 
 char room::getLinkedTurnDist(unsigned char index) const {

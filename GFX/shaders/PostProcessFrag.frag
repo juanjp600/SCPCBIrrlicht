@@ -12,8 +12,7 @@ uniform float gammaFactor;
 
 float getDepth(in vec2 coords) {
 	vec3 zbuff = texture2D(Texture1, clamp(coords,0.0,1.0)).xyz;
-	float dist = clamp(((zbuff.x*255.0)+(zbuff.y*255.0*255.0)+(zbuff.z*255.0*255.0*255.0))/(255.0*255.0*255.0),0.0,1.0);
-	return dist;
+	return zbuff.x;
 }
 
 void main(void) {
@@ -40,13 +39,13 @@ void main(void) {
 	float fzdist = zdist;
 	zdist = 1.0-zdist;
 	zdist *= zdist;
-	vec4 color = texture2D(Texture0, clamp(ntcoords,0.0,1.0)) * zdist * vec4(0.1);
+	vec4 color = texture2D(Texture0, clamp(ntcoords,0.0,1.0));// * zdist * vec4(0.1);
 	
 	dist+=noise1((color.r+color.g-color.b)*100000.0)*10.0;
 	
 	dist*=0.001;
 	
-	zdist = 1.0-getDepth(ntcoords+vec2(dist));
+	/*zdist = 1.0-getDepth(ntcoords+vec2(dist));
 	zdist *= zdist;
 	color += texture2D(Texture0, clamp(ntcoords+vec2(dist),0.0,1.0)) * vec4(0.225*zdist);
 	zdist = 1.0-getDepth(ntcoords-vec2(dist));
@@ -57,7 +56,7 @@ void main(void) {
 	color += texture2D(Texture0, clamp(ntcoords+vec2(dist,-dist),0.0,1.0)) * vec4(0.225*zdist);
 	zdist = 1.0-getDepth(ntcoords-vec2(dist,-dist));
 	zdist *= zdist;
-	color += texture2D(Texture0, clamp(ntcoords-vec2(dist,-dist),0.0,1.0)) * vec4(0.225*zdist);
+	color += texture2D(Texture0, clamp(ntcoords-vec2(dist,-dist),0.0,1.0)) * vec4(0.225*zdist);*/
 	
 	color = pow(color,vec4(gammaFactor));
 	

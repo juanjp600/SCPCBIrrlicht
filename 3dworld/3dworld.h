@@ -117,6 +117,12 @@ class MainEventReceiver : public irr::IEventReceiver {
         }
 };
 
+struct tempPathList {
+    tempPathList* prev = nullptr;
+    unsigned char x,y;
+    tempPathList* next = nullptr;
+};
+
 class world {
     private:
         irr::video::E_DRIVER_TYPE irrDriverType;
@@ -171,7 +177,7 @@ class world {
 
         //pathfinding
         void getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath);
-        short stepPath(const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath,unsigned char x,unsigned char y);
+        short stepPath(const irr::core::vector2di &endPos,tempPathList &roomPath,int depth=0);
 
         irr::gui::CGUITTFont* font1;
         irr::gui::CGUITTFont* font2;

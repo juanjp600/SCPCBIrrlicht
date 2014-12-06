@@ -70,7 +70,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
     blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
     blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
-    ZBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
+    ZBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R32F);
     finalImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
 
     irr::scene::SMesh* quadMesh = new irr::scene::SMesh();
@@ -231,7 +231,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	/*room4*/rme = loadRMesh(std::string("GFX/map/room4_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); room4::setBase(rme);
 	/*roompj*/rme = loadRMesh(std::string("GFX/map/roompj_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); roompj::setBase(rme);
 	/*r_914*/rme = loadRMesh(std::string("GFX/map/machineroom_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); r_914::setBase(rme);
-	#if 0
+#if 0
 	//HCZ
 	/*r_008*/rme = loadRMesh(std::string("GFX/map/008_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); r_008::setBase(rme);
 	/*coffin*/rme = loadRMesh(std::string("GFX/map/coffin_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); coffin::setBase(rme);
@@ -280,7 +280,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	/*checkpoint2*/rme = loadRMesh(std::string("GFX/map/checkpoint2_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); checkpoint2::setBase(rme);
 	/*gatea*/rme = loadRMesh(std::string("GFX/map/gatea_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); gatea::setBase(rme);
 	/*pocketdimension*/rme = loadRMesh(std::string("GFX/map/pocketdimension1_opt.rm2"),irrFileSystem,irrDriver,(irr::video::E_MATERIAL_TYPE)RoomShader); pocketdimension::setBase(rme);
-	#endif
+#endif
 
 	mainPlayer = new player(this,irrSmgr,dynamics,irrReceiver);
 
@@ -442,9 +442,9 @@ bool world::run() {
 					}
 					std::vector<irr::video::SLight> nLights = roomArray[px][py]->getPointLights();
 					irr::core::vector3df offset((px*204.8f*RoomScale),0.f,(py*204.8f*RoomScale));
+					irr::core::matrix4 rotMatrix;
+                    rotMatrix.setRotationDegrees(irr::core::vector3df(0.f,roomArray[px][py]->getAngle()*90.f,0.f));
 					for (unsigned int i=0;i<nLights.size();i++) {
-						irr::core::matrix4 rotMatrix;
-						rotMatrix.setRotationDegrees(irr::core::vector3df(0.f,roomArray[px][py]->getAngle()*90.f,0.f));
 						rotMatrix.transformVect(nLights[i].Position);
 
 						nLights[i].Position+=offset;
@@ -498,6 +498,131 @@ void world::draw3D() {
     irrDriver->draw2DImage(finalImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
     irrSmgr->drawAll();
+
+    irr::core::vector2di startPos;
+    irr::core::vector2di endPos;
+
+    /*for (int y=19;y>=0;y--) {
+		for (int x=19;x>=0;x--) {
+			if (roomArray[x][y]!=nullptr) {
+                startPos.X = x; startPos.Y = y;
+                y=-1;
+                break;
+			}
+        }
+    }*/
+
+    for (int y=0;y<20;y++) {
+		for (int x=0;x<20;x++) {
+			if (roomArray[x][y]!=nullptr) {
+                startPos.X = x; startPos.Y = y;
+                y=20;
+                break;
+			}
+        }
+    }
+    endPos.X = coordToRoomGrid(mainPlayer->getPosition().X); endPos.Y = coordToRoomGrid(mainPlayer->getPosition().Z);
+
+    std::vector<irr::core::vector2di> rPath;
+
+    getRoomList(startPos,endPos,rPath);
+
+    irr::video::SMaterial material;
+    material.setTexture(0, 0);
+    material.Lighting = false;
+    material.Wireframe=false;
+
+    irrDriver->setMaterial(material);
+    //std::cout<<"asdqweqwe\n";
+
+    for (int y=19;y>=0;y--) {
+		for (int x=19;x>=0;x--) {
+            if (roomArray[x][y]!=nullptr) {
+                irrDriver->draw2DRectangle(irr::video::SColor(255,100,100,100),irr::core::recti(x*10,y*10,x*10+8,y*10+8));
+            }
+        }
+    }
+
+    if (rPath.size()>0) {
+        if (rPath[0].X==startPos.X) {
+            if (rPath[0].Y<startPos.Y) {
+                for (int y=rPath[0].Y;y<=startPos.Y;y++) {
+                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(startPos.X*10,y*10,startPos.X*10+8,y*10+8));
+                }
+            } else {
+                for (int y=startPos.Y;y<=rPath[0].Y;y++) {
+                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(startPos.X*10,y*10,startPos.X*10+8,y*10+8));
+                }
+            }
+        } else {
+            if (rPath[0].X<startPos.X) {
+                for (int x=rPath[0].X;x<=startPos.X;x++) {
+                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(x*10,startPos.Y*10,x*10+8,startPos.Y*10+8));
+                }
+            } else {
+                for (int x=startPos.X;x<=rPath[0].X;x++) {
+                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(x*10,startPos.Y*10,x*10+8,startPos.Y*10+8));
+                }
+            }
+        }
+
+        for (unsigned int i=1;i<rPath.size();i++) {
+            if (rPath[i-1].X==rPath[i].X) {
+                if (rPath[i-1].Y<rPath[i].Y) {
+                    for (int y=rPath[i-1].Y;y<rPath[i].Y;y++) {
+                        irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(rPath[i].X*10,y*10,rPath[i].X*10+8,y*10+8));
+                    }
+                } else {
+                    for (int y=rPath[i].Y;y<rPath[i-1].Y;y++) {
+                        irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(rPath[i].X*10,y*10,rPath[i].X*10+8,y*10+8));
+                    }
+                }
+            } else {
+                if (rPath[i-1].X<rPath[i].X) {
+                    for (int x=rPath[i-1].X;x<rPath[i].X;x++) {
+                        irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(x*10,rPath[i].Y*10,x*10+8,rPath[i].Y*10+8));
+                    }
+                } else {
+                    for (int x=rPath[i].X;x<rPath[i-1].X;x++) {
+                        irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(x*10,rPath[i].Y*10,x*10+8,rPath[i].Y*10+8));
+                    }
+                }
+            }
+            irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(rPath[i].X*10,rPath[i].Y*10,rPath[i].X*10+8,rPath[i].Y*10+8));
+            //std::cout<<"drawingline"<<i<<": "<<rPath[i].X<<" "<<rPath[i].Y<<"\n";
+            //irrDriver->draw3DBox(irr::core::aabbox3df(irr::core::vector3df(rPath[i].X-0.5f,2.f*RoomScale,rPath[i].Y-0.5f),irr::core::vector3df(rPath[i].X+0.5f,22.f*RoomScale,rPath[i].Y+0.5f)));//Line(irr::core::vector3df(rPath[i-1].X,2.f*RoomScale,rPath[i-1].Y),irr::core::vector3df(rPath[i].X,2.f*RoomScale,rPath[i].Y),irr::video::SColor(255,255,0,0));
+        }
+
+        if (rPath[rPath.size()-1].X==endPos.X) {
+            if (rPath[rPath.size()-1].Y<endPos.Y) {
+                for (int y=rPath[rPath.size()-1].Y;y<=endPos.Y;y++) {
+                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(endPos.X*10,y*10,endPos.X*10+8,y*10+8));
+                }
+            } else {
+                for (int y=endPos.Y;y<=rPath[rPath.size()-1].Y;y++) {
+                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(endPos.X*10,y*10,endPos.X*10+8,y*10+8));
+                }
+            }
+        } else {
+            if (rPath[rPath.size()-1].X<endPos.X) {
+                for (int x=rPath[rPath.size()-1].X;x<=endPos.X;x++) {
+                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(x*10,endPos.Y*10,x*10+8,endPos.Y*10+8));
+                }
+            } else {
+                for (int x=endPos.X;x<=rPath[rPath.size()-1].X;x++) {
+                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti(x*10,endPos.Y*10,x*10+8,endPos.Y*10+8));
+                }
+            }
+        }
+    }
+
+    irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,255),irr::core::recti(startPos.X*10,startPos.Y*10,startPos.X*10+8,startPos.Y*10+8));
+    irrDriver->draw2DRectangle(irr::video::SColor(255,0,255,0),irr::core::recti(endPos.X*10,endPos.Y*10,endPos.X*10+8,endPos.Y*10+8));
+
+    //irr::core::vector3df ppos(coordToRoomGrid(mainPlayer->getPosition().X),2.f,coordToRoomGrid(mainPlayer->getPosition().Z));
+
+    //irrDriver->draw3DBox(irr::core::aabbox3df(ppos-irr::core::vector3df(0.5f,0.f,0.5f),ppos+irr::core::vector3df(0.5f,20.f,0.5f)),irr::video::SColor(255,255,0,0));
+
     float BlinkTimer = mainPlayer->BlinkTimer;
     if (BlinkTimer<0) {
         float darkA = 0.f;
@@ -693,9 +818,9 @@ void world::drawHUD() {
 		if (menusOpen==menus::PAUSEOPEN) {
 			font2->draw("PAUSED",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
 
-			if (button(std::string("Resume"),mainWidth/2-180*scale2D,mainHeight/2,455*scale2D,70*scale2D)) menusOpen = menus::NONE;
-			if (button(std::string("Options"),mainWidth/2-180*scale2D,mainHeight/2+80*scale2D,455*scale2D,70*scale2D)) menusOpen = menus::OPTIONSOPEN;
-			if (button(std::string("Quit"),mainWidth/2-180*scale2D,mainHeight/2+160*scale2D,455*scale2D,70*scale2D)) irrDevice->closeDevice(); //TODO: add main menu
+			if (button(std::string("Resume"),mainWidth/2-180*scale2D,mainHeight/2,455*scale2D,70*scale2D)) { menusOpen = menus::NONE; }
+			if (button(std::string("Options"),mainWidth/2-180*scale2D,mainHeight/2+80*scale2D,455*scale2D,70*scale2D)) { menusOpen = menus::OPTIONSOPEN; }
+			if (button(std::string("Quit"),mainWidth/2-180*scale2D,mainHeight/2+160*scale2D,455*scale2D,70*scale2D)) { irrDevice->closeDevice(); }//TODO: add main menu
 
 			if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = menus::NONE;
 		} else {
