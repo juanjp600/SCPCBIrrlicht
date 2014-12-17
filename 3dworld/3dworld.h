@@ -126,16 +126,12 @@ struct tempPathList {
 class world {
     private:
         irr::video::E_DRIVER_TYPE irrDriverType;
-        irr::IrrlichtDevice *irrDevice;
+        irr::IrrlichtDevice* irrDevice;
         irr::video::IVideoDriver* irrDriver;
         irr::scene::ISceneManager* irrSmgr;
-
 		irr::scene::ISceneCollisionManager* irrColl;
-
         irr::gui::IGUIEnvironment* irrEnv;
-
         irr::io::IFileSystem* irrFileSystem;
-
         irr::ITimer* irrTimer;
 
         unsigned int mainWidth,mainHeight;
@@ -146,11 +142,23 @@ class world {
 
         class player* mainPlayer;
 
+        irr::video::ITexture* reflection;
+
+        /*irr::video::ITexture*& reflectionNX = reflection[0];
+        irr::video::ITexture*& reflectionPX = reflection[1];
+        irr::video::ITexture*& reflectionNY = reflection[2];
+        irr::video::ITexture*& reflectionPY = reflection[3];
+        irr::video::ITexture*& reflectionNZ = reflection[4];
+        irr::video::ITexture*& reflectionPZ = reflection[5];*/
+
         irr::video::ITexture* blurImage;
         irr::video::ITexture* blurImage2;
         irr::video::ITexture* finalImage;
         irr::scene::IMeshSceneNode* screenQuad;
         irr::video::ITexture* ZBuffer;
+
+        irr::video::ITexture* fogTexture;
+
         unsigned char blurAlpha = 0;
 
         irr::video::ITexture* BlinkMeterIMG;
@@ -159,10 +167,10 @@ class world {
         irr::u32 prevTime = 0;
         float FPSfactor = 1;
 
-        irr::s32 RoomShader, NormalsShader, LightsShader, PostProcShader, ZBufferShader;
+        irr::video::E_MATERIAL_TYPE RoomShader, NormalsShader, PlainLightShader, PostProcShader, ZBufferShader;
         RoomShaderCallBack* RoomCallback;
         NormalsShaderCallBack* NormalsCallback;
-        LightsShaderCallBack* LightsCallback;
+        PlainLightShaderCallBack* PlainLightCallback;
         PostProcShaderCallBack* PostProcCallback;
         ZBufferShaderCallBack* ZBufferCallback;
 
@@ -176,7 +184,6 @@ class world {
         room* addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone);
 
         //pathfinding
-        void getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath);
         short stepPath(const irr::core::vector2di &endPos,tempPathList &roomPath,int depth=0);
 
         irr::gui::CGUITTFont* font1;
@@ -204,7 +211,11 @@ class world {
         unsigned char dragItem = 10;
 
         void draw3D();
+        void drawFog();
         void drawHUD();
+
+        irr::scene::IBillboardSceneNode* fogBillboards[50];
+        float fogBillAlpha[50];
 
         std::string hudMsg = "";
         float hudMsgTimer = 0.f;
@@ -217,7 +228,8 @@ class world {
 
         bool run();
 
-        unsigned char pickPlayerTriangle();
+        unsigned char pickPlayerTriangle(irr::core::vector3df* intersec = nullptr,const irr::core::vector3df customEnd = (irr::core::vector3df(0.f,-204.8*RoomScale,0.f)));
+        void getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath);
 };
 
 //#include "player.h"

@@ -230,7 +230,7 @@ irr::scene::IMeshSceneNode* world::genItemNode(const std::string &meshPath,const
 		node->setMaterialTexture(0,tex);
 	}
 
-    node->setMaterialType((irr::video::E_MATERIAL_TYPE)LightsShader);
+    node->setMaterialType(PlainLightShader);
 
     node->setScale(irr::core::vector3df(scale,scale,scale));
     node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);

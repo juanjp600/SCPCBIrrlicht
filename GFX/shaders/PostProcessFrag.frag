@@ -18,6 +18,8 @@ float getDepth(in vec2 coords) {
 void main(void) {
 	vec2 ntcoords = tcoords.xy;
 	
+	vec4 fogColor = vec4(0.0075,0.015,0.0375,1.0);
+	
 	float dx = ntcoords.x-0.5;
 	float dy = ntcoords.y-0.5;
 	//float dist = max(abs(dx),abs(dy));
@@ -37,26 +39,25 @@ void main(void) {
 	dist += abs(zdist-centerzdist)*2.0;
 	
 	float fzdist = zdist;
-	zdist = 1.0-zdist;
-	zdist *= zdist;
-	vec4 color = texture2D(Texture0, clamp(ntcoords,0.0,1.0));// * zdist * vec4(0.1);
+	//zdist *= zdist;
+	vec4 color = ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords,0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.1);
 	
-	dist+=noise1((color.r+color.g-color.b)*100000.0)*10.0;
+	//dist+=noise1((color.r+color.g-color.b)*100000.0)*10.0;
 	
 	dist*=0.001;
 	
-	/*zdist = 1.0-getDepth(ntcoords+vec2(dist));
-	zdist *= zdist;
-	color += texture2D(Texture0, clamp(ntcoords+vec2(dist),0.0,1.0)) * vec4(0.225*zdist);
-	zdist = 1.0-getDepth(ntcoords-vec2(dist));
-	zdist *= zdist;
-	color += texture2D(Texture0, clamp(ntcoords-vec2(dist),0.0,1.0)) * vec4(0.225*zdist);
-	zdist = 1.0-getDepth(ntcoords+vec2(dist,-dist));
-	zdist *= zdist;
-	color += texture2D(Texture0, clamp(ntcoords+vec2(dist,-dist),0.0,1.0)) * vec4(0.225*zdist);
-	zdist = 1.0-getDepth(ntcoords-vec2(dist,-dist));
-	zdist *= zdist;
-	color += texture2D(Texture0, clamp(ntcoords-vec2(dist,-dist),0.0,1.0)) * vec4(0.225*zdist);*/
+	zdist = getDepth(ntcoords+vec2(dist));
+	//zdist *= zdist;
+	color += ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords+vec2(dist),0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.225);
+	zdist = getDepth(ntcoords-vec2(dist));
+	//zdist *= zdist;
+	color += ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords-vec2(dist),0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.225);
+	zdist = getDepth(ntcoords+vec2(dist,-dist));
+	//zdist *= zdist;
+	color += ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords+vec2(dist,-dist),0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.225);
+	zdist = getDepth(ntcoords-vec2(dist,-dist));
+	//zdist *= zdist;
+	color += ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords-vec2(dist,-dist),0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.225);
 	
 	color = pow(color,vec4(gammaFactor));
 	

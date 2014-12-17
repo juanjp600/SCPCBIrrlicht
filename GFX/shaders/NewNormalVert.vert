@@ -8,30 +8,9 @@ uniform vec4 lightPos2;
 uniform vec4 lightPos3;
 uniform vec4 lightPos4;
 
-//light radius ^ 2, because that way GPU does less math
-/*uniform float lightRadius1;
-uniform float lightRadius2;
-uniform float lightRadius3;
-uniform float lightRadius4;*/
-
 varying mat3 TNTB;
 varying vec3 v;
-
-//light positions for specular mapping
 varying mat4 olightPos;
-
-/*//transformed light positions for normal mapping
-varying vec3 oTlightPos1;
-varying vec3 oTlightPos2;
-varying vec3 oTlightPos3;
-varying vec3 oTlightPos4;
-
-varying vec4 oLightColor1;
-varying vec4 oLightColor2;
-varying vec4 oLightColor3;
-varying vec4 oLightColor4;*/
-
-//varying mat3 oNormalMatrix;
 
 void main(void)
 {

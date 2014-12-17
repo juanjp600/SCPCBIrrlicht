@@ -24,7 +24,7 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
 		stepSound[1][1][i] = sound::getSound(std::string("SFX/RunMetal")+std::to_string(i+1)+std::string(".ogg"),false,1);
 		if (i<3) {
 			stepSound[2][0][i] = sound::getSound(std::string("SFX/StepPD")+std::to_string(i+1)+std::string(".ogg"),false,1);
-			stepSound[3][1][i] = sound::getSound(std::string("SFX/StepForest")+std::to_string(i+1)+std::string(".ogg"),false,1);
+			stepSound[3][0][i] = sound::getSound(std::string("SFX/StepForest")+std::to_string(i+1)+std::string(".ogg"),false,1);
 		}
 	}
 
@@ -32,8 +32,9 @@ player::player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
     Camera = irrSmgr->addCameraSceneNode(0,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,-1));
     Camera->setPosition(irr::core::vector3df(15*204.8f*RoomScale, 10*RoomScale, 15*204.8f*RoomScale));
     Camera->setTarget(irr::core::vector3df(0, 0, 0));
-    Camera->setNearValue(2.0*RoomScale);
+    Camera->setNearValue(3.0*RoomScale);
     Camera->setFarValue(200.0*RoomScale);
+    Camera->setFOV(70.f*irr::core::DEGTORAD);
 
     irrSmgr->setActiveCamera(Camera);
 
@@ -158,7 +159,7 @@ player::~player() {
 		if (stepSound[1][1][i]!=nullptr) stepSound[1][1][i]->drop();
 		if (i<3) {
 			if (stepSound[2][0][i]!=nullptr) stepSound[2][0][i]->drop();
-			if (stepSound[3][1][i]!=nullptr) stepSound[3][1][i]->drop();
+			if (stepSound[3][0][i]!=nullptr) stepSound[3][0][i]->drop();
 		}
 	}
 }
@@ -175,6 +176,11 @@ void player::resetSpeeds() {
 }
 
 void player::update() {
+
+    if (dynamics->rayTest(Capsule->getCenterOfMassPosition(),Capsule->getCenterOfMassPosition()-btVector3(0,height/2.f+3.f+std::max(0.f,Capsule->getLinearVelocity()[1]),0))) {
+        //make the player slightly float above the ground to prevent twitching
+        Capsule->setLinearVelocity(btVector3(Capsule->getLinearVelocity()[0],std::max(0.f,Capsule->getLinearVelocity()[1]),Capsule->getLinearVelocity()[2]));
+    }
 
 	dynSpeed = Capsule->getLinearVelocity();
 
@@ -437,6 +443,120 @@ void player::update() {
 	}
 }
 
+void player::resetCam() {
+    Camera->setPosition(tPos); Camera->updateAbsolutePosition();
+	Camera->setTarget(tTarget);
+	Camera->setUpVector(tUpVec);
+}
+
+void player::reflectNX() {
+    resetCam();
+
+    irr::core::vector3df prevTarget(Camera->getTarget()-Camera->getAbsolutePosition());
+    irr::core::vector3df prevUpVector(Camera->getUpVector());
+
+    irr::core::vector3df refPos;
+    owner->pickPlayerTriangle(&refPos,irr::core::vector3df(-500.f,0.f,0.f));
+    Camera->setPosition(refPos-irr::core::vector3df(Camera->getAbsolutePosition().X-refPos.X,0.f,0.f));
+
+    Camera->updateAbsolutePosition();
+
+    prevTarget.X=-prevTarget.X;
+    Camera->setTarget(Camera->getAbsolutePosition()+prevTarget);
+    prevUpVector.X=-prevUpVector.X;
+    Camera->setUpVector(prevUpVector);
+}
+
+void player::reflectPX() {
+    resetCam();
+
+    irr::core::vector3df prevTarget(Camera->getTarget()-Camera->getAbsolutePosition());
+    irr::core::vector3df prevUpVector(Camera->getUpVector());
+
+    irr::core::vector3df refPos;
+    owner->pickPlayerTriangle(&refPos,irr::core::vector3df(500.f,0.f,0.f));
+    Camera->setPosition(refPos+irr::core::vector3df(refPos.X-Camera->getAbsolutePosition().X,0.f,0.f));
+
+    Camera->updateAbsolutePosition();
+
+    prevTarget.X=-prevTarget.X;
+    Camera->setTarget(Camera->getAbsolutePosition()+prevTarget);
+    prevUpVector.X=-prevUpVector.X;
+    Camera->setUpVector(prevUpVector);
+}
+
+void player::reflectNY() {
+    resetCam();
+
+    irr::core::vector3df prevTarget(Camera->getTarget()-Camera->getAbsolutePosition());
+    irr::core::vector3df prevUpVector(Camera->getUpVector());
+
+    irr::core::vector3df refPos;
+    owner->pickPlayerTriangle(&refPos,irr::core::vector3df(0.f,-500.f,0.f));
+    Camera->setPosition(refPos-irr::core::vector3df(0.f,Camera->getAbsolutePosition().Y-refPos.Y,0.f));
+
+    Camera->updateAbsolutePosition();
+
+    prevTarget.Y=-prevTarget.Y;
+    Camera->setTarget(Camera->getAbsolutePosition()+prevTarget);
+    prevUpVector.Y=-prevUpVector.Y;
+    Camera->setUpVector(prevUpVector);
+}
+
+void player::reflectPY() {
+    resetCam();
+
+    irr::core::vector3df prevTarget(Camera->getTarget()-Camera->getAbsolutePosition());
+    irr::core::vector3df prevUpVector(Camera->getUpVector());
+
+    irr::core::vector3df refPos;
+    owner->pickPlayerTriangle(&refPos,irr::core::vector3df(0.f,500.f,0.f));
+    Camera->setPosition(refPos+irr::core::vector3df(0.f,refPos.Y-Camera->getAbsolutePosition().Y,0.f));
+
+    Camera->updateAbsolutePosition();
+
+    prevTarget.Y=-prevTarget.Y;
+    Camera->setTarget(Camera->getAbsolutePosition()+prevTarget);
+    prevUpVector.Y=-prevUpVector.Y;
+    Camera->setUpVector(prevUpVector);
+}
+
+void player::reflectNZ() {
+    resetCam();
+
+    irr::core::vector3df prevTarget(Camera->getTarget()-Camera->getAbsolutePosition());
+    irr::core::vector3df prevUpVector(Camera->getUpVector());
+
+    irr::core::vector3df refPos;
+    owner->pickPlayerTriangle(&refPos,irr::core::vector3df(0.f,0.f,-500.f));
+    Camera->setPosition(refPos-irr::core::vector3df(0.f,0.f,Camera->getAbsolutePosition().Z-refPos.Z));
+
+    Camera->updateAbsolutePosition();
+
+    prevTarget.Z=-prevTarget.Z;
+    Camera->setTarget(Camera->getAbsolutePosition()+prevTarget);
+    prevUpVector.Z=-prevUpVector.Z;
+    Camera->setUpVector(prevUpVector);
+}
+
+void player::reflectPZ() {
+    resetCam();
+
+    irr::core::vector3df prevTarget(Camera->getTarget()-Camera->getAbsolutePosition());
+    irr::core::vector3df prevUpVector(Camera->getUpVector());
+
+    irr::core::vector3df refPos;
+    owner->pickPlayerTriangle(&refPos,irr::core::vector3df(0.f,0.f,500.f));
+    Camera->setPosition(refPos+irr::core::vector3df(0.f,0.f,refPos.Z-Camera->getAbsolutePosition().Z));
+
+    Camera->updateAbsolutePosition();
+
+    prevTarget.Z=-prevTarget.Z;
+    Camera->setTarget(Camera->getAbsolutePosition()+prevTarget);
+    prevUpVector.Z=-prevUpVector.Z;
+    Camera->setUpVector(prevUpVector);
+}
+
 void player::updateHead() {
 
 	if (!dead) {
@@ -492,6 +612,10 @@ void player::updateHead() {
 
 	lastMouseDown[0] = irrReceiver->IsMouseDown(0);
 	lastMouseDown[1] = irrReceiver->IsMouseDown(1);
+
+	tPos = Camera->getAbsolutePosition();
+	tTarget = Camera->getTarget();
+	tUpVec = Camera->getUpVector();
 }
 
 bool player::addToInventory(item* it) {
@@ -558,12 +682,12 @@ bool player::seesBoundingBox(irr::core::aabbox3df bbox,irr::scene::SViewFrustum 
     return !result;
 }
 
-unsigned char world::pickPlayerTriangle() {
+unsigned char world::pickPlayerTriangle(irr::core::vector3df* intersec,const irr::core::vector3df customEnd) {
 	irr::core::triangle3df hitTriangle;
 	irr::core::vector3df intersection;
 	irr::core::line3d<irr::f32> ray;
 	ray.start = mainPlayer->getPosition();
-	ray.end = ray.start + irr::core::vector3df(0.f,-204.8*RoomScale,0.f);
+    ray.end = ray.start + customEnd;
 
 	irr::scene::ISceneNode * selectedSceneNode = irrColl->getSceneNodeAndCollisionPointFromRay(ray,intersection,hitTriangle);
 
@@ -581,6 +705,8 @@ unsigned char world::pickPlayerTriangle() {
 			materialType = 0;
 		}
 	}
+
+    if (intersec!=nullptr) { *intersec = intersection; }
 
 	return materialType;
 }

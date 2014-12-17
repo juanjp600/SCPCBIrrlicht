@@ -44,11 +44,22 @@ class player {
         bool lastMouseDown[2];
 
         bool recoverFromPenetration();
+
+        irr::core::vector3df tPos,tTarget,tUpVec;
     public:
         player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=24.1f,float radius=3.2f,float mass=5.0f);
         //mass should stay low if you want the player to be able the climb up stairs
         ~player();
         void update(); void resetSpeeds(); void updateHead();
+
+        void resetCam();
+        void reflectNX(); //-X
+        void reflectPX(); //+X
+        void reflectNY(); //-Y
+        void reflectPY(); //+Y
+        void reflectNZ(); //-Z
+        void reflectPZ(); //+Z
+
         float yaw = 0.f,pitch = 0.f,roll = 0.f;
 
         float BlinkTimer=100.0,Stamina=100.0;

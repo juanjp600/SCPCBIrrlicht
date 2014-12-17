@@ -28,6 +28,6 @@ struct RMesh {
     std::vector<waypoint*> waypoints;
 };
 
-RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::E_MATERIAL_TYPE RoomShader);
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::ITexture* reflection,irr::video::E_MATERIAL_TYPE RoomShader);
 
 #endif // RMESH_H_INCLUDED

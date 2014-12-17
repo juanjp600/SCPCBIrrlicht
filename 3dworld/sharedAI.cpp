@@ -79,7 +79,7 @@ void world::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
     testList->x = sPos.X;
     testList->y = sPos.Y;
     if (roomArray[sPos.X][sPos.Y]->getType()==roomTypes::ROOM1 || roomArray[sPos.X][sPos.Y]->getType()==roomTypes::ROOM2) {
-        std::cout<<"error at start\n";
+        //std::cout<<"error at start\n";
     }
     testList->prev = nullptr;
     testList->next = nullptr;
@@ -136,19 +136,19 @@ void world::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
 }
 
 short world::stepPath(const irr::core::vector2di &endPos,tempPathList &roomPath,int depth) {
-    //std::cout<<"asdasdasda"<<depth<<"\n";
+    ////std::cout<<"asdasdasda"<<depth<<"\n";
 	short minDist = -1;
 
     unsigned char x=roomPath.x;
     unsigned char y=roomPath.y;
 
     if (roomArray[x][y]->getType()==roomTypes::ROOM1 || roomArray[x][y]->getType()==roomTypes::ROOM2) {
-        std::cout<<"something is wrong with this\n";
+        //std::cout<<"something is wrong with this\n";
     }
 
     //check if endPos can be reached directly from (x,y)
 	if (x==endPos.X) {
-        std::cout<<"testX\n";
+        //std::cout<<"testX\n";
         if (y-endPos.Y==0) {
             return 0;
         } else if (y-endPos.Y<0) {
@@ -156,16 +156,16 @@ short world::stepPath(const irr::core::vector2di &endPos,tempPathList &roomPath,
                 if (roomArray[x][iy]==nullptr) { break; }
                 if (iy==endPos.Y) { return endPos.Y-y; }
             }
-            //if (roomArray[x][y]->getLinkedTurnDist(3)>=endPos.Y-y && roomArray[x][y]->getLinkedTurnDist(1)>0) { std::cout<<"www\n"; return endPos.Y-y; }
+            //if (roomArray[x][y]->getLinkedTurnDist(3)>=endPos.Y-y && roomArray[x][y]->getLinkedTurnDist(1)>0) { //std::cout<<"www\n"; return endPos.Y-y; }
         } else /* if (y-endPos.Y>0) */ {
             for (unsigned short iy=endPos.Y;iy<=y;iy++) {
                 if (roomArray[x][iy]==nullptr) { break; }
                 if (iy==y) { return y-endPos.Y; }
             }
-            //if (roomArray[x][y]->getLinkedTurnDist(1)>=y-endPos.Y && roomArray[x][y]->getLinkedTurnDist(3)>0) { std::cout<<"sss\n"; return y-endPos.Y; }
+            //if (roomArray[x][y]->getLinkedTurnDist(1)>=y-endPos.Y && roomArray[x][y]->getLinkedTurnDist(3)>0) { //std::cout<<"sss\n"; return y-endPos.Y; }
         }
 	} else if (y==endPos.Y) {
-        std::cout<<"testY\n";
+        //std::cout<<"testY\n";
         if (x-endPos.X==0) {
             return 0;
         } else if (x-endPos.X<0) {
@@ -173,13 +173,13 @@ short world::stepPath(const irr::core::vector2di &endPos,tempPathList &roomPath,
                 if (roomArray[ix][y]==nullptr) { break; }
                 if (ix==endPos.X) { return endPos.X-x; }
             }
-            //if (roomArray[x][y]->getLinkedTurnDist(0)>=endPos.X-x && roomArray[x][y]->getLinkedTurnDist(2)>0) { std::cout<<"aaa\n"; return endPos.X-x; }
+            //if (roomArray[x][y]->getLinkedTurnDist(0)>=endPos.X-x && roomArray[x][y]->getLinkedTurnDist(2)>0) { //std::cout<<"aaa\n"; return endPos.X-x; }
         } else /* if (x-endPos.X>0) */ {
             for (unsigned short ix=endPos.X;ix<=x;ix++) {
                 if (roomArray[ix][y]==nullptr) { break; }
                 if (ix==x) { return x-endPos.X; }
             }
-            //if (roomArray[x][y]->getLinkedTurnDist(2)>=x-endPos.X && roomArray[x][y]->getLinkedTurnDist(0)>0) { std::cout<<"ddd\n"; return x-endPos.X; }
+            //if (roomArray[x][y]->getLinkedTurnDist(2)>=x-endPos.X && roomArray[x][y]->getLinkedTurnDist(0)>0) { //std::cout<<"ddd\n"; return x-endPos.X; }
         }
 	}
 

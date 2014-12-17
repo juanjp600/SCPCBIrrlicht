@@ -3,7 +3,7 @@
 
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
-RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::E_MATERIAL_TYPE RoomShader) {
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::ITexture* reflection,irr::video::E_MATERIAL_TYPE RoomShader) {
 
     irr::io::IReadFile* file = fs->createAndOpenFile(path.c_str());
 
@@ -85,6 +85,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 			newTex.bump = nullptr;
 			file->read(&newTex.alpha,sizeof(unsigned char));
 
+            driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, false); //mipmaps are not good for bump maps
 			if (readString1=="tilefloor.jpg") {
 				newTex.bump = driver->getTexture("GFX/map/tilebump.jpg");
 			} else if (readString1=="concretefloor.jpg") {
@@ -108,6 +109,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 			} else if (readString1=="concretewall.jpg") {
 				newTex.bump = driver->getTexture("GFX/map/concretewallbump.jpg");
 			}
+			driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, true);
 
 			loadedTextures.push_back(newTex);
 		}
@@ -184,7 +186,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 							indices.push_back(irr::core::vector3di(i1,i2,i3));
 
-							/*float x1 = vertices[i1].Pos.X; float y1 = vertices[i1].Pos.Y; float z1 = vertices[i1].Pos.Z;
+							float x1 = vertices[i1].Pos.X; float y1 = vertices[i1].Pos.Y; float z1 = vertices[i1].Pos.Z;
 							float x2 = vertices[i2].Pos.X; float y2 = vertices[i2].Pos.Y; float z2 = vertices[i2].Pos.Z;
 							float x3 = vertices[i3].Pos.X; float y3 = vertices[i3].Pos.Y; float z3 = vertices[i3].Pos.Z;
 
@@ -194,7 +196,11 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 							float fac1=sqrt((nx1*nx1)+(ny1*ny1)+(nz1*nz1));
 							nx1 = nx1/fac1;
 							ny1 = ny1/fac1;
-							nz1 = nz1/fac1;*/
+							nz1 = nz1/fac1;
+
+							vertices[i1].Normal.set(nx1,ny1,nz1);
+							vertices[i2].Normal.set(nx1,ny1,nz1);
+							vertices[i3].Normal.set(nx1,ny1,nz1);
 
 							if (entType==0) {
 								btVector3 btVertices[3];
@@ -240,6 +246,10 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 										if (loadedTextures[textures[1]-1].bump!=nullptr) {
 											bufLM->getMaterial().MaterialType = RoomShader;
 											bufLM->getMaterial().setTexture(2,loadedTextures[textures[1]-1].bump);
+											//for (int ri=0;ri<6;ri++) {
+                                            bufLM->getMaterial().setTexture(3,reflection);
+                                            //    std::cout<<(3+ri)<<" vs. "<<irr::video::MATERIAL_MAX_TEXTURES<<"\n";
+                                            //}
 										}
 										/*if (textureRead[1]==path+"tilefloor.jpg") {
 											bufLM->getMaterial().MaterialType = RoomShader;
@@ -494,6 +504,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 		}
 
         mesh->recalculateBoundingBox();
+        mesh->setHardwareMappingHint(irr::scene::EHM_STATIC);
         retRMesh->mesh = mesh;
         retRMesh->shape = new btBvhTriangleMeshShape(pTriMesh,true);
         retRMesh->shape->setMargin(1.0f);

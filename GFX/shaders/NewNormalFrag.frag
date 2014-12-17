@@ -4,7 +4,6 @@
 
 varying mat3 TNTB;
 varying vec3 v;
-
 varying mat4 olightPos;
 
 uniform vec4 lightColor1;
@@ -131,5 +130,5 @@ void main(void)
 	
 	Idiff1.w = 1.0; Idiff2.w = 1.0; Idiff3.w = 1.0; Idiff4.w = 1.0;
 	
-	gl_FragColor = vec4(Idiff1+Idiff2+Idiff3+Idiff4+ambientLight)*vec4(texture2D( baseMap, gl_TexCoord[0].xy ).xyz,1.0);
+	gl_FragColor = vec4(Idiff1+Idiff2+Idiff3+Idiff4+ambientLight)*vec4(texture2D( baseMap, gl_TexCoord[0].xy ).xyz,1.0)*vec4(vec3(min(dot(normalize(v)*4.0,TNTB[0]),1.0)),1.0);
 }
