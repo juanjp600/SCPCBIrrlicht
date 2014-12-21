@@ -19,6 +19,8 @@ class itemCup : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemCup* createItemCup();
 

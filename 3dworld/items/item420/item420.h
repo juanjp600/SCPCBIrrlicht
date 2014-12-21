@@ -19,6 +19,8 @@ class item420 : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static item420* createItem420();
 

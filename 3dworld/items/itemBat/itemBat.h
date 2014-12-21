@@ -19,6 +19,8 @@ class itemBat : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemBat* createItemBat();
 

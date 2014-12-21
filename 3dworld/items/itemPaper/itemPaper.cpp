@@ -33,7 +33,7 @@ irr::core::vector3df itemPaper::getOffset() {
 }
 
 std::string itemPaper::getInvName() {
-	return std::string("Incident Report SCP-106-0204");
+	return std::string("Mysterious Note");
 }
 
 std::string itemPaper::getInvImgPath() {
@@ -41,5 +41,15 @@ std::string itemPaper::getInvImgPath() {
 }
 
 bool itemPaper::updateItem() {
-	return false;
+	return true;
+}
+
+void itemPaper::updateWearing() {}
+
+void itemPaper::drawItem() {
+    irr::video::ITexture* docTex = item::irrDriver->getTexture("GFX/items/sn.it");
+    unsigned short width = docTex->getSize().Width;
+    unsigned short height = docTex->getSize().Height;
+    float scale = item::screenHeight/1024.f;
+    item::irrDriver->draw2DImage(docTex,irr::core::recti((item::screenWidth/2)-(width*scale/2),(item::screenHeight/2)-(height*scale/2),(item::screenWidth/2)+(width*scale/2),(item::screenHeight/2)+(height*scale/2)),irr::core::recti(0,0,width,height));
 }

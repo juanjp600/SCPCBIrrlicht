@@ -43,3 +43,6 @@ std::string itemScp513::getInvImgPath() {
 bool itemScp513::updateItem() {
 	return false;
 }
+
+void itemScp513::updateWearing() {}
+void itemScp513::drawItem() {}

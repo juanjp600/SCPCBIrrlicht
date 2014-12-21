@@ -19,6 +19,8 @@ class itemSupereyedrops : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemSupereyedrops* createItemSupereyedrops();
 

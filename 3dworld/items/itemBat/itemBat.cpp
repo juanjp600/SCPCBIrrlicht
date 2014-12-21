@@ -43,3 +43,6 @@ std::string itemBat::getInvImgPath() {
 bool itemBat::updateItem() {
 	return false;
 }
+
+void itemBat::updateWearing() {}
+void itemBat::drawItem() {}

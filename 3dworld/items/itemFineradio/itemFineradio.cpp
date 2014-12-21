@@ -43,3 +43,6 @@ std::string itemFineradio::getInvImgPath() {
 bool itemFineradio::updateItem() {
 	return false;
 }
+
+void itemFineradio::updateWearing() {}
+void itemFineradio::drawItem() {}

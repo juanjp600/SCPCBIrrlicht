@@ -4,8 +4,17 @@
 #include <cmath>
 
 void world::getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath) {
+
 	if (roomArray[startPos.X][startPos.Y]==nullptr) { std::cout<<"err1\n"; return; }
 	if (roomArray[endPos.X][endPos.Y]==nullptr) { std::cout<<"err2\n"; return; }
+	if (startPos.X<0) { std::cout<<"err3\n"; return; }
+	if (startPos.X>=20) { std::cout<<"err4\n"; return; }
+	if (startPos.Y<0) { std::cout<<"err5\n"; return; }
+	if (startPos.Y>=20) { std::cout<<"err6\n"; return; }
+	if (endPos.X<0) { std::cout<<"err7\n"; return; }
+	if (endPos.X>=20) { std::cout<<"err8\n"; return; }
+	if (endPos.Y<0) { std::cout<<"err9\n"; return; }
+	if (endPos.Y>=20) { std::cout<<"err10\n"; return; }
 	roomPath.clear();
 
     irr::core::vector2di sPos = startPos;
@@ -15,7 +24,7 @@ void world::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
 
 	if (roomArray[startPos.X][startPos.Y]->getType()==roomTypes::ROOM1 || roomArray[startPos.X][startPos.Y]->getType()==roomTypes::ROOM2) {
 		unsigned char dist1 = 1;
-		while (roomArray[startPos.X+dist1][startPos.Y]!=nullptr) {
+		while (roomArray[startPos.X+dist1][startPos.Y]!=nullptr && startPos.X+dist1<20) {
 			if (roomArray[startPos.X+dist1][startPos.Y]->getType()!=roomTypes::ROOM1 && roomArray[startPos.X+dist1][startPos.Y]->getType()!=roomTypes::ROOM2) {
 				startDir = 0;
 				startDist = dist1;
@@ -24,7 +33,7 @@ void world::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
 			dist1++;
 		}
 		dist1 = 1;
-		while (roomArray[startPos.X][startPos.Y-dist1]!=nullptr) {
+		while (roomArray[startPos.X][startPos.Y-dist1]!=nullptr && startPos.Y-dist1>=0) {
 			if (roomArray[startPos.X][startPos.Y-dist1]->getType()!=roomTypes::ROOM1 && roomArray[startPos.X][startPos.Y-dist1]->getType()!=roomTypes::ROOM2) {
 				if (startDist>dist1 || startDist==0) {
 					startDir = 1;
@@ -35,7 +44,7 @@ void world::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
 			dist1++;
 		}
 		dist1 = 1;
-		while (roomArray[startPos.X-dist1][startPos.Y]!=nullptr) {
+		while (roomArray[startPos.X-dist1][startPos.Y]!=nullptr && startPos.X-dist1>=0) {
 			if (roomArray[startPos.X-dist1][startPos.Y]->getType()!=roomTypes::ROOM1 && roomArray[startPos.X-dist1][startPos.Y]->getType()!=roomTypes::ROOM2) {
 				if (startDist>dist1 || startDist==0) {
 					startDir = 2;
@@ -46,7 +55,7 @@ void world::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
 			dist1++;
 		}
 		dist1 = 1;
-		while (roomArray[startPos.X][startPos.Y+dist1]!=nullptr) {
+		while (roomArray[startPos.X][startPos.Y+dist1]!=nullptr && startPos.Y+dist1<20) {
 			if (roomArray[startPos.X][startPos.Y+dist1]->getType()!=roomTypes::ROOM1 && roomArray[startPos.X][startPos.Y+dist1]->getType()!=roomTypes::ROOM2) {
 				if (startDist>dist1 || startDist==0) {
 					startDir = 3;

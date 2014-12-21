@@ -43,3 +43,6 @@ std::string item18vbat::getInvImgPath() {
 bool item18vbat::updateItem() {
 	return false;
 }
+
+void item18vbat::updateWearing() {}
+void item18vbat::drawItem() {}

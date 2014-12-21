@@ -1,5 +1,8 @@
 #include "itemSupergasmask.h"
 
+#include "../../3dworld.h"
+#include "../../player.h"
+
 irr::scene::IMeshSceneNode* itemSupergasmask::baseNode = nullptr;
 btConvexHullShape* itemSupergasmask::shape = nullptr;
 irr::core::vector3df itemSupergasmask::offset = irr::core::vector3df(0,0,0);
@@ -41,5 +44,17 @@ std::string itemSupergasmask::getInvImgPath() {
 }
 
 bool itemSupergasmask::updateItem() {
+    item::mainPlayer->selectGasMask(this);
 	return false;
+}
+
+void itemSupergasmask::updateWearing() {
+    item::mainPlayer->boostStamina(0.1f,50.f);
+}
+
+void itemSupergasmask::drawItem() {
+    irr::video::ITexture* maskTex = item::irrDriver->getTexture("GFX/GasmaskOverlay.png");
+    unsigned short width = maskTex->getSize().Width;
+    unsigned short height = maskTex->getSize().Height;
+    item::irrDriver->draw2DImage(maskTex,irr::core::recti(0,(item::screenHeight/2)-((height/2)*screenWidth/screenHeight*0.7f),item::screenWidth,(item::screenHeight/2)+((height/2)*screenWidth/screenHeight*0.7f)),irr::core::recti(0,0,width,height),nullptr,nullptr,true);
 }

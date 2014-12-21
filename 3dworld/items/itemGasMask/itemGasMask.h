@@ -19,11 +19,13 @@ class itemGasmask : public item {
         }
 
         bool updateItem();
+        void updateWearing();
+		void drawItem();
 
         static itemGasmask* createItemGasmask();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
-		
+
 		virtual std::string getInvName();
 		virtual std::string getInvImgPath();
 

@@ -43,3 +43,6 @@ std::string itemSupereyedrops::getInvImgPath() {
 bool itemSupereyedrops::updateItem() {
 	return false;
 }
+
+void itemSupereyedrops::updateWearing() {}
+void itemSupereyedrops::drawItem() {}

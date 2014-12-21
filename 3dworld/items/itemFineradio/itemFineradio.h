@@ -19,6 +19,8 @@ class itemFineradio : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemFineradio* createItemFineradio();
 

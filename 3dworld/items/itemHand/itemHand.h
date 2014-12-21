@@ -19,6 +19,8 @@ class itemHand : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemHand* createItemHand();
 

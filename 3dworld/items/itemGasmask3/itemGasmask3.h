@@ -19,6 +19,8 @@ class itemGasmask3 : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemGasmask3* createItemGasmask3();
 

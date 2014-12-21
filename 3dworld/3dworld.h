@@ -35,11 +35,11 @@ class MainEventReceiver : public irr::IEventReceiver {
 
         irr::u32 lastMouseClick;
 
-        irr::ITimer* timer;
+        irr::u32 time;
         irr::u32 time1[2],time2[2];
     public:
-		void setTimer(irr::ITimer* inTimer) {
-			timer=inTimer;
+		void setTime(irr::u32 inTime) {
+			time=inTime;
 		}
 
         virtual bool OnEvent(const irr::SEvent& event) {
@@ -51,13 +51,13 @@ class MainEventReceiver : public irr::IEventReceiver {
                 switch(event.MouseInput.Event) {
                     case irr::EMIE_LMOUSE_PRESSED_DOWN:
                         MouseIsDown[0] = true;
-                        time2[0]=time1[0]; time1[0]=timer->getRealTime();
+                        time2[0]=time1[0]; time1[0]=time;
                         if (time1[0]-time2[0]<=500) { MouseDoubleClick[0]=true; }
                     break;
 
                     case irr::EMIE_RMOUSE_PRESSED_DOWN:
                         MouseIsDown[1] = true;
-                        time2[1]=time1[1]; time1[1]=timer->getRealTime();
+                        time2[1]=time1[1]; time1[1]=time;
                         if (time1[1]-time2[1]<=500) MouseDoubleClick[1]=true;
                     break;
 
@@ -133,6 +133,7 @@ class world {
         irr::gui::IGUIEnvironment* irrEnv;
         irr::io::IFileSystem* irrFileSystem;
         irr::ITimer* irrTimer;
+        irr::u32 time;
 
         unsigned int mainWidth,mainHeight;
 
@@ -202,6 +203,7 @@ class world {
 
         irr::video::ITexture* pauseImgs[3];
         irr::video::ITexture* invImgs[10];
+        bool itemSelected = false;
 
         bool button(const std::string &text,int x,int y,int w,int h);
 
@@ -215,7 +217,8 @@ class world {
         void drawHUD();
 
         irr::scene::IBillboardSceneNode* fogBillboards[50];
-        float fogBillAlpha[50];
+        irr::core::vector3df fogBillTargetPos[50];
+        //float fogBillAlpha[50];
 
         std::string hudMsg = "";
         float hudMsgTimer = 0.f;

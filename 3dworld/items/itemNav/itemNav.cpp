@@ -43,3 +43,6 @@ std::string itemNav::getInvImgPath() {
 bool itemNav::updateItem() {
 	return false;
 }
+
+void itemNav::updateWearing() {}
+void itemNav::drawItem() {}

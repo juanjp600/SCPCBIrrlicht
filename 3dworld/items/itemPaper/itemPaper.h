@@ -19,11 +19,13 @@ class itemPaper : public item {
         }
 
         bool updateItem();
+        void updateWearing();
+		void drawItem();
 
         static itemPaper* createItemPaper();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
-		
+
 		virtual std::string getInvName();
 		virtual std::string getInvImgPath();
 

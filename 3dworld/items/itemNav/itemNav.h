@@ -19,6 +19,8 @@ class itemNav : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemNav* createItemNav();
 

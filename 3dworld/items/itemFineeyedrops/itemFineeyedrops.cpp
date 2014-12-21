@@ -43,3 +43,6 @@ std::string itemFineeyedrops::getInvImgPath() {
 bool itemFineeyedrops::updateItem() {
 	return false;
 }
+
+void itemFineeyedrops::updateWearing() {}
+void itemFineeyedrops::drawItem() {}

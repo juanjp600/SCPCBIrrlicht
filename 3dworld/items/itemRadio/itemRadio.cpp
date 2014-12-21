@@ -43,3 +43,6 @@ std::string itemRadio::getInvImgPath() {
 bool itemRadio::updateItem() {
 	return false;
 }
+
+void itemRadio::updateWearing() {}
+void itemRadio::drawItem() {}

@@ -43,3 +43,6 @@ std::string itemKillbat::getInvImgPath() {
 bool itemKillbat::updateItem() {
 	return false;
 }
+
+void itemKillbat::updateWearing() {}
+void itemKillbat::drawItem() {}

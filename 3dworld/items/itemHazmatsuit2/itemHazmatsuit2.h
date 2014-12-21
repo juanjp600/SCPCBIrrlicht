@@ -19,6 +19,8 @@ class itemHazmatsuit2 : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemHazmatsuit2* createItemHazmatsuit2();
 

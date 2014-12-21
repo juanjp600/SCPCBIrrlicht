@@ -1,5 +1,8 @@
 #include "itemScp714.h"
 
+#include "../../3dworld.h"
+#include "../../player.h"
+
 irr::scene::IMeshSceneNode* itemScp714::baseNode = nullptr;
 btConvexHullShape* itemScp714::shape = nullptr;
 irr::core::vector3df itemScp714::offset = irr::core::vector3df(0,0,0);
@@ -41,5 +44,12 @@ std::string itemScp714::getInvImgPath() {
 }
 
 bool itemScp714::updateItem() {
+    item::mainPlayer->select714(this);
 	return false;
 }
+
+void itemScp714::updateWearing() {
+    item::mainPlayer->boostStamina(0.f,-20.f);
+}
+
+void itemScp714::drawItem() {}

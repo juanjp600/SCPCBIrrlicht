@@ -43,3 +43,6 @@ std::string itemGasmask3::getInvImgPath() {
 bool itemGasmask3::updateItem() {
 	return false;
 }
+
+void itemGasmask3::updateWearing() {}
+void itemGasmask3::drawItem() {}

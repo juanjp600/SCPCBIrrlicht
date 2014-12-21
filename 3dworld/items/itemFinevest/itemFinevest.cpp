@@ -43,3 +43,6 @@ std::string itemFinevest::getInvImgPath() {
 bool itemFinevest::updateItem() {
 	return false;
 }
+
+void itemFinevest::updateWearing() {}
+void itemFinevest::drawItem() {}

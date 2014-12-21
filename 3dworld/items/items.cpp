@@ -3,11 +3,33 @@
 
 item::item() {}
 
-dynRegister* item::dynamics = nullptr;
-void item::setDynamics(dynRegister* dyn) {
+irrDynamics* item::dynamics = nullptr;
+player* item::mainPlayer = nullptr;
+irr::video::IVideoDriver* item::irrDriver = nullptr;
+unsigned short item::screenWidth = 0;
+unsigned short item::screenHeight = 0;
+
+void item::setDynamics(irrDynamics* dyn) {
     if (item::dynamics == nullptr) {
         item::dynamics = dyn;
     }
+}
+
+void item::setPlayer(player* inPlayer) {
+    if (item::mainPlayer == nullptr) {
+        item::mainPlayer = inPlayer;
+    }
+}
+
+void item::setDriver(irr::video::IVideoDriver* inDriver) {
+    if (item::irrDriver == nullptr) {
+        item::irrDriver = inDriver;
+    }
+}
+
+void item::setDimensions(unsigned short width,unsigned short height) {
+    item::screenWidth = width;
+    item::screenHeight = height;
 }
 
 irr::core::aabbox3df item::getBBox() {
@@ -22,7 +44,7 @@ void item::Pick() {
     if (!picked) {
         //rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(0,1000000.0*RoomScale,0));
         irrObj->setVisible(false);
-        dynamics->sharedUnregisterRBody(rbody);
+        dynamics->unregisterRBody(rbody);
         rbody->setLinearVelocity(btVector3(0,0,0)); rbody->setAngularVelocity(btVector3(0,0,0));
         rbody->setLinearFactor(btVector3(0,0,0)); rbody->setAngularFactor(btVector3(0,0,0));
         rbody->forceActivationState(DISABLE_SIMULATION);
@@ -34,7 +56,7 @@ void item::Unpick(irr::core::vector3df position) {
     if (picked) {
         rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(position.X,position.Y,position.Z));
         irrObj->setVisible(true);
-        dynamics->sharedRegisterRBody(irrObj,rbody,-1,2,2,getOffset());
+        dynamics->registerNewRBody(irrObj,rbody,-1,2,2,getOffset());
         rbody->setLinearVelocity(btVector3(0,0,0)); rbody->setAngularVelocity(btVector3(0,0,0));
         rbody->setLinearFactor(btVector3(1,1,1)); rbody->setAngularFactor(btVector3(1,1,1));
         rbody->forceActivationState(ACTIVE_TAG); rbody->activate();

@@ -19,6 +19,8 @@ class itemVeryfineradio : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemVeryfineradio* createItemVeryfineradio();
 

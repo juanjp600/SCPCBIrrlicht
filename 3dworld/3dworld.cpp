@@ -35,12 +35,13 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     irrFileSystem = irrDevice->getFileSystem();
 
     irrTimer = irrDevice->getTimer();
-    irrReceiver->setTimer(irrTimer);
+    time = irrTimer->getRealTime();
+    irrReceiver->setTime(time);
 
 	font1 = irr::gui::CGUITTFont::createTTFont(irrEnv, "GFX/cour.ttf", 16*scale2D, true, true);
 	font2 = irr::gui::CGUITTFont::createTTFont(irrEnv, "GFX/cour.ttf", 64*scale2D, true, true);
 
-	int seed = irrTimer->getRealTime();
+	int seed = time;
 	std::cout<<"Seed: "<<seed<<"\n";
 
     srand(seed);
@@ -75,9 +76,9 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
     reflection = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(64,64),"",irr::video::ECF_R8G8B8);
 
-    fogTexture = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(64,64),"",irr::video::ECF_R8G8B8);
+    fogTexture = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
 
-    irr::video::ITexture* fogBillTex = irrDriver->getTexture("GFX/smoke2.png");
+    irr::video::ITexture* fogBillTex = irrDriver->getTexture("GFX/fogBillboard.jpg");
 
     irr::scene::SMesh* quadMesh = new irr::scene::SMesh();
 	irr::scene::SMeshBuffer* buf = new irr::scene::SMeshBuffer();
@@ -105,6 +106,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	}
 	buf->getMaterial().setTexture(0,blurImage);
 	buf->getMaterial().setTexture(1,ZBuffer);
+	buf->getMaterial().setTexture(2,fogTexture);
 
 	buf->getMaterial().MaterialType = (irr::video::E_MATERIAL_TYPE)PostProcShader;
 
@@ -124,8 +126,10 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
     dynamics->setGravity(-100*RoomScale);
 
 	irr::scene::IMeshSceneNode* node = nullptr;
-    dynRegister* itemDyn = new dynRegister(dynamics);
-	item::setDynamics(itemDyn);
+    //dynRegister* itemDyn = new dynRegister(dynamics);
+	item::setDynamics(dynamics);
+	item::setDriver(irrDriver);
+	item::setDimensions(mainWidth,mainHeight);
 
     item420::setMeshNode(genItemNode(std::string("GFX/items/420.x"),std::string(""),0.015f*RoomScale));
 	itemKey1::setMeshNode(genItemNode(std::string("GFX/items/keycard.x"),std::string("GFX/items/keycard1.jpg"),0.012f*RoomScale));
@@ -178,7 +182,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
         item* it = itemEyedrops::createItemEyedrops();
         itemList.push_back(it);
 
-		it = itemGasmask::createItemGasmask();
+		it = itemSupergasmask::createItemSupergasmask();
         itemList.push_back(it);
 
         it = itemKey2::createItemKey2();
@@ -188,7 +192,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
         itemList.push_back(it);
         it = itemMisc::createItemMisc();
         itemList.push_back(it);
-        it = itemScp148ingot::createItemScp148ingot();
+        it = itemScp714::createItemScp714();
         itemList.push_back(it);
         it = itemPaper::createItemPaper();
         itemList.push_back(it);
@@ -208,7 +212,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	btRigidBody* rbody;
 
-	room::setDynamics(itemDyn);
+	room::setDynamics(dynamics);
 
 	ambient[0] = sound::getSound(std::string("SFX/Music/The Dread.ogg"),false);
 	if (ambient[0]!=nullptr) {
@@ -292,16 +296,19 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
 	mainPlayer->update();
 
+	item::setPlayer(mainPlayer);
+
 	createMap(0);
 
 	for (int i=0;i<50;i++) {
-        fogBillboards[i]=irrSmgr->addBillboardSceneNode();
+        fogBillboards[i]=irrSmgr->addBillboardSceneNode(nullptr,irr::core::dimension2df(500.f*0.1f*RoomScale,500.f*0.1f*RoomScale));
         fogBillboards[i]->setMaterialTexture(0,fogBillTex);
         fogBillboards[i]->setMaterialFlag(irr::video::EMF_LIGHTING, false);
-        fogBillboards[i]->setMaterialType(irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL);
-        fogBillboards[i]->setPosition(mainPlayer->getPosition());
-        fogBillAlpha[i]=0.f;
-        fogBillboards[i]->setColor(irr::video::SColor(0,255,255,255));
+        fogBillboards[i]->setMaterialType(irr::video::EMT_TRANSPARENT_ADD_COLOR);
+        fogBillboards[i]->setPosition(mainPlayer->getPosition()+irr::core::vector3df((rand()%1024-512)*0.1f*RoomScale,-(rand()%100)*0.1f*RoomScale,(rand()%1024-512)*0.1f*RoomScale));
+        //fogBillAlpha[i]=(rand()%256)/255.f;
+        fogBillTargetPos[i]=fogBillboards[i]->getPosition();
+        fogBillboards[i]->setVisible(false);
     }
 
 	irrDevice->getCursorControl()->setVisible(false);
@@ -316,7 +323,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 				node = irrSmgr->addMeshSceneNode(mesh1);
 
 				node->setScale(irr::core::vector3df(1.3*RoomScale));
-				node->setPosition(irr::core::vector3df(x*204.8f*RoomScale,10*RoomScale,y*204.8f*RoomScale));
+				node->setPosition(irr::core::vector3df(x*204.8f*RoomScale,10.f*RoomScale,y*204.8f*RoomScale));
 				node->setMaterialFlag(irr::video::EMF_LIGHTING, true);
 				node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
@@ -402,18 +409,20 @@ world::~world() {
 }
 
 bool world::run() {
+    time = irrTimer->getRealTime();
+    irrReceiver->setTime(time);
 
 	if (prevTime==0) { FPSfactor = 1.0; } else {
-		FPSfactor = (irrTimer->getRealTime()-prevTime)/(1000.0/70.0);
+		FPSfactor = (time-prevTime)/(1000.0/70.0);
 	}
-	prevTime = irrTimer->getRealTime();
+	prevTime = time;
 
 	if (menusOpen==menus::NONE) {
 
 		float prec = 0.65f;
 
 		mainPlayer->update();
-		dynamics->simStep(irrTimer->getRealTime(),60.f * prec);
+		dynamics->simStep(time,60.f * prec);
 		mainPlayer->resetSpeeds();
 
 		if (irrReceiver->IsMouseDown(0) != mainPlayer->getLastMouseDown(0) && irrReceiver->IsMouseDown(0)==false) {
@@ -488,7 +497,7 @@ bool world::run() {
 			menusOpen = menus::PAUSEOPEN;
 		}
 	} else {
-		dynamics->resetTimer(irrTimer->getRealTime());
+		dynamics->resetTimer(time);
 	}
 
     irrDriver->beginScene(true, true, irr::video::SColor(255, 255, 0, 255));
@@ -498,7 +507,8 @@ bool world::run() {
 
     irrDriver->endScene();
 
-	if (irrTimer->getRealTime()-prevTime<17) irrDevice->sleep(17-(irrTimer->getRealTime()-prevTime));
+    time = irrTimer->getRealTime();
+	if (time-prevTime<17) irrDevice->sleep(17-(time-prevTime));
 
 	sound::processDrops();
 	irrReceiver->perLoopUpdate();
@@ -507,12 +517,63 @@ bool world::run() {
 }
 
 void world::draw3D() {
-
 	PostProcCallback->fpsFactor = FPSfactor;
 
+    irrDriver->setRenderTarget(fogTexture);
+    for (int i=0;i<50;i++) {
+        irr::core::matrix4 rotMatrix;
+        float dist = mainPlayer->getPosition().getDistanceFrom(fogBillTargetPos[i]);
+        if (dist<200.f*0.1f*RoomScale) {
+            fogBillTargetPos[i]=(fogBillTargetPos[i]+(fogBillTargetPos[i]-mainPlayer->getPosition())/dist*20.f);
+        } else if (dist>1000.f*0.1f*RoomScale) {
+            fogBillTargetPos[i]=(mainPlayer->getPosition()-(fogBillTargetPos[i]-mainPlayer->getPosition())*((990.f*0.1f*RoomScale)/dist));
+            fogBillTargetPos[i].Y = mainPlayer->getPosition().Y-(rand()%100);
+            fogBillboards[i]->setPosition(fogBillTargetPos[i]);
+        } else {
+            rotMatrix.setRotationDegrees(irr::core::vector3df((rand()%100-50)/25.f,(rand()%100-50)/12.f,(rand()%100-50)/150.f)*0.2f);
+            fogBillTargetPos[i]+=irr::core::vector3df(rand()%3-1,rand()%3-1,rand()%3-1)*0.1f;
+            irr::core::vector3df diff = fogBillTargetPos[i]-mainPlayer->getPosition();
+            rotMatrix.transformVect(diff);
+            fogBillTargetPos[i]=mainPlayer->getPosition()+diff;
+        }
+
+        if ((fogBillTargetPos[i].Y-mainPlayer->getPosition().Y)>100.f) {
+            fogBillTargetPos[i].Y-=100.f;
+        }
+        if ((mainPlayer->getPosition().Y-fogBillTargetPos[i].Y)>100.f) {
+            fogBillTargetPos[i].Y+=100.f;
+        }
+
+        for (int j=0;j<50;j++) {
+            if (j!=i) {
+                float dist3 = fogBillTargetPos[i].getDistanceFrom(fogBillTargetPos[j]);
+                if (dist3<50.f*0.1f*RoomScale) {
+                    fogBillTargetPos[i]=(fogBillTargetPos[i]+(fogBillTargetPos[i]-fogBillTargetPos[j])/dist3*40.f*0.1f*RoomScale);
+                }
+            }
+        }
+
+        fogBillboards[i]->updateAbsolutePosition();
+        fogBillboards[i]->setPosition(fogBillboards[i]->getAbsolutePosition()*(1.f-(0.05f*FPSfactor))+fogBillTargetPos[i]*0.05f*FPSfactor);
+        fogBillboards[i]->updateAbsolutePosition();
+
+        float dist2 = mainPlayer->getPosition().getDistanceFrom(fogBillboards[i]->getAbsolutePosition());
+        if (dist2<400.f*0.1f*RoomScale) {
+            unsigned char bcolor = std::max((dist2-(100.f*0.1f*RoomScale))/(300.f*0.1f*RoomScale),0.f)*10;
+            fogBillboards[i]->setColor(irr::video::SColor(255,bcolor,bcolor,bcolor));
+        } else if (dist2>800.f*0.1*RoomScale) {
+            unsigned char bcolor = std::max(((1010.f*0.1f*RoomScale)-dist2)/(210.f*0.1f*RoomScale),0.f)*10;
+            fogBillboards[i]->setColor(irr::video::SColor(255,bcolor,bcolor,bcolor));
+        } else {
+            fogBillboards[i]->setColor(irr::video::SColor(255,10,10,10));
+        }
+
+        fogBillboards[i]->setVisible(true);
+        fogBillboards[i]->render();
+        fogBillboards[i]->setVisible(false);
+    }
 
     RoomCallback->reflectFactor=0.f;
-
     irrDriver->setRenderTarget(reflection,true,true);
     mainPlayer->reflectNY();
     irrSmgr->drawAll();
@@ -522,10 +583,6 @@ void world::draw3D() {
     irrDriver->draw2DImage(finalImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
     irrSmgr->drawAll();
-
-    //irr::core::vector3df ppos(coordToRoomGrid(mainPlayer->getPosition().X),2.f,coordToRoomGrid(mainPlayer->getPosition().Z));
-
-    //irrDriver->draw3DBox(irr::core::aabbox3df(ppos-irr::core::vector3df(0.5f,0.f,0.5f),ppos+irr::core::vector3df(0.5f,20.f,0.5f)),irr::video::SColor(255,255,0,0));
 
     float BlinkTimer = mainPlayer->BlinkTimer;
     if (BlinkTimer<0) {
@@ -541,7 +598,11 @@ void world::draw3D() {
         irrDriver->draw2DRectangle(irr::video::SColor(std::min(255.f,darkA*255.f),0,0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight));
         PostProcCallback->minBlur = darkA*6.f;
     } else {
-		PostProcCallback->minBlur = 0.f;
+		if (itemSelected==true) {
+            PostProcCallback->minBlur=2.f;
+        } else {
+            PostProcCallback->minBlur=0.f;
+        }
 		if (menusOpen!=menus::NONE) PostProcCallback->minBlur = 2.f;
     }
 
@@ -564,6 +625,9 @@ void world::draw3D() {
 }
 
 void world::drawHUD() {
+
+    itemSelected = mainPlayer->drawSelectedItem();
+
 	if (hudMsgTimer>0.f) {
 		hudMsgTimer-=getFPSfactor();
 
@@ -594,6 +658,7 @@ void world::drawHUD() {
 
     blurAlpha = 100;
 
+#if 0
     //{ startPathCode
     irr::core::vector2di startPos;
     irr::core::vector2di endPos;
@@ -707,8 +772,10 @@ void world::drawHUD() {
     irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,255),irr::core::recti((19-startPos.X)*10,startPos.Y*10,(19-startPos.X)*10+8,startPos.Y*10+8));
     irrDriver->draw2DRectangle(irr::video::SColor(255,0,255,0),irr::core::recti((19-endPos.X)*10,endPos.Y*10,(19-endPos.X)*10+8,endPos.Y*10+8));
     //} endPathCode
+#endif
 
     if (menusOpen==menus::INVOPEN) {
+        mainPlayer->selectItem(inventory_size);
 		if (prevMenusOpen!=menusOpen) {
 			sound::freezeCategory(1);
 			irrReceiver->perLoopUpdate();
@@ -733,6 +800,7 @@ void world::drawHUD() {
 					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x+2,y+(h+8)*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+24)*scale2Db)),irr::video::SColor(100,0,0,0),true,true);
 					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x,y+(h+6)*scale2Db),irr::core::position2di(x+w*scale2Db,y+(h+22)*scale2Db)),irr::video::SColor(255,255,255,255),true,true);
 					if (irrReceiver->IsDoubleClick(0)) {
+                        mainPlayer->selectItem(i);
 						menusOpen=menus::NONE;
 					} else if (irrReceiver->IsMouseDown(0) && dragItem>=inventory_size) {
 						dragItem = i;
@@ -816,6 +884,7 @@ void world::drawHUD() {
 			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
 		}
 	} else if (menusOpen==menus::PAUSEOPEN || menusOpen==menus::OPTIONSOPEN) {
+        mainPlayer->selectItem(inventory_size);
 		if (pauseImgs[0]==nullptr) {
 			pauseImgs[0] = irrDriver->getTexture("GFX/menu/pausemenu.jpg");
 			pauseImgs[1] = irrDriver->getTexture("GFX/menu/menublack.jpg");

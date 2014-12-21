@@ -43,3 +43,6 @@ std::string itemVeryfinefirstaid::getInvImgPath() {
 bool itemVeryfinefirstaid::updateItem() {
 	return false;
 }
+
+void itemVeryfinefirstaid::updateWearing() {}
+void itemVeryfinefirstaid::drawItem() {}

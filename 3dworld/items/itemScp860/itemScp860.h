@@ -19,6 +19,8 @@ class itemScp860 : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemScp860* createItemScp860();
 

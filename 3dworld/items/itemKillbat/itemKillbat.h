@@ -19,6 +19,8 @@ class itemKillbat : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemKillbat* createItemKillbat();
 

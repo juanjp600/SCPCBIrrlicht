@@ -43,3 +43,6 @@ std::string itemCigarette::getInvImgPath() {
 bool itemCigarette::updateItem() {
 	return false;
 }
+
+void itemCigarette::updateWearing() {}
+void itemCigarette::drawItem() {}

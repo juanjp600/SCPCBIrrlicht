@@ -36,6 +36,9 @@ void PostProcShaderCallBack::OnSetConstants(irr::video::IMaterialRendererService
 	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
 	irr::s32 TextureLayerID2 = 1;
 	services->setPixelShaderConstant("Texture1", &TextureLayerID2, 1);
+
+	irr::s32 TextureLayerIDFog = 2;
+	services->setPixelShaderConstant("fogTex", &TextureLayerIDFog, 1);
 }
 
 void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {

@@ -19,6 +19,8 @@ class item18vbat : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static item18vbat* createItem18vbat();
 

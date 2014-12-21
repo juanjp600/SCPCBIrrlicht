@@ -17,7 +17,7 @@ class room {
 		irr::scene::ISceneNode* node;
 		btRigidBody* rbody;
 
-		static dynRegister* dynamics;
+		static irrDynamics* dynamics;
 		irr::scene::ITriangleSelector* getSelector(irr::scene::IMesh* mesh);
 		static irr::scene::IMeshSceneNode* getNewNode(irr::scene::IMesh* mesh);
 
@@ -36,7 +36,7 @@ class room {
 		virtual bool disableDecals() const { return false; }
 		virtual void setLinkedTurnDist(unsigned char index,signed char value);
 		virtual char getLinkedTurnDist(unsigned char index) const;
-		static void setDynamics(dynRegister* inDyn);
+		static void setDynamics(irrDynamics* inDyn);
 		static void setSmgr(irr::scene::ISceneManager* inSmgr);
 		virtual void destroy();
 };

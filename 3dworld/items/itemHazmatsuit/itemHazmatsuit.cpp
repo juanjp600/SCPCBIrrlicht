@@ -43,3 +43,6 @@ std::string itemHazmatsuit::getInvImgPath() {
 bool itemHazmatsuit::updateItem() {
 	return false;
 }
+
+void itemHazmatsuit::updateWearing() {}
+void itemHazmatsuit::drawItem() {}

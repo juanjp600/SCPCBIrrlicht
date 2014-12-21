@@ -43,3 +43,6 @@ std::string itemVeryfineradio::getInvImgPath() {
 bool itemVeryfineradio::updateItem() {
 	return false;
 }
+
+void itemVeryfineradio::updateWearing() {}
+void itemVeryfineradio::drawItem() {}

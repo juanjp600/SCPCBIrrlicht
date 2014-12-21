@@ -19,6 +19,8 @@ class itemFinevest : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemFinevest* createItemFinevest();
 

@@ -35,16 +35,17 @@
 
 extern ContactAddedCallback gContactAddedCallback;*/
 
-dynRegister* room::dynamics = nullptr;
+irrDynamics* room::dynamics = nullptr;
 irr::scene::ISceneManager* room::smgr = nullptr;
 
 room::room() {
+    std::cout<<"room constructor\n";
 	for (unsigned char i=0;i<4;i++) {
 		linkedTurnDists[i]=-1;
 	}
 }
 
-void room::setDynamics(dynRegister* inDyn) {
+void room::setDynamics(irrDynamics* inDyn) {
 	if (room::dynamics==nullptr) room::dynamics = inDyn;
 }
 
@@ -69,10 +70,10 @@ irr::scene::IMeshSceneNode* room::getNewNode(irr::scene::IMesh* mesh) {
 void room::setActivation(bool s) {
 	if (s!=isActivated) {
 		if (s) {
-			dynamics->sharedRegisterRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
+			dynamics->registerNewRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
 			node->setVisible(true);
 		} else {
-			dynamics->sharedUnregisterRBody(rbody);
+			dynamics->unregisterRBody(rbody);
 			node->setVisible(false);
 		}
 		isActivated = s;
@@ -104,7 +105,7 @@ void room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 	rme->shape->calculateLocalInertia(0.0, localInertia);
 
 	rbody = new btRigidBody(0.0, MotionState, rme->shape, localInertia);
-	room::dynamics->sharedRegisterRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
+	room::dynamics->registerNewRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
 
 	rbody->setFriction(1.f);
 	rbody->setRollingFriction(1.f);
@@ -115,7 +116,7 @@ void room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 
 void room::destroy() {
 	node->drop();
-	dynamics->sharedUnregisterRBody(rbody);
+	dynamics->unregisterRBody(rbody);
 	delete rbody;
 }
 

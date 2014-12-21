@@ -43,3 +43,6 @@ std::string itemFinefirstaid::getInvImgPath() {
 bool itemFinefirstaid::updateItem() {
 	return false;
 }
+
+void itemFinefirstaid::updateWearing() {}
+void itemFinefirstaid::drawItem() {}

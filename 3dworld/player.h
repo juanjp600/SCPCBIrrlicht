@@ -21,6 +21,9 @@ class player {
         irr::core::vector3df selfRotation;
 
         item* inventory[inventory_size];
+        unsigned char selectedItem = inventory_size;
+        unsigned char wearingGasMask = inventory_size;
+        unsigned char wearing714 = inventory_size;
 
 		float height,radius;
 
@@ -67,6 +70,13 @@ class player {
         bool addToInventory(item* it);
         item* takeFromInventory(unsigned char slot);
         unsigned char moveToSlot(unsigned char srcSlot,unsigned char destSlot);
+
+        void selectItem(unsigned char index);
+        void selectGasMask(item* it);
+        void select714(item* it);
+        bool drawSelectedItem();
+
+        void boostStamina(float add,float clamp);
 
         void teleport(irr::core::vector3df position);
 

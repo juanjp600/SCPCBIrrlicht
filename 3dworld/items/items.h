@@ -56,7 +56,7 @@ enum class itemTempIDs : unsigned short {
 	ITEM_SCP513,
 };
 
-class world;
+class world; class player;
 
 class item {
     protected:
@@ -64,12 +64,17 @@ class item {
         btRigidBody* rbody;
         bool picked = true;
         float state[3];
-        static dynRegister* dynamics;
+        static irrDynamics* dynamics;
+        static irr::video::IVideoDriver* irrDriver;
+        static player* mainPlayer;
+        static unsigned short screenWidth; static unsigned short screenHeight;
 
         static void createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShape* &outShape,irr::core::vector3df &offset);
         void loadAssets(irr::scene::IMeshSceneNode* node,btConvexHullShape* shape);
     public:
         virtual bool updateItem() =0;
+		virtual void updateWearing() =0;
+        virtual void drawItem() =0;
         virtual std::string getInvName() =0;
         virtual std::string getInvImgPath() =0;
         virtual itemTempIDs getTempID() =0;
@@ -89,7 +94,10 @@ class item {
         virtual irr::core::aabbox3df getBBox();
         virtual irr::core::matrix4 getTransform();
 
-        static void setDynamics(dynRegister* dyn);
+        static void setDynamics(irrDynamics* dyn);
+        static void setDriver(irr::video::IVideoDriver* inDriver);
+        static void setPlayer(player* inPlayer);
+        static void setDimensions(unsigned short width,unsigned short height);
 
         item();
         ~item();

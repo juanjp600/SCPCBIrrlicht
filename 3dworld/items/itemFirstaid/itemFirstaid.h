@@ -19,6 +19,8 @@ class itemFirstaid : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemFirstaid* createItemFirstaid();
 

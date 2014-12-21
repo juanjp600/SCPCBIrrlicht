@@ -43,3 +43,6 @@ std::string itemHand::getInvImgPath() {
 bool itemHand::updateItem() {
 	return false;
 }
+
+void itemHand::updateWearing() {}
+void itemHand::drawItem() {}

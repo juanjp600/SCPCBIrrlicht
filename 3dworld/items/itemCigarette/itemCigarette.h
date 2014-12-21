@@ -19,6 +19,8 @@ class itemCigarette : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemCigarette* createItemCigarette();
 

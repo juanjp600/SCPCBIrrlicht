@@ -41,5 +41,12 @@ std::string itemKey3::getInvImgPath() {
 }
 
 bool itemKey3::updateItem() {
-	return false;
+	return true;
+}
+
+void itemKey3::updateWearing() {}
+
+void itemKey3::drawItem() {
+    irr::video::ITexture* keyTex = item::irrDriver->getTexture(getInvImgPath().c_str());
+    item::irrDriver->draw2DImage(keyTex,irr::core::recti(item::screenWidth/2-32,item::screenHeight/2-32,item::screenWidth/2+32,item::screenHeight/2+32),irr::core::recti(0,0,64,64));
 }

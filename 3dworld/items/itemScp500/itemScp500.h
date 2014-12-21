@@ -19,6 +19,8 @@ class itemScp500 : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemScp500* createItemScp500();
 

@@ -175,7 +175,45 @@ void player::resetSpeeds() {
 	Capsule->setLinearVelocity(btVector3(dynSpeed[0],Capsule->getLinearVelocity()[1],dynSpeed[2]));
 }
 
+void player::boostStamina(float add,float clamp) {
+    Stamina+=add*owner->getFPSfactor();
+    Stamina = std::min(Stamina,100.f);
+    if (clamp>0.f) {
+        if (Stamina<clamp) {
+            Stamina = (clamp*owner->getFPSfactor()*0.05f+Stamina*(1.f-(owner->getFPSfactor()*0.05f)));
+        }
+    } else {
+        if (Stamina>-clamp) {
+            Stamina = (-clamp*owner->getFPSfactor()*0.05f+Stamina*(1.f-(owner->getFPSfactor()*0.05f)));
+        }
+    }
+}
+
 void player::update() {
+
+    if (wearingGasMask<inventory_size) {
+        if (inventory[wearingGasMask]!=nullptr) {
+            inventory[wearingGasMask]->updateWearing();
+        } else {
+            wearingGasMask = inventory_size;
+        }
+    }
+
+    if (wearing714<inventory_size) {
+        if (inventory[wearing714]!=nullptr) {
+            inventory[wearing714]->updateWearing();
+        } else {
+            wearing714 = inventory_size;
+        }
+    }
+
+    if (selectedItem<inventory_size) {
+        if (inventory[selectedItem]==nullptr) {
+            selectedItem = inventory_size;
+        } else if (inventory[selectedItem]->updateItem()==false) {
+            selectedItem = inventory_size;
+        }
+    }
 
     if (dynamics->rayTest(Capsule->getCenterOfMassPosition(),Capsule->getCenterOfMassPosition()-btVector3(0,height/2.f+3.f+std::max(0.f,Capsule->getLinearVelocity()[1]),0))) {
         //make the player slightly float above the ground to prevent twitching
@@ -735,4 +773,55 @@ unsigned char player::moveToSlot(unsigned char srcSlot,unsigned char destSlot) {
 
 		return 0;//return 2;
 	}
+}
+
+void player::selectItem(unsigned char index) {
+    selectedItem = index;
+}
+
+void player::selectGasMask(item* it) {
+    for (unsigned char i=0;i<inventory_size;i++) {
+        if (inventory[i]==it) {
+            if (i==wearingGasMask) {
+                wearingGasMask = inventory_size;
+            } else {
+                wearingGasMask = i;
+            }
+        }
+    }
+}
+
+void player::select714(item* it) {
+    for (unsigned char i=0;i<inventory_size;i++) {
+        if (inventory[i]==it) {
+            if (i==wearing714) {
+                wearing714 = inventory_size;
+            } else {
+                wearing714 = i;
+            }
+        }
+    }
+}
+
+bool player::drawSelectedItem() {
+
+    if (wearingGasMask<inventory_size) {
+        if (inventory[wearingGasMask]!=nullptr) {
+            inventory[wearingGasMask]->drawItem();
+        } else {
+            wearingGasMask = inventory_size;
+        }
+    }
+
+    if (selectedItem<inventory_size) {
+        if (inventory[selectedItem]!=nullptr) {
+            inventory[selectedItem]->drawItem();
+            return true;
+        } else {
+            selectedItem = inventory_size;
+            return false;
+        }
+    } else {
+        return false;
+    }
 }

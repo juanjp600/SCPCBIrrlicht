@@ -19,11 +19,13 @@ class itemKey6 : public item {
         }
 
         bool updateItem();
+        void updateWearing();
+		void drawItem();
 
         static itemKey6* createItemKey6();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
-		
+
 		virtual std::string getInvName();
 		virtual std::string getInvImgPath();
 

@@ -19,6 +19,8 @@ class item18vradio : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static item18vradio* createItem18vradio();
 

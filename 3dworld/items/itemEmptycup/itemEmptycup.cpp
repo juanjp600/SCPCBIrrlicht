@@ -43,3 +43,6 @@ std::string itemEmptycup::getInvImgPath() {
 bool itemEmptycup::updateItem() {
 	return false;
 }
+
+void itemEmptycup::updateWearing() {}
+void itemEmptycup::drawItem() {}

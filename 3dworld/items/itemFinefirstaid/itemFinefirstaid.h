@@ -19,6 +19,8 @@ class itemFinefirstaid : public item {
         }
 
         bool updateItem();
+		void updateWearing();
+		void drawItem();
 
         static itemFinefirstaid* createItemFinefirstaid();
 
