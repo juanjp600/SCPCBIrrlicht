@@ -22,6 +22,7 @@ itemScp714* itemScp714::createItemScp714() {
 
     if (itemScp714::shape == nullptr) {
 		item::createShapeFromNode(itemScp714::baseNode,itemScp714::shape,itemScp714::offset);
+		itemScp714::shape->setMargin(0.02f);
 	}
 
     itemScp714* newIt = new itemScp714;
@@ -49,7 +50,7 @@ bool itemScp714::updateItem() {
 }
 
 void itemScp714::updateWearing() {
-    item::mainPlayer->boostStamina(0.f,-20.f);
+    item::mainPlayer->boostStamina(0.f,-5.f);
 }
 
 void itemScp714::drawItem() {}

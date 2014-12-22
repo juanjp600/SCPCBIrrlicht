@@ -25,7 +25,7 @@ class itemScp714 : public item {
         static itemScp714* createItemScp714();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
-		
+
 		virtual std::string getInvName();
 		virtual std::string getInvImgPath();
 
