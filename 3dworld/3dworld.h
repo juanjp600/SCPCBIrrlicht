@@ -123,6 +123,12 @@ struct tempPathList {
     tempPathList* next = nullptr;
 };
 
+struct tempWPPathList {
+    tempWPPathList* prev = nullptr;
+    unsigned char index;
+    tempWPPathList* next = nullptr;
+};
+
 class world {
     private:
         irr::video::E_DRIVER_TYPE irrDriverType;

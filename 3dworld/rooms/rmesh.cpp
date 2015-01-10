@@ -411,7 +411,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 					file->read(&fy,sizeof(float));
 					file->read(&fz,sizeof(float));
 
-					newWP.pos = irr::core::vector3df(fx,fy,fz);
+					newWP.pos = irr::core::vector3df(fx*RoomScale*0.1f,fy*RoomScale*0.1f,fz*RoomScale*0.1f);
 
 					file->read(&readChar1,sizeof(unsigned char));
 					for (unsigned char j=0;j<10;j++) {

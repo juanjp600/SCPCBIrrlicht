@@ -19,3 +19,7 @@ lockroom2* lockroom2::createNew(irr::core::vector3df inPosition,char inAngle) {
 const std::vector<irr::video::SLight>& lockroom2::getPointLights() {
 	return lockroom2::baseRMesh->pointlights;
 }
+
+void lockroom2::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
+	room::findWPPath(lockroom2::baseRMesh,startPos,destPos,posList);
+}

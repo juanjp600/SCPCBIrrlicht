@@ -19,3 +19,7 @@ tunnel2* tunnel2::createNew(irr::core::vector3df inPosition,char inAngle) {
 const std::vector<irr::video::SLight>& tunnel2::getPointLights() {
 	return tunnel2::baseRMesh->pointlights;
 }
+
+void tunnel2::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
+	room::findWPPath(tunnel2::baseRMesh,startPos,destPos,posList);
+}

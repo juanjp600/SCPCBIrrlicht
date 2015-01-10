@@ -71,7 +71,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 
     blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
     blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
-    ZBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R32F);
+    ZBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R16F);
     finalImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"",irr::video::ECF_R8G8B8);
 
     reflection = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(64,64),"",irr::video::ECF_R8G8B8);

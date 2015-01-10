@@ -1,5 +1,6 @@
 #include "3dworld.h"
 #include "rooms/rmesh.h"
+#include "rooms/room.h"
 
 #include <cmath>
 
@@ -376,4 +377,109 @@ short world::stepPath(const irr::core::vector2di &endPos,tempPathList &roomPath,
     if (newList!=nullptr) { roomPath.next = newList; }
 
     return minDist;
+}
+
+void room::findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
+    bool found1,found2;
+    found1=found2=false;
+    startPos-=node->getPosition();
+    destPos-=node->getPosition();
+    irr::core::matrix4 invRotMatrix;
+    invRotMatrix.setRotationDegrees(irr::core::vector3df(0.f,-angle*90.f,0.f));
+    float found1dist,found2dist;
+    unsigned int found1index,found2index;
+    for (unsigned int i=0;i<rme->waypoints.size();i++) {
+        if (!found1 || found1dist>startPos.getDistanceFromSQ(rme->waypoints[i]->position)) {
+            found1dist=startPos.getDistanceFromSQ(rme->waypoints[i]->position);
+            found1=true;
+            found1index = i;
+        }
+        if (!found2 || found2dist>destPos.getDistanceFromSQ(rme->waypoints[i]->position)) {
+            found2dist=destPos.getDistanceFromSQ(rme->waypoints[i]->position);
+            found2=true;
+            found2index = i;
+        }
+    }
+    if (found1&&found2) {
+        tempWPPathList* startPathList = new tempWPPathList;
+        startPathList->prev = nullptr;
+        startPathList->next = nullptr;
+        startPathList->index = found1index;
+        short result = wpPathStep(rme,found2index,*startPathList);
+        if (result>=0) {
+            while (startPathList!=nullptr) {
+                irr::core::vector3df pushPos = rme->waypoints[startPathList->index]->position;
+                rotMatrix.transformVect(pushPos);
+                pushPos+=node->getPosition();
+                posList.push_back(pushPos);
+                tempWPPathList* tempList = startPathList;
+                startPathList = startPathList->next;
+                delete tempList;
+            }
+        } else {
+            while (startPathList!=nullptr) {
+                tempWPPathList* tempList = startPathList;
+                startPathList = startPathList->next;
+                delete tempList;
+            }
+        }
+    }
+}
+
+short room::wpPathStep(RMesh* rme,unsigned char destWP,tempWPPathList &currWP) {
+    RMesh::waypoint* wp = rme->waypoints[currWP.index];
+    RMesh::waypoint* dwp = rme->waypoints[destWP];
+    if (wp==dwp) { return 0; }
+    for (int i=0;i<20;i++) {
+        if (wp->connected[i]==dwp) {
+            return 1;
+        }
+    }
+    tempWPPathList* tempList = nullptr;
+    tempWPPathList* bestList = nullptr;
+    short bestListDist = -1;
+    for (int i=0;i<20;i++) {
+        RMesh::waypoint* awp = wp->connected[i];
+        if (awp==nullptr) { continue; }
+        unsigned int j=0;
+        for (j=0;j<rme->waypoints.size();j++) {
+            if (rme->waypoints[j]==awp) {
+                break;
+            }
+        }
+        tempWPPathList* testList = currWP.prev;
+        bool isInList = false;
+        while (testList!=nullptr) {
+            if (testList->index==j) { isInList=true; break; }
+            testList = testList->prev;
+        }
+        if (!isInList) {
+            if (tempList!=nullptr) { delete tempList; tempList=nullptr; }
+            tempList = new tempWPPathList;
+            tempList->prev = &currWP;
+            tempList->next = nullptr;
+            tempList->index = j;
+            short currDist = wpPathStep(rme,destWP,*tempList);
+            if (currDist>=0) {
+                if (bestList==nullptr) {
+                    bestList=tempList; tempList=nullptr;
+                    bestListDist = currDist;
+                } else if (currDist<bestListDist) {
+                    tempWPPathList* rmvList = bestList;
+                    while (bestList!=nullptr) {
+                        bestList = rmvList->next;
+                        delete rmvList;
+                        rmvList = bestList;
+                    }
+                    bestList=tempList; tempList=nullptr;
+                    bestListDist = currDist;
+                }
+            }
+        }
+    }
+    if (bestList!=nullptr) {
+        currWP.next = bestList;
+        return bestListDist+1;
+    }
+    return -1;
 }

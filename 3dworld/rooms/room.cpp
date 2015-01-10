@@ -85,6 +85,7 @@ void room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 	getSelector(rme->mesh);
 	node->setPosition(inPosition);
 	node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
+
 	angle = inAngle;
 
 	//Add the Bullet rigid body
@@ -106,6 +107,17 @@ void room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 
 	rbody = new btRigidBody(0.0, MotionState, rme->shape, localInertia);
 	room::dynamics->registerNewRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
+
+	rotMatrix.setRotationDegrees(irr::core::vector3df(0,inAngle*90.f,0));
+
+	for (unsigned int i=0;i<rme->waypoints.size();i++) {
+        irr::core::vector3df pos = rme->waypoints[i]->position;
+        rotMatrix.transformVect(pos);
+        //pos*=0.75f*0.1f;
+        irr::scene::ISceneNode* cube = room::smgr->addCubeSceneNode();
+        cube->getMaterial(0).Lighting=false;
+        cube->setPosition(pos+inPosition);
+	}
 
 	rbody->setFriction(1.f);
 	rbody->setRollingFriction(1.f);

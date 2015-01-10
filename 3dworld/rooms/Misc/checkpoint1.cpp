@@ -19,3 +19,7 @@ checkpoint1* checkpoint1::createNew(irr::core::vector3df inPosition,char inAngle
 const std::vector<irr::video::SLight>& checkpoint1::getPointLights() {
 	return checkpoint1::baseRMesh->pointlights;
 }
+
+void checkpoint1::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
+	room::findWPPath(checkpoint1::baseRMesh,startPos,destPos,posList);
+}

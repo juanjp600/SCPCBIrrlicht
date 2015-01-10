@@ -19,3 +19,7 @@ endroom2* endroom2::createNew(irr::core::vector3df inPosition,char inAngle) {
 const std::vector<irr::video::SLight>& endroom2::getPointLights() {
 	return endroom2::baseRMesh->pointlights;
 }
+
+void endroom2::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
+	room::findWPPath(endroom2::baseRMesh,startPos,destPos,posList);
+}

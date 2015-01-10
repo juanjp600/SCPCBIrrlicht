@@ -12,6 +12,7 @@ class room {
 		static irr::scene::ISceneManager* smgr;
 	protected:
 		char angle;
+		irr::core::matrix4 rotMatrix;
 		char selectedEvent;
 		float eventState[3];
 		irr::scene::ISceneNode* node;
@@ -26,6 +27,9 @@ class room {
 		void loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle);
 
 		signed char linkedTurnDists[4];
+
+		virtual void findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList);
+		virtual short wpPathStep(RMesh* rme,unsigned char destWP,class tempWPPathList &currWP);
 	public:
 		room();
 		virtual roomTypes getType() const =0;
@@ -39,6 +43,7 @@ class room {
 		static void setDynamics(irrDynamics* inDyn);
 		static void setSmgr(irr::scene::ISceneManager* inSmgr);
 		virtual void destroy();
+		virtual void findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) =0;
 };
 
 //extern bool CustomMaterialCombinerCallback(btManifoldPoint& cp,const btCollisionObjectWrapper* colObj0,int partId0,int index0,const btCollisionObjectWrapper* colObj1,int partId1,int index1);

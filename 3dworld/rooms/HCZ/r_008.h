@@ -11,6 +11,7 @@ class r_008 : public room {
 		virtual const std::vector<irr::video::SLight>& getPointLights();
 		static void setBase(RMesh* inRme);
 		static r_008* createNew(irr::core::vector3df inPosition,char inAngle);
+		virtual void findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList);
 };
 
 #endif

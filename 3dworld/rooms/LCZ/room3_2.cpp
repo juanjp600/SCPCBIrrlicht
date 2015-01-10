@@ -19,3 +19,7 @@ room3_2* room3_2::createNew(irr::core::vector3df inPosition,char inAngle) {
 const std::vector<irr::video::SLight>& room3_2::getPointLights() {
 	return room3_2::baseRMesh->pointlights;
 }
+
+void room3_2::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
+	room::findWPPath(room3_2::baseRMesh,startPos,destPos,posList);
+}
