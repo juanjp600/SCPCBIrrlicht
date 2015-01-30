@@ -1,4 +1,5 @@
 #include "3dworld.h"
+#include "player.h"
 #include "rooms/rmesh.h"
 #include "rooms/room.h"
 
@@ -379,13 +380,21 @@ short world::stepPath(const irr::core::vector2di &endPos,tempPathList &roomPath,
     return minDist;
 }
 
+void world::getRoomListToPlayer(const irr::core::vector2di &startPos,std::vector<irr::core::vector2di> &roomPath) {
+    std::cout<<"::::: "<<mainPlayer->getPosition().X<<"\n";
+    getRoomList(startPos,irr::core::vector2di(coordToRoomGrid(mainPlayer->getPosition().X),coordToRoomGrid(mainPlayer->getPosition().Z)),roomPath);
+}
+
 void room::findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
     bool found1,found2;
     found1=found2=false;
-    startPos-=node->getPosition();
-    destPos-=node->getPosition();
+    node->updateAbsolutePosition();
+    startPos-=node->getAbsolutePosition();
+    destPos-=node->getAbsolutePosition();
     irr::core::matrix4 invRotMatrix;
     invRotMatrix.setRotationDegrees(irr::core::vector3df(0.f,-angle*90.f,0.f));
+    invRotMatrix.transformVect(startPos);
+    invRotMatrix.transformVect(destPos);
     float found1dist,found2dist;
     unsigned int found1index,found2index;
     for (unsigned int i=0;i<rme->waypoints.size();i++) {
@@ -410,13 +419,21 @@ void room::findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector
             while (startPathList!=nullptr) {
                 irr::core::vector3df pushPos = rme->waypoints[startPathList->index]->position;
                 rotMatrix.transformVect(pushPos);
-                pushPos+=node->getPosition();
+                node->updateAbsolutePosition();
+                pushPos+=node->getAbsolutePosition();
                 posList.push_back(pushPos);
+                //std::cout<<"asdasdasd "<<pushPos.Y<<"\n";
                 tempWPPathList* tempList = startPathList;
                 startPathList = startPathList->next;
                 delete tempList;
+                std::cout<<"spl ::::: "<<posList.size()<<" "<<result<<"\n";
             }
         } else {
+            std::cout<<"waypoint pathfinding failed ("<<found1index<<","<<found2index<<";"<<rme->waypoints.size()<<") \n";
+            if (rme->waypoints.size()==2) {
+                std::cout<<"______ "<<rme->waypoints[0]->position.X<<","<<rme->waypoints[0]->position.Y<<","<<rme->waypoints[0]->position.Z<<"\n";
+                std::cout<<"______ "<<rme->waypoints[1]->position.X<<","<<rme->waypoints[1]->position.Y<<","<<rme->waypoints[1]->position.Z<<"\n";
+            }
             while (startPathList!=nullptr) {
                 tempWPPathList* tempList = startPathList;
                 startPathList = startPathList->next;
@@ -429,14 +446,27 @@ void room::findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector
 short room::wpPathStep(RMesh* rme,unsigned char destWP,tempWPPathList &currWP) {
     RMesh::waypoint* wp = rme->waypoints[currWP.index];
     RMesh::waypoint* dwp = rme->waypoints[destWP];
-    if (wp==dwp) { return 0; }
+    if (wp==dwp) { std::cout<<"wppathstep returned 0\n"; return 0; }
+
+    tempWPPathList* tempList = nullptr;
+    tempWPPathList* bestList = nullptr;
+
     for (int i=0;i<20;i++) {
         if (wp->connected[i]==dwp) {
+            unsigned int j=0;
+            for (j=0;j<rme->waypoints.size();j++) {
+                if (rme->waypoints[j]==dwp) {
+                    break;
+                }
+            }
+            tempList = new tempWPPathList;
+            tempList->prev = &currWP;
+            tempList->next = nullptr;
+            tempList->index = j;
+            currWP.next = tempList;
             return 1;
         }
     }
-    tempWPPathList* tempList = nullptr;
-    tempWPPathList* bestList = nullptr;
     short bestListDist = -1;
     for (int i=0;i<20;i++) {
         RMesh::waypoint* awp = wp->connected[i];
@@ -473,6 +503,14 @@ short room::wpPathStep(RMesh* rme,unsigned char destWP,tempWPPathList &currWP) {
                     }
                     bestList=tempList; tempList=nullptr;
                     bestListDist = currDist;
+                } else {
+                    tempWPPathList* rmvList = tempList;
+                    while (tempList!=nullptr) {
+                        tempList = rmvList->next;
+                        delete rmvList;
+                        rmvList = tempList;
+                    }
+                    tempList = nullptr;
                 }
             }
         }
@@ -482,4 +520,14 @@ short room::wpPathStep(RMesh* rme,unsigned char destWP,tempWPPathList &currWP) {
         return bestListDist+1;
     }
     return -1;
+}
+
+void world::npcPathFind(const irr::core::vector3df &startPos,const irr::core::vector3df &endPos,const irr::core::vector2di &roomPos,std::vector<irr::core::vector3df> &posList) {
+    if (roomPos.X<0) { std::cout<<"err3\n"; return; }
+	if (roomPos.X>=20) { std::cout<<"err4\n"; return; }
+	if (roomPos.Y<0) { std::cout<<"err5\n"; return; }
+	if (roomPos.Y>=20) { std::cout<<"err6\n"; return; }
+    if (roomArray[roomPos.X][roomPos.Y]==nullptr) { std::cout<<"error with npcpathfind: room is null\n"; return; }
+    marked = roomPos;
+    roomArray[roomPos.X][roomPos.Y]->findWPPath(startPos,endPos,posList);
 }

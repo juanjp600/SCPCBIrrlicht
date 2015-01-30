@@ -74,7 +74,7 @@ void room::setActivation(bool s) {
 			node->setVisible(true);
 		} else {
 			dynamics->unregisterRBody(rbody);
-			node->setVisible(false);
+			node->setVisible(true);
 		}
 		isActivated = s;
 	}
@@ -114,7 +114,7 @@ void room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
         irr::core::vector3df pos = rme->waypoints[i]->position;
         rotMatrix.transformVect(pos);
         //pos*=0.75f*0.1f;
-        irr::scene::ISceneNode* cube = room::smgr->addCubeSceneNode();
+        irr::scene::ISceneNode* cube = room::smgr->addCubeSceneNode(1.f);
         cube->getMaterial(0).Lighting=false;
         cube->setPosition(pos+inPosition);
 	}

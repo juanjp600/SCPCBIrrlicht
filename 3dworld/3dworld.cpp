@@ -1,6 +1,8 @@
 #include "3dworld.h"
 #include "player.h"
 
+#include "npcs/npc096.h"
+
 #include "rooms/room.h"
 #include "rooms/rmesh.h"
 
@@ -218,8 +220,8 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	if (ambient[0]!=nullptr) {
 		ambient[0]->playSound(true);
 	}
-
 	RMesh* rme;
+#if 1
 	//LCZ
 	/*lockroom*/rme = loadRMesh(std::string("GFX/map/lockroom_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); lockroom::setBase(rme);
 	/*start*/rme = loadRMesh(std::string("GFX/map/173_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); start::setBase(rme);
@@ -241,6 +243,7 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	/*room4*/rme = loadRMesh(std::string("GFX/map/room4_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room4::setBase(rme);
 	/*roompj*/rme = loadRMesh(std::string("GFX/map/roompj_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); roompj::setBase(rme);
 	/*r_914*/rme = loadRMesh(std::string("GFX/map/machineroom_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); r_914::setBase(rme);
+#endif
 #if 0
 	//HCZ
 	/*r_008*/rme = loadRMesh(std::string("GFX/map/008_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); r_008::setBase(rme);
@@ -262,12 +265,14 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	/*room3tunnel*/rme = loadRMesh(std::string("GFX/map/room3tunnel_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room3tunnel::setBase(rme);
 	/*room4tunnels*/rme = loadRMesh(std::string("GFX/map/4tunnels_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room4tunnels::setBase(rme);
 	/*room513*/rme = loadRMesh(std::string("GFX/map/room513_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room513::setBase(rme);
+#endif
+#if 0
 	//EZ
 	/*room860*/rme = loadRMesh(std::string("GFX/map/room860_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room860::setBase(rme);
 	/*exit1*/rme = loadRMesh(std::string("GFX/map/exit1_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); exit1::setBase(rme);
 	/*gateaentrance*/rme = loadRMesh(std::string("GFX/map/gateaentrance_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); gateaentrance::setBase(rme);
 	/*lockroom2*/rme = loadRMesh(std::string("GFX/map/lockroom2_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); lockroom2::setBase(rme);
-	/*room079*/rme = loadRMesh(std::string("GFX/map/room079_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room079::setBase(rme);
+
 	/*room2z3*/rme = loadRMesh(std::string("GFX/map/room2z3_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room2z3::setBase(rme);
 	/*room2cafeteria*/rme = loadRMesh(std::string("GFX/map/room2cafeteria_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room2cafeteria::setBase(rme);
 	/*room2cz3*/rme = loadRMesh(std::string("GFX/map/room2Cz3_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room2cz3::setBase(rme);
@@ -291,6 +296,11 @@ world::world(unsigned int width,unsigned int height,bool fullscreen) {
 	/*gatea*/rme = loadRMesh(std::string("GFX/map/gatea_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); gatea::setBase(rme);
 	/*pocketdimension*/rme = loadRMesh(std::string("GFX/map/pocketdimension1_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); pocketdimension::setBase(rme);
 #endif
+    /*room079*/rme = loadRMesh(std::string("GFX/map/room079_opt.rm2"),irrFileSystem,irrDriver,reflection,RoomShader); room079::setBase(rme);
+
+    npc::owner = this;
+    npc096::baseNode = irrSmgr->addCubeSceneNode();
+    testNPC = npc096::createNPC096();
 
 	mainPlayer = new player(this,irrSmgr,dynamics,irrReceiver);
 
@@ -394,6 +404,8 @@ world::~world() {
     sound::killSounds();
     irrDevice->drop();
 
+    delete irrReceiver;
+
 	auto a = irr::LeakHunter::getReferenceCountedObjects();
 	std::cout<<"Leaked IReferenceCount: "<<a.size()<<"\n";
 
@@ -424,6 +436,8 @@ bool world::run() {
 		mainPlayer->update();
 		dynamics->simStep(time,60.f * prec);
 		mainPlayer->resetSpeeds();
+
+        testNPC->update();
 
 		if (irrReceiver->IsMouseDown(0) != mainPlayer->getLastMouseDown(0) && irrReceiver->IsMouseDown(0)==false) {
 			for (unsigned int i=0;i<itemList.size();i++) {
@@ -582,6 +596,7 @@ void world::draw3D() {
 	irrDriver->setRenderTarget(blurImage2); //copy the old render
     irrDriver->draw2DImage(finalImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
+    mainPlayer->teleport(testNPC->getPosition());
     irrSmgr->drawAll();
 
     float BlinkTimer = mainPlayer->BlinkTimer;
@@ -657,6 +672,16 @@ void world::drawHUD() {
     }
 
     blurAlpha = 100;
+
+    for (int y=19;y>=0;y--) {
+        for (int x=19;x>=0;x--) {
+            if (roomArray[x][y]!=nullptr) {
+                irrDriver->draw2DRectangle(irr::video::SColor(255,100,100,100),irr::core::recti((19-x)*10,y*10,(19-x)*10+8,y*10+8));
+            }
+        }
+    }
+    irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,0),irr::core::recti((19-marked.X)*10,marked.Y*10,(19-marked.X)*10+8,marked.Y*10+8));
+    irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,0),irr::core::recti((19-coordToRoomGrid(mainPlayer->getPosition().X))*10,coordToRoomGrid(mainPlayer->getPosition().Z)*10,(19-coordToRoomGrid(mainPlayer->getPosition().X))*10+8,coordToRoomGrid(mainPlayer->getPosition().Z)*10+8));
 
 #if 0
     //{ startPathCode

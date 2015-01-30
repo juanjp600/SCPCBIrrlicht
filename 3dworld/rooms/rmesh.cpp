@@ -27,6 +27,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
     };
 
 	std::vector<tempWaypoint> tempWaypoints;
+	tempWaypoints.clear();
 	tempWaypoint newWP;
 
     readString1 = "";
@@ -47,6 +48,8 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
     if (readString1=="RM2") { //this is a valid RMesh
         std::cout<<"Loading \""<<path<<"\"\n";
         RMesh* retRMesh = new RMesh;
+
+        retRMesh->waypoints.clear();
 
         retRMesh->path = path;
         int initialSize = path.size()-1;
@@ -128,9 +131,11 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
             std::vector<irr::video::S3DVertex2TCoords> vertices;
 			std::vector<irr::core::vector3di> indices;
             unsigned char entType;
+            entType = 10;
             file->read(&entType,sizeof(unsigned char));
             char blendType = 0;
 			unsigned char textures[2];
+			std::cout<<(int)entType<<"\n";
             switch (entType) {
 				case 0: //solid, drawn
 				case 1: //not solid, drawn
@@ -417,8 +422,10 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 					for (unsigned char j=0;j<10;j++) {
 						newWP.connected[j]=0;
 					}
+					std::cout<<"   "<<(int)readChar1<<"\n";
 					for (unsigned char j=0;j<readChar1;j++) {
 						file->read(&readChar2,sizeof(unsigned char));
+						//std::cout<<"      "<<(int)readChar2<<"\n";
 						newWP.connected[j]=readChar2;
 					}
 					tempWaypoints.push_back(newWP);
@@ -476,10 +483,22 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 				break;
 				default:
 					std::cout<<"Unknown RMesh entity: \""<<(int)readChar1<<"\"\n";
+					std::terminate();
 				break;
 			}
         }
 
+        /*if (tempWaypoints.size()<=0) {
+            newWP.pos = irr::core::vector3df(0.f,0.f,0.f);
+            for (unsigned char j=0;j<10;j++) {
+                newWP.connected[j]=0;
+            }
+            tempWaypoints.push_back(newWP);
+        }*/
+
+        if (tempWaypoints.size()==2) {
+            std::cout<<"uh oh\n";
+        }
 
 		for (unsigned char i=0;i<tempWaypoints.size();i++) {
 			RMesh::waypoint* finalWP;
@@ -498,10 +517,57 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 				if (tempWaypoints[i].connected[j+shift]==0) { break; }
 				retRMesh->waypoints[i]->connected[j+shift]=retRMesh->waypoints[tempWaypoints[i].connected[j]-1];
 				unsigned char shift2 = 0;
-				while (retRMesh->waypoints[i]->connected[j+shift]->connected[shift2]!=nullptr) { shift2++; }
-				retRMesh->waypoints[i]->connected[j+shift]->connected[shift2]=retRMesh->waypoints[i];
+				while (retRMesh->waypoints[i]->connected[j+shift]->connected[shift2]!=nullptr) {
+                    shift2++;
+                    if (shift2>=20) { break; }
+                }
+                if (shift2<20) {
+                    retRMesh->waypoints[i]->connected[j+shift]->connected[shift2]=retRMesh->waypoints[i];
+                } else {
+                    std::cout<<"error connecting waypoints: too many connections\n";
+                }
 			}
 		}
+
+		buf = new irr::scene::SMeshBuffer();
+        mesh->addMeshBuffer(buf);
+        buf->drop();
+
+		std::vector<irr::video::S3DVertex> vertices;
+		std::vector<unsigned short> indices;
+
+		for (unsigned char i=0;i<retRMesh->waypoints.size();i++) {
+            for (unsigned char j=0;j<10;j++) {
+                if (retRMesh->waypoints[i]->connected[j]!=nullptr) {
+                    irr::video::SColor colr(255,rand()%256,rand()%256,rand()%256);
+                    vertices.push_back(irr::video::S3DVertex(retRMesh->waypoints[i]->position,irr::core::vector3df(0.f,1.f,0.f),colr,irr::core::vector2df(0.f,0.f)));
+                    vertices.push_back(irr::video::S3DVertex(retRMesh->waypoints[i]->connected[j]->position,irr::core::vector3df(0.f,1.f,0.f),colr,irr::core::vector2df(0.f,0.f)));
+                    vertices.push_back(irr::video::S3DVertex(retRMesh->waypoints[i]->position+irr::core::vector3df(0.f,0.f,0.001f),irr::core::vector3df(0.f,1.f,0.f),colr,irr::core::vector2df(0.f,0.f)));
+                    indices.push_back(vertices.size()-1);
+                    indices.push_back(vertices.size()-2);
+                    indices.push_back(vertices.size()-3);
+                }
+            }
+		}
+
+		buf->Vertices.reallocate(vertices.size());
+        buf->Vertices.set_used(vertices.size());
+
+        for (unsigned int j=0;j<vertices.size();j++) {
+            buf->Vertices[j]=vertices[j];
+        }
+
+        buf->getMaterial().Wireframe = true;
+        buf->getMaterial().Lighting = false;
+        buf->getMaterial().setTexture(0, 0);
+
+        buf->Indices.reallocate(indices.size());
+        buf->Indices.set_used(indices.size());
+        for (unsigned int j=0;j<indices.size();j++) {
+            buf->Indices[j]=indices[j];
+        }
+
+        mesh->addMeshBuffer(buf);
 
         mesh->recalculateBoundingBox();
         mesh->setHardwareMappingHint(irr::scene::EHM_STATIC);
@@ -518,6 +584,8 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
     } else {
         std::cout<<"\""<<path<<"\" isn't a valid RMesh";
     }
+
+    std::cout<<"reached end\n";
 
     file->drop();
     return nullptr;

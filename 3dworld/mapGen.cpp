@@ -1,5 +1,6 @@
 #include "3dworld.h"
 #include "player.h"
+#include "npcs/npc.h"
 
 room* world::addRandomRoom(unsigned short x,unsigned short y,roomTypes type,char angle,int zone) {
 	int choice = 0;
@@ -774,7 +775,12 @@ void world::createMap(unsigned char zone) {
 									roomArray[x][y] = room079::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.3f*(float)room1amount)) {
 									roomArray[x][y] = room106::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10,y*204.8f*RoomScale));
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10,y*204.8f*RoomScale));
+
+									for (unsigned int i=0;i<itemList.size();i++) {
+										itemList[i]->Unpick(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+									}
+
 								} else if (currentRoom1==(int)(0.5f*(float)room1amount)) {
 									roomArray[x][y] = coffin::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.7f*(float)room1amount)) {
@@ -906,6 +912,9 @@ void world::createMap(unsigned char zone) {
 					roomArray[x][y]->setLinkedTurnDist(1,roomTemp[x][y].linkedTurns[1]);
 					roomArray[x][y]->setLinkedTurnDist(2,roomTemp[x][y].linkedTurns[2]);
 					roomArray[x][y]->setLinkedTurnDist(3,roomTemp[x][y].linkedTurns[3]);
+					if (y<3) {
+                        testNPC->teleport(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale));
+                    }
 				}
 			}
 		}

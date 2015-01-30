@@ -148,6 +148,9 @@ class world {
         irrDynamics* dynamics;
 
         class player* mainPlayer;
+        class npc* testNPC;
+
+        irr::core::vector2di marked;
 
         irr::video::ITexture* reflection;
 
@@ -239,11 +242,13 @@ class world {
 
         unsigned char pickPlayerTriangle(irr::core::vector3df* intersec = nullptr,const irr::core::vector3df customEnd = (irr::core::vector3df(0.f,-204.8*RoomScale,0.f)));
         void getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath);
+        void getRoomListToPlayer(const irr::core::vector2di &startPos,std::vector<irr::core::vector2di> &roomPath);
+        void npcPathFind(const irr::core::vector3df &startPos,const irr::core::vector3df &endPos,const irr::core::vector2di &roomPos,std::vector<irr::core::vector3df> &posList);
 };
 
 //#include "player.h"
 
-inline int coordToRoomGrid(float coord);
+extern int coordToRoomGrid(float coord);
 
 bool getNodeTriangleTextureName(irr::scene::ISceneNode* node,const irr::core::triangle3df& tri,std::string& texname);
 

@@ -13,7 +13,7 @@ class player {
         MainEventReceiver* irrReceiver;
         btVector3 prevLinearVelocity;
         float walkingSpeed;
-        irr::scene::ICameraSceneNode* Camera;
+        //irr::scene::ICameraSceneNode* Camera;
         btRigidBody* Capsule;
 #if defined(PLAYER_PENETRATION_RECOVER)
         btPairCachingGhostObject* ghostObject;
@@ -50,6 +50,9 @@ class player {
 
         irr::core::vector3df tPos,tTarget,tUpVec;
     public:
+
+        irr::scene::ICameraSceneNode* Camera;
+
         player(world* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float height=24.1f,float radius=3.2f,float mass=5.0f);
         //mass should stay low if you want the player to be able the climb up stairs
         ~player();
