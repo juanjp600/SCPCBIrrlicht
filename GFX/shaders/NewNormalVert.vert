@@ -1,6 +1,6 @@
 #version 110
 
-//heavily based on this shader: http://irrlicht.sourceforge.net/forum//viewtopic.php?f=9&t=21186
+//based on this shader: http://irrlicht.sourceforge.net/forum//viewtopic.php?f=9&t=21186
 
 //pos = xyz; radius ^ 2 = w
 uniform vec4 lightPos1;

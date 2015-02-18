@@ -27,8 +27,15 @@ void main (void)
 	col3+=texture2D(Texture2, vec2(gl_TexCoord[0])+vec2(-0.0009765625,0.0009765625));
 	col3/=vec4(vec3(5.0),1.0);
 	
-	vec4 col2 = texture2D(Texture1, vec2(gl_TexCoord[1])-(vec2(col3.r-0.5,col3.g-0.5)*vec2(0.03)));
+	vec2 lightmapCoords = vec2(gl_TexCoord[1])-(vec2(col3.r-0.5,col3.g-0.5)*vec2(0.03));
+	vec4 col2 = texture2D(Texture1, lightmapCoords);
+	col2 += texture2D(Texture1, lightmapCoords+vec2(1.0/1024.0,1.0/1024.0));
+	col2 += texture2D(Texture1, lightmapCoords-vec2(1.0/1024.0,1.0/1024.0));
+	col2 += texture2D(Texture1, lightmapCoords+vec2(-1.0/1024.0,1.0/1024.0));
+	col2 += texture2D(Texture1, lightmapCoords+vec2(1.0/1024.0,-1.0/1024.0));
+	col2*=vec4(vec3(0.2),1.0);
 	vec4 col = texture2D(Texture0, vec2(gl_TexCoord[0]));
+	col*=vec4(vec3(2.0),1.0);
 	col*=vec4(1.0-(min(max(abs(col3.r-0.5),abs(col3.g-0.5)),1.0)*2.0*nReflectFactor));
 	col *= col2;
 	col+=col4;

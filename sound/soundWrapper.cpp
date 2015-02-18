@@ -206,6 +206,8 @@ void sound::drop() {
 
 void sound::grab() {
 	grabs++;
+	//excessive grabs generally mean there's something wrong
+	if (grabs>20) std::cout<<"Warning: "<<name<<" has been grabbed more than 20 times\n";
 }
 
 unsigned char sound::playSound(const irr::core::vector3df &sourcePos,float near,float far,bool isLooping,float gain) {
@@ -372,6 +374,14 @@ void sound::resumeSound() {
 	for (unsigned char i=0;i<sourceCount;i++) {
 		if (sound::playingSounds[i]==this) resumeSound(i);
 	}
+}
+
+void sound::moveSource(unsigned char sourceNum,const irr::core::vector3df& sourcePos) {
+    if (sound::frozenCategories & (1<<category)) return;
+    sourceNum%=sourceCount;
+    if (sound::playingSounds[sourceNum]==this) {
+        alSource3f(sound::sources[sourceNum],AL_POSITION,sourcePos.X,sourcePos.Y,sourcePos.Z);
+    }
 }
 
 bool sound::isPlaying() {

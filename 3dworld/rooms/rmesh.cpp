@@ -3,7 +3,7 @@
 
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
-RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::ITexture* reflection,irr::video::E_MATERIAL_TYPE RoomShader) {
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::ITexture* reflection,irr::video::E_MATERIAL_TYPE* RoomShader) {
 
     irr::io::IReadFile* file = fs->createAndOpenFile(path.c_str());
 
@@ -249,51 +249,18 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 										bufLM->getMaterial().MaterialType = irr::video::EMT_LIGHTMAP;
 										if (loadedTextures[textures[1]-1].bump!=nullptr) {
-											bufLM->getMaterial().MaterialType = RoomShader;
+											bufLM->getMaterial().MaterialType = RoomShader[0];
 											bufLM->getMaterial().setTexture(2,loadedTextures[textures[1]-1].bump);
-											//for (int ri=0;ri<6;ri++) {
                                             bufLM->getMaterial().setTexture(3,reflection);
-                                            //    std::cout<<(3+ri)<<" vs. "<<irr::video::MATERIAL_MAX_TEXTURES<<"\n";
-                                            //}
+										} else {
+                                            //using a shader is faster than defaulting to fixed pipeline
+                                            bufLM->getMaterial().MaterialType = RoomShader[1];
 										}
-										/*if (textureRead[1]==path+"tilefloor.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/tilebump.jpg"));
-										} else if (textureRead[1]==path+"concretefloor.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/concretefloorbump.jpg"));
-										} else if (textureRead[1]==path+"whitewall.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/whitewallbump.jpg"));
-										} else if (textureRead[1]==path+"metal3.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/metal3bump.jpg"));
-										} else if (textureRead[1]==path+"vent.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/ventbump.jpg"));
-										} else if (textureRead[1]==path+"dirtymetal.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/dirtymetalbump.jpg"));
-										} else if (textureRead[1]==path+"misc.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/miscbump.jpg"));
-										} else if (textureRead[1]==path+"rockmoss.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/rockmossbump.jpg"));
-										} else if (textureRead[1]==path+"metalpanels.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/metalpanelsbump.jpg"));
-										} else if (textureRead[1]==path+"metalpanels2.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/metalpanels2bump.jpg"));
-										} else if (textureRead[1]==path+"concretewall.jpg") {
-											bufLM->getMaterial().MaterialType = RoomShader;
-											bufLM->getMaterial().setTexture(2,driver->getTexture("GFX/map/concretewallbump.jpg"));
-										}*/
 
 										bufLM->recalculateBoundingBox();
 									} else { //only one texture
 										buf = new irr::scene::SMeshBuffer();
+										buf->getMaterial().MaterialType = RoomShader[2];
 
 										mesh->addMeshBuffer(buf);
 
@@ -322,13 +289,14 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 										buf->getMaterial().Lighting = false;
 
-										buf->getMaterial().MaterialType = irr::video::EMT_SOLID;
+										//buf->getMaterial().MaterialType = irr::video::EMT_SOLID;
 
 										buf->recalculateBoundingBox();
 									}
 								break;
 								case 1: //alpha
 									buf = new irr::scene::SMeshBuffer();
+									buf->getMaterial().MaterialType = RoomShader[3];
 
 									mesh->addMeshBuffer(buf);
 
@@ -358,7 +326,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 									buf->getMaterial().Lighting = false;
 
-									buf->getMaterial().MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+									//buf->getMaterial().MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 
 									buf->getMaterial().BackfaceCulling = false;
 
@@ -529,7 +497,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 			}
 		}
 
-		buf = new irr::scene::SMeshBuffer();
+		/*buf = new irr::scene::SMeshBuffer();
         mesh->addMeshBuffer(buf);
         buf->drop();
 
@@ -567,7 +535,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
             buf->Indices[j]=indices[j];
         }
 
-        mesh->addMeshBuffer(buf);
+        mesh->addMeshBuffer(buf);*/
 
         mesh->recalculateBoundingBox();
         mesh->setHardwareMappingHint(irr::scene::EHM_STATIC);

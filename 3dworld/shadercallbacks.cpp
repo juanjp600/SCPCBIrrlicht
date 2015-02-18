@@ -23,6 +23,35 @@ void RoomShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* s
 	services->setPixelShaderConstant("reflectFactor", &reflectFactor, 1);
 }
 
+void ZBufferShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+    irr::video::IVideoDriver* driver = services->getVideoDriver();
+    irr::core::matrix4 worldViewProj;
+	worldViewProj = driver->getTransform(irr::video::ETS_WORLD);
+
+	services->setVertexShaderConstant("mWorld", worldViewProj.pointer(), 16);
+}
+
+void RoomShaderCallBack_noNormals::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+	irr::video::IVideoDriver* driver = services->getVideoDriver();
+
+	irr::core::matrix4 worldViewProj;
+	/*worldViewProj = driver->getTransform(irr::video::ETS_PROJECTION);
+	worldViewProj *= driver->getTransform(irr::video::ETS_VIEW);*/
+	worldViewProj = driver->getTransform(irr::video::ETS_WORLD);
+
+	services->setVertexShaderConstant("mWorld", worldViewProj.pointer(), 16);
+
+	irr::s32 TextureLayerID = 0;
+	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
+	irr::s32 TextureLayerID2 = 1;
+	services->setPixelShaderConstant("Texture1", &TextureLayerID2, 1);
+}
+
+void VertLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+	irr::s32 TextureLayerID = 0;
+	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
+}
+
 void PostProcShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	currmBlur += (minBlur-currmBlur) * 0.1f * fpsFactor;
 	currMBlur += (maxBlur-currMBlur) * 0.1f * fpsFactor;

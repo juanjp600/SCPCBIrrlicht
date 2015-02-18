@@ -94,5 +94,5 @@ void main(void)
 	
 	vec4 fdiff1 = Idiff1+Idiff2+Idiff3+Idiff4+ambientLight;
 
-	gl_FragColor = vec4(vec4(fdiff1)*vec4(texture2D( baseMap, gl_TexCoord[0].xy ).xyz,1.0))*vec4(vec3(min(dot(normalize(v)*4.0,TN),1.0)),1.0);
+	gl_FragColor = vec4(vec4(fdiff1)*vec4(texture2D( baseMap, gl_TexCoord[0].xy ).xyz,1.0));
 }

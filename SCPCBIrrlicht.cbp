@@ -15,19 +15,20 @@
 					<Add option="-std=c++11" />
 					<Add option="-g" />
 					<Add directory="Irrlicht/include" />
-					<Add directory="FreeType/include" />
+					<Add directory="FreeType/include/freetype2" />
 					<Add directory="Bullet/include" />
-					<Add directory="OpenAL-Soft/include/AL" />
+					<Add directory="OpenAL-Soft/include" />
 					<Add directory="oggVorbis/include" />
+					<Add directory="FreeType/include" />
 				</Compiler>
 				<Linker>
-					<Add library="Irrlicht\lib\Win32-gcc\libIrrlicht.a" />
-					<Add library="FreeType\lib\libfreetype.dll.a" />
 					<Add library="Bullet\lib\libBullet.a" />
-					<Add library="OpenAL-Soft\libOpenAL32.dll.a" />
+					<Add library="FreeType\lib\libfreetype.dll.a" />
+					<Add library="Irrlicht\lib\Win32-gcc\libIrrlicht.a" />
 					<Add library="oggVorbis\libogg.dll.a" />
 					<Add library="oggVorbis\libvorbis.dll.a" />
 					<Add library="oggVorbis\libvorbisfile.dll.a" />
+					<Add library="OpenAL-Soft\libOpenAL32.dll.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -43,6 +44,8 @@
 					<Add directory="Irrlicht/include" />
 					<Add directory="oggVorbis/include" />
 					<Add directory="OpenAL-Soft/include/AL" />
+					<Add directory="OpenAL-Soft/include" />
+					<Add directory="FreeType/include/freetype2" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />

@@ -12,9 +12,11 @@ class npc {
         //static class world* owner;
     public:
         virtual void update() =0;
+        virtual void updateModel() =0;
         virtual void teleport(irr::core::vector3df newPos) =0;
         virtual irr::core::vector3df getPosition() =0;
         static class world* owner;
+        static class irrDynamics* dynamics;
 };
 
 #endif // NPC_H_INCLUDED

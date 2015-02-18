@@ -913,7 +913,7 @@ void world::createMap(unsigned char zone) {
 					roomArray[x][y]->setLinkedTurnDist(2,roomTemp[x][y].linkedTurns[2]);
 					roomArray[x][y]->setLinkedTurnDist(3,roomTemp[x][y].linkedTurns[3]);
 					if (y<3) {
-                        testNPC->teleport(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale));
+                        testNPC->teleport(irr::core::vector3df(x*204.8f*RoomScale,-10.f,y*204.8f*RoomScale));
                     }
 				}
 			}

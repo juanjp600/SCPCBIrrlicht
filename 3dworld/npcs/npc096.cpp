@@ -1,12 +1,22 @@
 #include "npc096.h"
 #include "../3dworld.h"
 
+#include <cmath>
+
 btCollisionShape* npc096::shape = nullptr;
 //irr::scene::IMeshSceneNode* npc096::baseNode = nullptr;
-irr::scene::ISceneNode* npc096::baseNode = nullptr;
+irr::scene::IAnimatedMeshSceneNode* npc096::baseNode = nullptr;
 
 npc096::npc096() {
     node = npc096::baseNode->clone();
+    collider = npc::dynamics->addCapsuleObject(node,12.f,3.f,16000.f);
+    npc::dynamics->unregisterRBody(collider);
+    npc::dynamics->registerNewRBody(node,collider,-1,-1,~0,irr::core::vector3df(0.f,1.f,0.f));
+    //collider->setLinearFactor(btVector3(0.f,0.f,0.f));
+    collider->setAngularFactor(btVector3(0.f,0.f,0.f));
+    collider->setGravity(btVector3(0.f,-100.f,0.f));
+    screamLoop = sound::getSound("SFX/096_4.ogg");
+    screamChannel = screamLoop->playSound(irr::core::vector3df(0.f,0.f,0.f),2.f,500.f,true,0.5f);
 }
 
 npc096* npc096::createNPC096() {
@@ -15,14 +25,20 @@ npc096* npc096::createNPC096() {
 }
 
 void npc096::teleport(irr::core::vector3df newPos) {
-    node->setPosition(newPos);
+    btTransform oTrans = collider->getCenterOfMassTransform();
+	oTrans.setOrigin(btVector3(newPos.X,newPos.Y,newPos.Z));
+	collider->setCenterOfMassTransform(oTrans);
+	collider->setLinearVelocity(btVector3(0,0,0));
+	node->setPosition(newPos);
 }
 
 void npc096::update() {
     chasingPlayer = true;
     if (roomList.size()>0) {
         if (waypointList.size()>0) {
-            if (node->getPosition().getDistanceFromSQ(waypointList[wpListIndex])<3.f*RoomScale) {
+            irr::core::vector3df wpDist = node->getPosition()-waypointList[wpListIndex];
+            wpDist.Y=0.f;
+            if (wpDist.getLength()<0.25f*collider->getLinearVelocity().distance(btVector3())*npc::owner->getFPSfactor()) {
                 wpListIndex++;
                 if (wpListIndex>=waypointList.size()) {
                     waypointList.clear();
@@ -33,10 +49,15 @@ void npc096::update() {
             }
             if (waypointList.size()>0) {
                 node->updateAbsolutePosition();
-                node->setPosition(node->getAbsolutePosition()+(waypointList[wpListIndex]-node->getAbsolutePosition()).normalize());
+                collider->setLinearVelocity((irrToBtVec((waypointList[wpListIndex]-node->getAbsolutePosition()).normalize())*75.f));
+                collider->setFriction(0.f);
+                collider->setDamping(0.f,0.f);
+                //node->updateAbsolutePosition();
+                //node->setPosition(node->getAbsolutePosition()+(waypointList[wpListIndex]-node->getAbsolutePosition()).normalize());
                 //std::cout<<waypointList[wpListIndex].Y<<"\n";
             }
-        } else {
+        }
+        if (waypointList.size()==0) {
             std::cout<<"096 waypointlist empty\n";
             wpListIndex = 0;
             rListIndex++;
@@ -107,7 +128,7 @@ void npc096::update() {
         }
         if (mustFix) { std::terminate(); }
         std::cout<<" "<<tempRoomList.size()<<" vs "<<roomList.size()<<"\n";
-        node->setPosition(irr::core::vector3df(roomList[0].X*204.8f*RoomScale,0.f,roomList[0].Y*204.8f*RoomScale));
+        teleport(irr::core::vector3df(roomList[0].X*204.8f*RoomScale,10.f,roomList[0].Y*204.8f*RoomScale));
     }
     /*if (chasingPlayer) {
         if (roomList.size()>0) {
@@ -194,4 +215,42 @@ void npc096::update() {
             }
         }
     }*/
+}
+
+void npc096::updateModel() {
+    irr::core::vector3df rot;
+    irr::core::vector3df pointAt;
+    pointAt = node->getPosition()-waypointList[wpListIndex];
+    pointAt.Y = 0.f;
+    if (pointAt.getLength()>30.f*RoomScale) {
+        rot.Y = (std::atan2(pointAt.X,pointAt.Z)*irr::core::RADTODEG)+180.f;
+
+        while (rot.Y>180.f) {
+            rot.Y-=360.f;
+        }
+        while (rot.Y<-180.f) {
+            rot.Y+=360.f;
+        }
+
+        rot.Y = rot.Y-currAngle;
+
+        while (rot.Y>180.f) {
+            rot.Y-=360.f;
+        }
+        while (rot.Y<-180.f) {
+            rot.Y+=360.f;
+        }
+
+        currAngle = currAngle+(rot.Y*0.1f);
+
+        while (currAngle>180.f) {
+            currAngle-=360.f;
+        }
+        while (currAngle<-180.f) {
+            currAngle+=360.f;
+        }
+    }
+    rot.Y = currAngle;
+    node->setRotation(rot);
+    screamLoop->moveSource(screamChannel,node->getPosition());
 }

@@ -154,13 +154,6 @@ class world {
 
         irr::video::ITexture* reflection;
 
-        /*irr::video::ITexture*& reflectionNX = reflection[0];
-        irr::video::ITexture*& reflectionPX = reflection[1];
-        irr::video::ITexture*& reflectionNY = reflection[2];
-        irr::video::ITexture*& reflectionPY = reflection[3];
-        irr::video::ITexture*& reflectionNZ = reflection[4];
-        irr::video::ITexture*& reflectionPZ = reflection[5];*/
-
         irr::video::ITexture* blurImage;
         irr::video::ITexture* blurImage2;
         irr::video::ITexture* finalImage;
@@ -177,8 +170,13 @@ class world {
         irr::u32 prevTime = 0;
         float FPSfactor = 1;
 
-        irr::video::E_MATERIAL_TYPE RoomShader, NormalsShader, PlainLightShader, PostProcShader, ZBufferShader;
+        irr::video::E_MATERIAL_TYPE RoomShader, RoomShader_noNormals, VertLightShader, VertLightShader_alpha,
+                                    FogBillboardShader, NormalsShader, PlainLightShader, PostProcShader,
+                                    ZBufferShader;
+
         RoomShaderCallBack* RoomCallback;
+        RoomShaderCallBack_noNormals* RoomCallback_noNormals;
+        VertLightShaderCallBack* VertLightCallback;
         NormalsShaderCallBack* NormalsCallback;
         PlainLightShaderCallBack* PlainLightCallback;
         PostProcShaderCallBack* PostProcCallback;

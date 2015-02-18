@@ -7,6 +7,8 @@ varying float imaxBlur;
 uniform sampler2D Texture0;
 uniform sampler2D Texture1;
 
+uniform sampler2D fogTex;
+
 uniform float gammaFactor;
 //uniform float blurStrength;
 
@@ -18,7 +20,8 @@ float getDepth(in vec2 coords) {
 void main(void) {
 	vec2 ntcoords = tcoords.xy;
 	
-	vec4 fogColor = vec4(0.0075,0.015,0.0375,1.0);
+	vec4 fogColor = texture2D(fogTex,ntcoords.xy);
+	fogColor.a = 1.0;
 	
 	float dx = ntcoords.x-0.5;
 	float dy = ntcoords.y-0.5;

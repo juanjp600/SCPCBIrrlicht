@@ -13,6 +13,18 @@ class RoomShaderCallBack : public irr::video::IShaderConstantSetCallBack {
 		irr::f32 reflectFactor = 1.f;
 };
 
+class RoomShaderCallBack_noNormals : public irr::video::IShaderConstantSetCallBack {
+    public:
+
+		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
+};
+
+class VertLightShaderCallBack : public irr::video::IShaderConstantSetCallBack {
+    public:
+
+		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
+};
+
 class PostProcShaderCallBack : public irr::video::IShaderConstantSetCallBack {
     public:
 
@@ -30,7 +42,7 @@ class PostProcShaderCallBack : public irr::video::IShaderConstantSetCallBack {
 class ZBufferShaderCallBack : public irr::video::IShaderConstantSetCallBack {
     public:
 
-		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {};
+		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };
 
 class LightsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
