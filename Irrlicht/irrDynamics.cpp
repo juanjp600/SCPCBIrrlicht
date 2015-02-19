@@ -30,6 +30,14 @@
 #include <vector>
 #include <cmath>
 
+btVector3 irrToBtVec(irr::core::vector3df inVec) {
+    return btVector3(inVec.X,inVec.Y,inVec.Z);
+}
+
+irr::core::vector3df btToIrrVec(btVector3 inVec) {
+    return irr::core::vector3df(inVec[0],inVec[1],inVec[2]);
+}
+
 using namespace irr;
 
 irrDynamics::irrDynamics() : lastStep(0) {
@@ -217,18 +225,6 @@ void irrDynamics::registerNewRBody(irr::scene::ISceneNode* node,btRigidBody* rbo
     *mOffset = nOffset;
 	objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rbody));
 	offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
-}
-
-void dynRegister::sharedRegisterRBody(irr::scene::ISceneNode* node,btRigidBody* rbody,float mass,short group,short mask,irr::core::vector3df nOffset) {
-    dynamics->registerNewRBody(node,rbody,mass,group,mask,nOffset);
-}
-
-void dynRegister::sharedUnregisterRBody(btRigidBody* rbody) {
-    dynamics->unregisterRBody(rbody);
-}
-
-dynRegister::dynRegister(irrDynamics* dyn) {
-    dynamics = dyn;
 }
 
 void irrDynamics::addTriMesh_static(irr::scene::IMeshSceneNode* node,short group,short mask) { //can be concave
@@ -498,6 +494,17 @@ bool irrDynamics::rayTest(btVector3 Start,btVector3 End) {
 	world->rayTest(Start,End,RayCallback);
 
 	return RayCallback.hasHit();
+}
+
+irr::core::vector3df irrDynamics::rayTestPoint(class btVector3 Start,class btVector3 End) {
+    btCollisionWorld::ClosestRayResultCallback RayCallback(Start, End);
+	world->rayTest(Start,End,RayCallback);
+
+    if (RayCallback.hasHit()) {
+        return irr::core::vector3df(RayCallback.m_hitPointWorld[0],RayCallback.m_hitPointWorld[1],RayCallback.m_hitPointWorld[2]);
+    } else {
+        return irr::core::vector3df(Start[0],Start[1],Start[2]);
+    }
 }
 
 btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 height, f32 radius, f32 mass,short group,short mask)

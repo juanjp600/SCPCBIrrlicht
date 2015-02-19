@@ -27,6 +27,9 @@
 #include <map>
 #include <irrlicht.h>
 
+extern class btVector3 irrToBtVec(irr::core::vector3df inVec);
+extern irr::core::vector3df btToIrrVec(class btVector3 inVec);
+
 class irrDynamics
 {
     public:
@@ -60,6 +63,7 @@ class irrDynamics
 		class btRigidBody* addPlayerColliderObject(irr::scene::ISceneNode* node, irr::f32 height, irr::f32 radius, irr::f32 mass,short group=~0,short mask=~0);
 
 		bool rayTest(class btVector3 Start,class btVector3 End);
+		irr::core::vector3df rayTestPoint(class btVector3 Start,class btVector3 End);
 
 		class btRigidBody* addCapsuleObject(irr::scene::ISceneNode* node,irr::f32 height, irr::f32 radius, irr::f32 mass,short group=~0,short mask=~0);
 		//! Add a scene node that is represented as a sturdy box
@@ -157,7 +161,7 @@ class irrDynamics
 		irr::u32 lastStep;
 };
 
-class dynRegister {
+/*class dynRegister {
     private:
         irrDynamics* dynamics;
     public:
@@ -165,6 +169,6 @@ class dynRegister {
         void sharedUnregisterRBody(btRigidBody* rbody);
 
         dynRegister(irrDynamics* dyn);
-};
+};*/
 
 #endif
