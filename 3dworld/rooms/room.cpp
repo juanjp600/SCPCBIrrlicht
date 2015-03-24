@@ -55,7 +55,7 @@ void room::setSmgr(irr::scene::ISceneManager* inSmgr) {
 
 irr::scene::ITriangleSelector* room::getSelector(irr::scene::IMesh* mesh) {
 	if (node->getTriangleSelector()==nullptr) {
-		irr::scene::ITriangleSelector* retSelec = smgr->createOctreeTriangleSelector(mesh,node,150);
+		irr::scene::ITriangleSelector* retSelec = smgr->createTriangleSelector(mesh,node);
 		node->setTriangleSelector(retSelec);
 		retSelec->drop();
 		return retSelec;
@@ -64,7 +64,7 @@ irr::scene::ITriangleSelector* room::getSelector(irr::scene::IMesh* mesh) {
 }
 
 irr::scene::IMeshSceneNode* room::getNewNode(irr::scene::IMesh* mesh) {
-	return smgr->addOctreeSceneNode(mesh);
+	return smgr->addMeshSceneNode(mesh);
 }
 
 void room::setActivation(bool s) {
@@ -110,6 +110,23 @@ void room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 
 	rotMatrix.setRotationDegrees(irr::core::vector3df(0,inAngle*90.f,0));
 
+	for (unsigned int i=0;i<rme->pointlights.size();i++) {
+        pointLight lght = rme->pointlights[i];
+        rotMatrix.transformVect(lght.position);
+        lght.position+=inPosition;
+
+        lght.viewMatrix[0].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(0.f,0.f,1.f),irr::core::vector3df(0.f,1.f,0.f));
+        lght.viewMatrix[1].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(1.f,0.f,0.f),irr::core::vector3df(0.f,1.f,0.f));
+        lght.viewMatrix[2].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(0.f,0.f,-1.f),irr::core::vector3df(0.f,1.f,0.f));
+        lght.viewMatrix[3].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(-1.f,0.f,0.f),irr::core::vector3df(0.f,1.f,0.f));
+        lght.viewMatrix[4].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(0.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f));
+        lght.viewMatrix[5].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(0.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f));
+
+        if (lght.viewMatrix[0].equals(lght.viewMatrix[5])) { std::terminate(); }
+
+        pointLights.push_back(lght);
+	}
+
 	/*for (unsigned int i=0;i<rme->waypoints.size();i++) {
         irr::core::vector3df pos = rme->waypoints[i]->position;
         rotMatrix.transformVect(pos);
@@ -142,4 +159,8 @@ void room::setLinkedTurnDist(unsigned char index,signed char value) {
 char room::getLinkedTurnDist(unsigned char index) const {
 	index = index % 4;
 	return linkedTurnDists[index];
+}
+
+const std::vector<pointLight>& room::getPointLights() {
+    return pointLights;
 }

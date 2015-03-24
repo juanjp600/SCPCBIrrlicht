@@ -16,10 +16,6 @@ gatea* gatea::createNew(irr::core::vector3df inPosition,char inAngle) {
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& gatea::getPointLights() {
-	return gatea::baseRMesh->pointlights;
-}
-
 void gatea::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(gatea::baseRMesh,startPos,destPos,posList);
 }

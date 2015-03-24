@@ -16,10 +16,6 @@ coffin* coffin::createNew(irr::core::vector3df inPosition,char inAngle) {
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& coffin::getPointLights() {
-	return coffin::baseRMesh->pointlights;
-}
-
 void coffin::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(coffin::baseRMesh,startPos,destPos,posList);
 }

@@ -14,11 +14,21 @@
 #include <vector>
 #include <string>
 
+#include "../shadercallbacks.h"
+
+struct pointLight {
+    irr::core::vector3df position;
+    float radius;
+    float intensity;
+    irr::video::SColorf color;
+    irr::core::matrix4 viewMatrix[6];
+};
+
 struct RMesh {
     std::string path;
     irr::scene::IMesh* mesh;
     btBvhTriangleMeshShape* shape;
-    std::vector<irr::video::SLight> pointlights;
+    std::vector<pointLight> pointlights;
 
     struct waypoint {
 		irr::core::vector3df position;
@@ -28,6 +38,6 @@ struct RMesh {
     std::vector<waypoint*> waypoints;
 };
 
-RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::ITexture* reflection,irr::video::E_MATERIAL_TYPE* RoomShader);
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneManager* smgr,irr::video::ITexture** reflection,irr::video::E_MATERIAL_TYPE* RoomShader,PlainLightShaderCallBack* PlainLightCallback);
 
 #endif // RMESH_H_INCLUDED

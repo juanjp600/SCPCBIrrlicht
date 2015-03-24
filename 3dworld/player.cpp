@@ -803,6 +803,10 @@ void player::select714(item* it) {
     }
 }
 
+void player::setVisible(bool isVisible) {
+    Camera->setVisible(isVisible);
+}
+
 bool player::drawSelectedItem() {
 
     if (wearingGasMask<inventory_size) {

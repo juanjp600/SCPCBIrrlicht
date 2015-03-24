@@ -16,10 +16,6 @@ room2toilets* room2toilets::createNew(irr::core::vector3df inPosition,char inAng
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& room2toilets::getPointLights() {
-	return room2toilets::baseRMesh->pointlights;
-}
-
 void room2toilets::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(room2toilets::baseRMesh,startPos,destPos,posList);
 }

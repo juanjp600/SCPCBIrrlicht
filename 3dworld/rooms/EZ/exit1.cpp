@@ -16,10 +16,6 @@ exit1* exit1::createNew(irr::core::vector3df inPosition,char inAngle) {
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& exit1::getPointLights() {
-	return exit1::baseRMesh->pointlights;
-}
-
 void exit1::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(exit1::baseRMesh,startPos,destPos,posList);
 }

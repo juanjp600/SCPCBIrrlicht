@@ -79,6 +79,8 @@ class player {
         void select714(item* it);
         bool drawSelectedItem();
 
+        void setVisible(bool isVisible);
+
         void boostStamina(float add,float clamp);
 
         void teleport(irr::core::vector3df position);

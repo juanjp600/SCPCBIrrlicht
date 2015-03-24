@@ -48,21 +48,24 @@ class ZBufferShaderCallBack : public irr::video::IShaderConstantSetCallBack {
 class LightsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
     protected:
 
-		struct sortHelper {
+	public:
+
+        struct sortHelper {
             irr::video::SColorf color;
             irr::f32 pos[4];
+            irr::f32 intensity;
 			//irr::video::SLight light;
 			irr::f32 dist;
 			bool operator < (const sortHelper &other) const {
 				return (dist<other.dist);
 			}
+			irr::core::matrix4 viewMatrix[6];
 		};
 
-		std::vector<sortHelper> lightList;
-	public:
+        std::vector<sortHelper> lightList;
 
 		irr::video::SColorf ambient;
-		void setLights(const std::vector<irr::video::SLight> &inList);
+		void setLights(const std::vector<class pointLight> &inList);
 
 		void sortLights(irr::core::matrix4 transfrm);
 
@@ -72,6 +75,10 @@ class LightsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
 class PlainLightShaderCallBack: public LightsShaderCallBack {
 	public:
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
+
+		unsigned char pass = 0;
+		irr::core::matrix4 lightMatrix;
+		irr::core::vector3df useTBN;
 };
 
 class NormalsShaderCallBack: public LightsShaderCallBack {

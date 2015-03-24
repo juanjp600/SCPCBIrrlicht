@@ -114,7 +114,7 @@
 
 
 //! Maximum number of texture an SMaterial can have, up to 8 are supported by Irrlicht.
-#define _IRR_MATERIAL_MAX_TEXTURES_ 4
+#define _IRR_MATERIAL_MAX_TEXTURES_ 8
 
 //! Add a leak-hunter to Irrlicht which helps finding unreleased reference counted objects.
 //! NOTE: This is slow and should only be used for debugging
@@ -155,6 +155,8 @@ If not defined, Windows Multimedia library is used, which offers also broad supp
 //! Only define _IRR_COMPILE_WITH_DIRECT3D_8_ if you have an appropriate DXSDK, e.g. Summer 2004
 // #define _IRR_COMPILE_WITH_DIRECT3D_8_
 #define _IRR_COMPILE_WITH_DIRECT3D_9_
+
+#define NO_IRR_COMPILE_WITH_DIRECT3D_9_
 
 #ifdef NO_IRR_COMPILE_WITH_DIRECT3D_8_
 #undef _IRR_COMPILE_WITH_DIRECT3D_8_

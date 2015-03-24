@@ -25,7 +25,6 @@
   that you use the Irrlicht Engine, the zlib and libPng. See the README files
   in the jpeglib, the zlib and libPng for further informations.
 */
-//Modified OpenGL normal mapping shaders to support ambient light and 4 point lights
 
 #ifndef __IRRLICHT_H_INCLUDED__
 #define __IRRLICHT_H_INCLUDED__
@@ -187,9 +186,6 @@
 #include "triangle3d.h"
 #include "vector2d.h"
 #include "vector3d.h"
-
-#include "irrUString.h"
-#include "irrDynamics.h"
 
 /*! \mainpage Irrlicht Engine 1.8 API documentation
  *

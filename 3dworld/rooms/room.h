@@ -2,6 +2,7 @@
 #define ROOM_H_INCLUDED
 
 #include "rmesh.h"
+#include <irrDynamics.h>
 
 enum class roomTypes {
 	ROOM1,ROOM2,ROOM2C,ROOM3,ROOM4
@@ -30,13 +31,15 @@ class room {
 
 		virtual void findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList);
 		virtual short wpPathStep(RMesh* rme,unsigned char destWP,class tempWPPathList &currWP);
+
+		std::vector<pointLight> pointLights;
 	public:
 		room();
 		virtual roomTypes getType() const =0;
 		virtual char getAngle() const { return angle; };
 		virtual void updateEvent() =0;
 		virtual void setActivation(bool s);
-		virtual const std::vector<irr::video::SLight>& getPointLights()=0;
+		const std::vector<pointLight>& getPointLights();
 		virtual bool disableDecals() const { return false; }
 		virtual void setLinkedTurnDist(unsigned char index,signed char value);
 		virtual char getLinkedTurnDist(unsigned char index) const;

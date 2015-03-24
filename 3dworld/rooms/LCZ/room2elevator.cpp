@@ -16,10 +16,6 @@ room2elevator* room2elevator::createNew(irr::core::vector3df inPosition,char inA
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& room2elevator::getPointLights() {
-	return room2elevator::baseRMesh->pointlights;
-}
-
 void room2elevator::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(room2elevator::baseRMesh,startPos,destPos,posList);
 }

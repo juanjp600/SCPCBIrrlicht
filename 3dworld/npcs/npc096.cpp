@@ -85,6 +85,7 @@ void npc096::update() {
         wpListIndex = 0;
         rListIndex = 0;
         std::cout<<"096 roomlist empty\n";
+
         currRoom = irr::core::vector2di(coordToRoomGrid(node->getPosition().X),coordToRoomGrid(node->getPosition().Z));
         std::vector<irr::core::vector2di> tempRoomList;
         owner->getRoomListToPlayer(currRoom,tempRoomList);

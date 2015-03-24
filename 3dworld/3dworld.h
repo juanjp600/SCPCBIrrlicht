@@ -160,7 +160,11 @@ class world {
         irr::scene::IMeshSceneNode* screenQuad;
         irr::video::ITexture* ZBuffer;
 
+        irr::video::ITexture* lightPass[2];
+
         irr::video::ITexture* fogTexture;
+
+        irr::video::ITexture* lightDepth;
 
         unsigned char blurAlpha = 0;
 
@@ -229,6 +233,10 @@ class world {
 
         std::string hudMsg = "";
         float hudMsgTimer = 0.f;
+
+        void renderLights();
+
+        irr::scene::ICameraSceneNode* smCamera;
     public:
         //main
         world(unsigned int width,unsigned int height,bool fullscreen = false);

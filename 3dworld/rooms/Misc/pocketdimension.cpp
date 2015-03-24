@@ -16,10 +16,6 @@ pocketdimension* pocketdimension::createNew(irr::core::vector3df inPosition,char
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& pocketdimension::getPointLights() {
-	return pocketdimension::baseRMesh->pointlights;
-}
-
 void pocketdimension::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(pocketdimension::baseRMesh,startPos,destPos,posList);
 }

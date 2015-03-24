@@ -16,10 +16,6 @@ room3storage* room3storage::createNew(irr::core::vector3df inPosition,char inAng
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& room3storage::getPointLights() {
-	return room3storage::baseRMesh->pointlights;
-}
-
 void room3storage::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(room3storage::baseRMesh,startPos,destPos,posList);
 }

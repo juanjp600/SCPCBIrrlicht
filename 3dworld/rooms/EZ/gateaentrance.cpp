@@ -16,10 +16,6 @@ gateaentrance* gateaentrance::createNew(irr::core::vector3df inPosition,char inA
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& gateaentrance::getPointLights() {
-	return gateaentrance::baseRMesh->pointlights;
-}
-
 void gateaentrance::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(gateaentrance::baseRMesh,startPos,destPos,posList);
 }

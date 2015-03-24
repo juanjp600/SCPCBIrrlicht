@@ -16,10 +16,6 @@ r_914* r_914::createNew(irr::core::vector3df inPosition,char inAngle) {
 	return retRoom;
 }
 
-const std::vector<irr::video::SLight>& r_914::getPointLights() {
-	return r_914::baseRMesh->pointlights;
-}
-
 void r_914::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	room::findWPPath(r_914::baseRMesh,startPos,destPos,posList);
 }

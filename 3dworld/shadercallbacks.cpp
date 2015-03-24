@@ -1,6 +1,8 @@
 #include "shadercallbacks.h"
 #include <iostream>
 
+#include "rooms/rmesh.h"
+
 void RoomShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::video::IVideoDriver* driver = services->getVideoDriver();
 
@@ -15,6 +17,10 @@ void RoomShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* s
 	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
 	irr::s32 TextureLayerID2 = 1;
 	services->setPixelShaderConstant("Texture1", &TextureLayerID2, 1);
+	irr::s32 TextureLayerID4 = 4;
+	services->setPixelShaderConstant("Texture1_t", &TextureLayerID4, 1);
+	irr::s32 TextureLayerID5 = 5;
+	services->setPixelShaderConstant("Texture1_b", &TextureLayerID5, 1);
 	irr::s32 TextureLayerID3 = 2;
 	services->setPixelShaderConstant("Texture2", &TextureLayerID3, 1);
 	irr::s32 TextureLayerIDNY = 3;
@@ -122,16 +128,20 @@ void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices
 	services->setPixelShaderConstant("ambientLight", (float*)(&ambient), 4);
 }
 
-void LightsShaderCallBack::setLights(const std::vector<irr::video::SLight> &inList) {
+void LightsShaderCallBack::setLights(const std::vector<pointLight> &inList) {
 	lightList.resize(inList.size());
 	for (unsigned int i=0;i<lightList.size();i++) {
 		sortHelper lig;
 		//lig.light = inList[i];
-		lig.color = inList[i].DiffuseColor;
-		lig.pos[0] = inList[i].Position.X;
-		lig.pos[1] = inList[i].Position.Y;
-		lig.pos[2] = inList[i].Position.Z;
-		lig.pos[3] = inList[i].Radius*inList[i].Radius;
+		lig.color = inList[i].color;
+		lig.pos[0] = inList[i].position.X;
+		lig.pos[1] = inList[i].position.Y;
+		lig.pos[2] = inList[i].position.Z;
+		lig.pos[3] = inList[i].radius*inList[i].radius;
+		lig.intensity = inList[i].intensity;
+		for (unsigned int j=0;j<6;j++) {
+            lig.viewMatrix[j] = inList[i].viewMatrix[j];
+		}
 		lig.dist = 0;
 		lightList[i] = lig;
 	}
@@ -146,6 +156,7 @@ void LightsShaderCallBack::sortLights(irr::core::matrix4 transfrm) {
 	std::sort(lightList.begin(),lightList.end());
 }
 
+#if 0
 void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::video::IVideoDriver* driver = services->getVideoDriver();
 
@@ -193,3 +204,57 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 
 	services->setPixelShaderConstant("ambientLight", (float*)(&ambient), 4);
 }
+#endif
+
+#if 1
+void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+	irr::video::IVideoDriver* driver = services->getVideoDriver();
+
+	irr::core::matrix4 invWorld = driver->getTransform(irr::video::ETS_WORLD);
+	invWorld.makeInverse();
+
+	irr::core::matrix4 worldViewProj;
+	worldViewProj = driver->getTransform(irr::video::ETS_VIEW);
+	worldViewProj *= driver->getTransform(irr::video::ETS_WORLD);
+
+	irr::u32 cnt = lightList.size();
+
+	irr::core::matrix4 lightTransform = worldViewProj*invWorld;
+
+	//sortLights(lightTransform);
+
+	//for (irr::u32 i=0;i<4;++i) {
+    std::string lightPosition = "lightPos1";
+    std::string lightColor = "lightColor1";
+
+    services->setVertexShaderConstant("lightMatrix", (lightMatrix*driver->getTransform(irr::video::ETS_WORLD)).pointer(), 16);
+
+    sortHelper light = lightList[pass];
+
+    light.color.a = 1.0f;
+
+    /*light.color.r *= light.intensity;
+    light.color.g *= light.intensity;
+    light.color.b *= light.intensity;*/
+
+    irr::core::vector3df lightPos(light.pos[0],light.pos[1],light.pos[2]);
+    lightTransform.transformVect(lightPos);
+    light.pos[0]=lightPos.X; light.pos[1]=lightPos.Y; light.pos[2]=lightPos.Z;
+    //light.pos[3]*=100.f;
+
+    services->setVertexShaderConstant(lightPosition.c_str(), (float*)(light.pos), 4);
+    services->setPixelShaderConstant(lightColor.c_str(), (float*)(&light.color), 4);
+	//}
+
+	irr::s32 TextureLayerID = 0;
+	services->setPixelShaderConstant("renderedLights", &TextureLayerID, 1);
+	irr::s32 TextureLayerID2 = 1;
+	services->setPixelShaderConstant("lightDepthMap", &TextureLayerID2, 1);
+
+	services->setPixelShaderConstant("ambientLight", (float*)(&ambient), 4);
+
+	float TBN[3];
+	TBN[0] = useTBN.X; TBN[1] = useTBN.Y; TBN[2] = useTBN.Z;
+	services->setPixelShaderConstant("useTBN", TBN, 3);
+}
+#endif

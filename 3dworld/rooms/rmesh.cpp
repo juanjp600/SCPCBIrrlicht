@@ -3,7 +3,8 @@
 
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
-RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDriver* driver,irr::video::ITexture* reflection,irr::video::E_MATERIAL_TYPE* RoomShader) {
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneManager* smgr,irr::video::ITexture** reflection,irr::video::E_MATERIAL_TYPE* RoomShader,PlainLightShaderCallBack* PlainLightCallback) {
+    irr::video::IVideoDriver* driver = smgr->getVideoDriver();
 
     irr::io::IReadFile* file = fs->createAndOpenFile(path.c_str());
 
@@ -52,6 +53,12 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
         retRMesh->waypoints.clear();
 
         retRMesh->path = path;
+        std::string lm1_path = "";
+        std::string lm2_path = "";
+        std::string lm3_path = "";
+        std::string lm4_path = "";
+        std::string lm5_path = "";
+        std::string fnd = "_opt.rm2";
         int initialSize = path.size()-1;
         for (int i=initialSize;i>=0;i--) {
             if (path[i]!='\\' && path[i]!='/') {
@@ -68,6 +75,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 		pTriMesh->m_weldingThreshold = 3.f;
 
 		struct loadedTexture {
+            std::string name;
 			irr::video::ITexture* tex;
 			irr::video::ITexture* bump;
 			unsigned char alpha;
@@ -85,6 +93,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 			}
 			loadedTexture newTex;
 			newTex.tex = driver->getTexture((path+readString1).c_str());
+			newTex.name = (path+readString1);
 			newTex.bump = nullptr;
 			file->read(&newTex.alpha,sizeof(unsigned char));
 
@@ -112,6 +121,27 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 			} else if (readString1=="concretewall.jpg") {
 				newTex.bump = driver->getTexture("GFX/map/concretewallbump.jpg");
 			}
+
+			/*if (readString1.find("_lm1")!=std::string::npos) {
+                lm1_path = retRMesh->path;
+                lm1_path.replace(lm1_path.find(fnd),fnd.length(),"_lm1.png");
+			}
+			if (readString1.find("_lm2")!=std::string::npos) {
+                lm2_path = retRMesh->path;
+                lm2_path.replace(lm2_path.find(fnd),fnd.length(),"_lm2.png");
+			}
+			if (readString1.find("_lm3")!=std::string::npos) {
+                lm3_path = retRMesh->path;
+                lm3_path.replace(lm3_path.find(fnd),fnd.length(),"_lm3.png");
+			}
+			if (readString1.find("_lm4")!=std::string::npos) {
+                lm4_path = retRMesh->path;
+                lm4_path.replace(lm4_path.find(fnd),fnd.length(),"_lm4.png");
+			}
+			if (readString1.find("_lm5")!=std::string::npos) {
+                lm5_path = retRMesh->path;
+                lm5_path.replace(lm5_path.find(fnd),fnd.length(),"_lm5.png");
+			}*/
 			driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, true);
 
 			loadedTextures.push_back(newTex);
@@ -127,7 +157,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
                 file->read(&readChar1,sizeof(unsigned char));
                 readString1+=readChar1;
             }*/
-            irr::video::SColorf lightColor; irr::video::SLight newLight;
+            irr::video::SColorf lightColor; pointLight newLight;
             std::vector<irr::video::S3DVertex2TCoords> vertices;
 			std::vector<irr::core::vector3di> indices;
             unsigned char entType;
@@ -176,6 +206,10 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 							file->read(&fv1,sizeof(float));
 							file->read(&fu2,sizeof(float));
 							file->read(&fv2,sizeof(float));
+							fu1 = std::round(fu1*1024.f)/1024.f;
+							fv1 = std::round(fv1*1024.f)/1024.f;
+							fu2 = std::round(fu2*1024.f)/1024.f;
+							fv2 = std::round(fv2*1024.f)/1024.f;
 
 							file->read(&cr,sizeof(unsigned char));
 							file->read(&cg,sizeof(unsigned char));
@@ -199,9 +233,9 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 							float ny1 = (z3-z1)*(x2-x1)-(z2-z1)*(x3-x1);
 							float nz1 = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1);
 							float fac1=sqrt((nx1*nx1)+(ny1*ny1)+(nz1*nz1));
-							nx1 = nx1/fac1;
-							ny1 = ny1/fac1;
-							nz1 = nz1/fac1;
+							nx1 = -nx1/fac1;
+							ny1 = -ny1/fac1;
+							nz1 = -nz1/fac1;
 
 							vertices[i1].Normal.set(nx1,ny1,nz1);
 							vertices[i2].Normal.set(nx1,ny1,nz1);
@@ -209,9 +243,15 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 							if (entType==0) {
 								btVector3 btVertices[3];
-								btVertices[0] = btVector3(vertices[i1].Pos.X,vertices[i1].Pos.Y,vertices[i1].Pos.Z);
-								btVertices[1] = btVector3(vertices[i2].Pos.X,vertices[i2].Pos.Y,vertices[i2].Pos.Z);
-								btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i3].Pos.Y,vertices[i3].Pos.Z);
+								if (ny1<-0.9f || ny1>0.9f) {
+                                    btVertices[0] = btVector3(vertices[i1].Pos.X,vertices[i1].Pos.Y,vertices[i1].Pos.Z);
+                                    btVertices[1] = btVector3(vertices[i2].Pos.X,vertices[i1].Pos.Y,vertices[i2].Pos.Z);
+                                    btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i1].Pos.Y,vertices[i3].Pos.Z);
+                                } else {
+                                    btVertices[0] = btVector3(vertices[i1].Pos.X,vertices[i1].Pos.Y,vertices[i1].Pos.Z);
+                                    btVertices[1] = btVector3(vertices[i2].Pos.X,vertices[i2].Pos.Y,vertices[i2].Pos.Z);
+                                    btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i3].Pos.Y,vertices[i3].Pos.Z);
+								}
 								//faces that barely make a difference to the shape of the object are removed
 								if (btVertices[0].distance(btVertices[1])>5.f || btVertices[1].distance(btVertices[2])>5.f || btVertices[0].distance(btVertices[2])>5.f) {
 									pTriMesh->addTriangle(btVertices[0], btVertices[1], btVertices[2],true);
@@ -251,13 +291,22 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 										if (loadedTextures[textures[1]-1].bump!=nullptr) {
 											bufLM->getMaterial().MaterialType = RoomShader[0];
 											bufLM->getMaterial().setTexture(2,loadedTextures[textures[1]-1].bump);
-                                            bufLM->getMaterial().setTexture(3,reflection);
+                                            bufLM->getMaterial().setTexture(3,reflection[0]);
+
+                                            std::string lmString = loadedTextures[textures[0]-1].name;
+                                            lmString.replace(lmString.find("lm"),2,"lm_t_");
+                                            bufLM->getMaterial().setTexture(4,driver->getTexture(lmString.c_str()));
+                                            lmString = loadedTextures[textures[0]-1].name;
+                                            lmString.replace(lmString.find("lm"),2,"lm_b_");
+                                            bufLM->getMaterial().setTexture(5,driver->getTexture(lmString.c_str()));
 										} else {
                                             //using a shader is faster than defaulting to fixed pipeline
                                             bufLM->getMaterial().MaterialType = RoomShader[1];
 										}
 
 										bufLM->recalculateBoundingBox();
+										//bufLM->getMaterial().setTexture(1,reflection[1]);
+										//bufLM->getMaterial().setTexture(0,reflection[0]);
 									} else { //only one texture
 										buf = new irr::scene::SMeshBuffer();
 										buf->getMaterial().MaterialType = RoomShader[2];
@@ -292,10 +341,12 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 										//buf->getMaterial().MaterialType = irr::video::EMT_SOLID;
 
 										buf->recalculateBoundingBox();
+										//buf->getMaterial().setTexture(1,reflection[1]);
+										//buf->getMaterial().setTexture(0,reflection[0]);
 									}
 								break;
 								case 1: //alpha
-									buf = new irr::scene::SMeshBuffer();
+									/*buf = new irr::scene::SMeshBuffer();
 									buf->getMaterial().MaterialType = RoomShader[3];
 
 									mesh->addMeshBuffer(buf);
@@ -330,7 +381,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 									buf->getMaterial().BackfaceCulling = false;
 
-									buf->recalculateBoundingBox();
+									buf->recalculateBoundingBox();*/
 								break;
 							}
 						}
@@ -412,10 +463,20 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
 					file->read(&fv1,sizeof(float)); //intensity
 
-					lightColor = irr::video::SColorf(float(cr)/255.f*fv1,float(cg)/255.f*fv1,float(cb)/255.f*fv1);
-					newLight.DiffuseColor = lightColor;
-					newLight.Radius = fu1*0.05f*RoomScale;
-					newLight.Position = irr::core::vector3df(fx*0.1f*RoomScale,fy*0.1f*RoomScale,fz*0.1f*RoomScale);
+					newLight.intensity = fv1;
+					newLight.color.r = float(cr)/255.f;
+					newLight.color.g = float(cg)/255.f;
+					newLight.color.b = float(cb)/255.f;
+					newLight.color.a = 1.f;
+					newLight.radius = fu1*0.05f*RoomScale;
+					newLight.position = irr::core::vector3df(fx*0.1f*RoomScale,fy*0.1f*RoomScale,fz*0.1f*RoomScale);
+
+					newLight.viewMatrix[0].buildCameraLookAtMatrixLH(newLight.position,newLight.position+irr::core::vector3df(0.f,0.f,1.f),irr::core::vector3df(0.f,1.f,0.f));
+                    newLight.viewMatrix[1].buildCameraLookAtMatrixLH(newLight.position,newLight.position+irr::core::vector3df(1.f,0.f,0.f),irr::core::vector3df(0.f,1.f,0.f));
+                    newLight.viewMatrix[2].buildCameraLookAtMatrixLH(newLight.position,newLight.position+irr::core::vector3df(0.f,0.f,-1.f),irr::core::vector3df(0.f,1.f,0.f));
+                    newLight.viewMatrix[3].buildCameraLookAtMatrixLH(newLight.position,newLight.position+irr::core::vector3df(-1.f,0.f,0.f),irr::core::vector3df(0.f,1.f,0.f));
+                    newLight.viewMatrix[4].buildCameraLookAtMatrixLH(newLight.position,newLight.position+irr::core::vector3df(0.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f));
+                    newLight.viewMatrix[5].buildCameraLookAtMatrixLH(newLight.position,newLight.position+irr::core::vector3df(0.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f));
 
 					retRMesh->pointlights.push_back(newLight);
 				break;
@@ -463,10 +524,6 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
             }
             tempWaypoints.push_back(newWP);
         }*/
-
-        if (tempWaypoints.size()==2) {
-            std::cout<<"uh oh\n";
-        }
 
 		for (unsigned char i=0;i<tempWaypoints.size();i++) {
 			RMesh::waypoint* finalWP;
@@ -539,6 +596,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 
         mesh->recalculateBoundingBox();
         mesh->setHardwareMappingHint(irr::scene::EHM_STATIC);
+        smgr->getMeshManipulator()->recalculateNormals(mesh);
         retRMesh->mesh = mesh;
         retRMesh->shape = new btBvhTriangleMeshShape(pTriMesh,true);
         retRMesh->shape->setMargin(1.0f);
@@ -547,6 +605,198 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::video::IVideoDri
 		btGenerateInternalEdgeInfo(retRMesh->shape, triangleInfoMap);
 
         file->drop();
+
+        //irr::scene::ICameraSceneNode* oldCam = irrSmgr->getActiveCamera();
+        //oldCam->render();
+#if 0
+        for (int usetbn=0;usetbn<3;usetbn++) {
+            switch (usetbn) {
+                case 0:
+                    PlainLightCallback->useTBN.X = 0.f;
+                    PlainLightCallback->useTBN.Y = 0.f;
+                    PlainLightCallback->useTBN.Z = 1.f;
+                break;
+                case 1:
+                    PlainLightCallback->useTBN.X = 1.f;
+                    PlainLightCallback->useTBN.Y = 0.f;
+                    PlainLightCallback->useTBN.Z = 0.f;
+                break;
+                case 2:
+                    PlainLightCallback->useTBN.X = 0.f;
+                    PlainLightCallback->useTBN.Y = 1.f;
+                    PlainLightCallback->useTBN.Z = 0.f;
+                break;
+            }
+            for (int lmi=0;lmi<5;lmi++) {
+                std::string lmString;
+                switch (lmi) {
+                    case 0:
+                        lmString = lm1_path;
+                    break;
+                    case 1:
+                        lmString = lm2_path;
+                    break;
+                    case 2:
+                        lmString = lm3_path;
+                    break;
+                    case 3:
+                        lmString = lm4_path;
+                    break;
+                    case 4:
+                        lmString = lm5_path;
+                    break;
+                }
+                if (lmString=="") { continue; }
+                irr::video::ITexture* lightPass[2];
+                lightPass[0] = reflection[0];
+                lightPass[1] = reflection[2];
+                irr::video::ITexture* lightDepth = reflection[1];
+
+                driver->setRenderTarget(lightPass[0],true,true,irr::video::SColor(255,0,0,0));
+
+                PlainLightCallback->pass = 0;
+                PlainLightCallback->setLights(retRMesh->pointlights);
+
+                smgr->fastDrawAll_init(irr::core::vector3df(0.f,0.f,0.f));
+
+                for (int i=0;i<PlainLightCallback->lightList.size();i++) {
+                    irr::core::vector3df lightPos = irr::core::vector3df(PlainLightCallback->lightList[i].pos[0],PlainLightCallback->lightList[i].pos[1],PlainLightCallback->lightList[i].pos[2]);
+                    //smCamera->setPosition(irr::core::vector3df(PlainLightCallback->lightList[i].pos[0],PlainLightCallback->lightList[i].pos[1],PlainLightCallback->lightList[i].pos[2]));
+                    //if (lightPos.getDistanceFromSQ(mainPlayer->getPosition())<300.f*300.f&&mainPlayer->seesBoundingBox(irr::core::aabbox3df(lightPos-irr::core::vector3df(130.f,130.f,130.0),lightPos+irr::core::vector3df(130.f,130.f,130.0)),*mainPlayer->getViewFrustum())) {
+                    irr::core::matrix4 projectionMatrix;
+                    projectionMatrix.buildProjectionMatrixPerspectiveFovLH(90.f*irr::core::DEGTORAD,1.f,1.f,150.f);
+                    for (int j=0;j<6;j++) {
+                        driver->setRenderTarget(lightDepth,true,true,irr::video::SColor(255,255,0,0));
+                        //irrSmgr->setActiveCamera(smCamera);
+                        driver->getOverrideMaterial().EnableFlags = irr::video::EMF_MATERIAL_TYPE;
+                        driver->getOverrideMaterial().EnablePasses = irr::scene::ESNRP_SOLID;
+                        driver->getOverrideMaterial().Material.MaterialType = RoomShader[4];
+                        //irrDriver->setViewPort(irr::core::recti(0,0,128,128));
+                        /*switch (j) {
+                            case 0:
+                                //smCamera->setRotation(irr::core::vector3df(0.f,0.f,0.f));
+                                smCamera->setUpVector(irr::core::vector3df(0.f,1.f,0.f));
+                                smCamera->setTarget(smCamera->getPosition()+irr::core::vector3df(0.f,0.f,1.f));
+                            break;
+                            case 1:
+                                smCamera->setUpVector(irr::core::vector3df(0.f,1.f,0.f));
+                                smCamera->setTarget(smCamera->getPosition()+irr::core::vector3df(1.f,0.f,0.f));
+                                //smCamera->setRotation(irr::core::vector3df(0.f,90.f,0.f));
+                            break;
+                            case 2:
+                                smCamera->setUpVector(irr::core::vector3df(0.f,1.f,0.f));
+                                smCamera->setTarget(smCamera->getPosition()+irr::core::vector3df(0.f,0.f,-1.f));
+                                //smCamera->setRotation(irr::core::vector3df(0.f,180.f,0.f));
+                            break;
+                            case 3:
+                                smCamera->setUpVector(irr::core::vector3df(0.f,1.f,0.f));
+                                smCamera->setTarget(smCamera->getPosition()+irr::core::vector3df(-1.f,0.f,0.f));
+                                //smCamera->setRotation(irr::core::vector3df(0.f,270.f,0.f));
+                            break;
+                            case 4:
+                                smCamera->setUpVector(irr::core::vector3df(0.f,0.f,1.f));
+                                smCamera->setTarget(smCamera->getPosition()+irr::core::vector3df(0.f,1.f,0.f));
+                                //smCamera->setRotation(irr::core::vector3df(90.f,0.f,0.f));
+                            break;
+                            case 5:
+                                smCamera->setUpVector(irr::core::vector3df(0.f,0.f,1.f));
+                                smCamera->setTarget(smCamera->getPosition()+irr::core::vector3df(0.f,-1.f,0.f));
+                                //smCamera->setRotation(irr::core::vector3df(-90.f,0.f,0.f));
+                            break;
+                        }*/
+                        //smCamera->OnRegisterSceneNode();
+
+                        driver->setTransform(irr::video::ETS_PROJECTION,projectionMatrix);
+                        driver->setTransform(irr::video::ETS_VIEW,PlainLightCallback->lightList[i].viewMatrix[j]);
+                        irr::core::matrix4 mat;
+                        mat.setRotationDegrees(irr::core::vector3df(0.f,0.f,0.f));
+                        mat.setTranslation(irr::core::vector3df(0.f,0.f,0.f));
+                        driver->setTransform(irr::video::ETS_WORLD,mat);
+
+                        for (irr::u32 k=0; k<retRMesh->mesh->getMeshBufferCount(); ++k)
+                        {
+                            irr::scene::IMeshBuffer* mb = retRMesh->mesh->getMeshBuffer(k);
+                            if (mb)
+                            {
+                                const irr::video::SMaterial& material = mb->getMaterial();
+
+                                irr::video::IMaterialRenderer* rnd = driver->getMaterialRenderer(material.MaterialType);
+                                bool transparent = (rnd && rnd->isTransparent());
+
+                                if (transparent == false)
+                                {
+                                    driver->setMaterial(driver->getOverrideMaterial().Material);
+                                    driver->drawMeshBuffer(mb);
+                                }
+                            }
+                        }
+                        //irrSmgr->fastDrawAll(projectionMatrix,PlainLightCallback->lightList[i].viewMatrix[j]);
+
+                        PlainLightCallback->lightMatrix = projectionMatrix;//smCamera->getProjectionMatrix();
+                        PlainLightCallback->lightMatrix *= PlainLightCallback->lightList[i].viewMatrix[j];//smCamera->getViewMatrix();
+
+                        driver->setTransform(irr::video::ETS_WORLD,mat);
+
+                        driver->setRenderTarget(lightPass[1],true,true,irr::video::SColor(255,0,0,0));
+
+                        for (irr::u32 k=0; k<retRMesh->mesh->getMeshBufferCount(); ++k)
+                        {
+                            irr::scene::IMeshBuffer* mb = retRMesh->mesh->getMeshBuffer(k);
+                            if (mb)
+                            {
+                                irr::video::SMaterial material = mb->getMaterial();
+
+                                irr::video::IMaterialRenderer* rnd = driver->getMaterialRenderer(material.MaterialType);
+                                bool transparent = (rnd && rnd->isTransparent());
+
+                                if (material.getTexture(1)!=nullptr) {
+                                    if (transparent == false && std::string(mb->getMaterial().getTexture(1)->getName().getPath().c_str()).find(lmString.c_str())!=std::string::npos)
+                                    {
+                                        material.setTexture(0,reflection[0]);
+                                        material.setTexture(1,reflection[1]);
+                                        driver->setMaterial(material);
+                                        driver->drawMeshBuffer(mb);
+                                    }
+                                }
+                            }
+                        }
+
+                        //irrDriver->setViewPort(irr::core::recti(0,0,mainWidth,mainHeight));
+                        driver->getOverrideMaterial().EnablePasses = 0;
+                        //irrSmgr->setActiveCamera(oldCam);
+                        //irrSmgr->fastDrawAll(oldCam->getProjectionMatrix(),oldCam->getViewMatrix());
+
+                        driver->setRenderTarget(lightPass[0],false,false,irr::video::SColor(255,0,0,0));
+                        driver->draw2DImage(lightPass[1],irr::core::vector2di(0,0));
+                        //}
+                    }
+                    PlainLightCallback->pass++;
+                }
+
+                smgr->fastDrawAll_end();
+                //mainPlayer->setVisible(true);
+                //smCamera->setVisible(false);
+                driver->getOverrideMaterial().EnablePasses = 0;
+
+                void* imageData = lightPass[0]->lock(irr::video::ETLM_READ_ONLY);
+                irr::video::IImage* im = driver->createImageFromData(lightPass[0]->getColorFormat(), lightPass[0]->getSize(), imageData);
+                if (usetbn==1) {
+                    lmString.replace(lmString.find("lm"),2,"lm_t_");
+                }
+                if (usetbn==2) {
+                    lmString.replace(lmString.find("lm"),2,"lm_b_");
+                }
+                driver->writeImageToFile(im, lmString.c_str());
+                im->drop();
+                lightPass[0]->unlock();
+
+                //driver->removeTexture(lightPass[0]);
+                //driver->removeTexture(lightPass[1]);
+                //driver->removeTexture(lightDepth);
+            }
+        }
+#endif
+
         return retRMesh;
 
     } else {
