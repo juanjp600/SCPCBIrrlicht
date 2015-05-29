@@ -1,0 +1,1497 @@
+--- CAnimatedMeshSceneNode.cpp	Mon Jun 17 11:09:20 2013
++++ CAnimatedMeshSceneNode.cpp	Tue May 12 16:00:55 2015
+@@ -262,7 +262,7 @@
+ 
+ 
+ //! renders the node.
+-void CAnimatedMeshSceneNode::render()
++void CAnimatedMeshSceneNode::render(f32 interpolate)
+ {
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 
+@@ -288,7 +288,9 @@
+ 		#endif
+ 	}
+ 
+-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++	core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
++
++	driver->setTransform(video::ETS_WORLD, matr);
+ 
+ 	if (Shadow && PassCount==1)
+ 		Shadow->updateShadowVolumes();
+@@ -337,7 +339,7 @@
+ 				if (RenderFromIdentity)
+ 					driver->setTransform(video::ETS_WORLD, core::IdentityMatrix );
+ 				else if (Mesh->getMeshType() == EAMT_SKINNED)
+-					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((SSkinMeshBuffer*)mb)->Transformation);
++					driver->setTransform(video::ETS_WORLD, matr * ((SSkinMeshBuffer*)mb)->Transformation);
+ 
+ 				driver->setMaterial(material);
+ 				driver->drawMeshBuffer(mb);
+@@ -345,7 +347,7 @@
+ 		}
+ 	}
+ 
+-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++	driver->setTransform(video::ETS_WORLD, matr);
+ 
+ 	// for debug purposes only:
+ 	if (DebugDataVisible && PassCount==1)
+@@ -383,7 +385,7 @@
+ 				const IMeshBuffer* mb = m->getMeshBuffer(g);
+ 
+ 				if (Mesh->getMeshType() == EAMT_SKINNED)
+-					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((SSkinMeshBuffer*)mb)->Transformation);
++					driver->setTransform(video::ETS_WORLD, matr * ((SSkinMeshBuffer*)mb)->Transformation);
+ 				driver->draw3DBox(mb->getBoundingBox(), video::SColor(255,190,128,128));
+ 			}
+ 		}
+--- CAnimatedMeshSceneNode.h	Sat Nov 03 18:08:16 2012
++++ CAnimatedMeshSceneNode.h	Tue May 12 15:41:47 2015
+@@ -40,7 +40,7 @@
+ 		virtual void OnAnimate(u32 timeMs);
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+--- CBillboardSceneNode.cpp	Sat Nov 03 18:07:56 2012
++++ CBillboardSceneNode.cpp	Tue May 12 16:02:53 2015
+@@ -57,7 +57,7 @@
+ 
+ 
+ //! render
+-void CBillboardSceneNode::render()
++void CBillboardSceneNode::render(f32 interpolate)
+ {
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 	ICameraSceneNode* camera = SceneManager->getActiveCamera();
+@@ -153,7 +153,7 @@
+ {
+ 	Size.set(bottomEdgeWidth, height);
+ 	TopEdgeWidth = topEdgeWidth;
+- 
++
+ 	if (core::equals(Size.Height, 0.0f))
+ 		Size.Height = 1.0f;
+ 
+@@ -197,7 +197,7 @@
+ 	bottomEdgeWidth = Size.Width;
+ 	topEdgeWidth = TopEdgeWidth;
+ }
+- 
++
+ 
+ //! Writes attributes of the scene node.
+ void CBillboardSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
+--- CBillboardSceneNode.h	Sat Nov 03 18:07:58 2012
++++ CBillboardSceneNode.h	Tue May 12 15:27:22 2015
+@@ -14,13 +14,13 @@
+ {
+ 
+ //! Scene node which is a billboard. A billboard is like a 3d sprite: A 2d element,
+-//! which always looks to the camera. 
++//! which always looks to the camera.
+ class CBillboardSceneNode : virtual public IBillboardSceneNode
+ {
+ public:
+ 
+ 	//! constructor
+-	CBillboardSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,	
++	CBillboardSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
+ 		const core::vector3df& position, const core::dimension2d<f32>& size,
+ 		video::SColor colorTop=video::SColor(0xFFFFFFFF),
+ 		video::SColor colorBottom=video::SColor(0xFFFFFFFF));
+@@ -29,7 +29,7 @@
+ 	virtual void OnRegisterSceneNode();
+ 
+ 	//! render
+-	virtual void render();
++	virtual void render(f32 interpolate=1.f);
+ 
+ 	//! returns the axis aligned bounding box of this node
+ 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -42,15 +42,15 @@
+ 
+  	//! gets the size of the billboard
+  	virtual const core::dimension2d<f32>& getSize() const;
+- 
++
+ 	//! Gets the widths of the top and bottom edges of the billboard.
+ 	virtual void getSize(f32& height, f32& bottomEdgeWidth, f32& topEdgeWidth) const;
+ 
+ 	virtual video::SMaterial& getMaterial(u32 i);
+-	
++
+ 	//! returns amount of materials used by this scene node.
+ 	virtual u32 getMaterialCount() const;
+-	
++
+ 	//! Set the color of all vertices of the billboard
+ 	//! \param overallColor: the color to set
+ 	virtual void setColor(const video::SColor& overallColor);
+@@ -78,7 +78,7 @@
+ 
+ 	//! Creates a clone of this scene node and its children.
+ 	virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
+-	
++
+ private:
+ 
+ 	//! Size.Width is the bottom edge width
+--- CCameraSceneNode.cpp	Sat Nov 03 18:07:52 2012
++++ CCameraSceneNode.cpp	Tue May 12 15:27:33 2015
+@@ -242,7 +242,7 @@
+ 
+ 
+ //! render
+-void CCameraSceneNode::render()
++void CCameraSceneNode::render(f32 interpolate)
+ {
+ 	core::vector3df pos = getAbsolutePosition();
+ 	core::vector3df tgtv = Target - pos;
+--- CCameraSceneNode.h	Sat Nov 03 18:08:00 2012
++++ CCameraSceneNode.h	Tue May 12 15:27:54 2015
+@@ -18,7 +18,7 @@
+ 	public:
+ 
+ 		//! constructor
+-		CCameraSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id, 
++		CCameraSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
+ 			const core::vector3df& position = core::vector3df(0,0,0),
+ 			const core::vector3df& lookat = core::vector3df(0,0,100));
+ 
+@@ -48,10 +48,10 @@
+ 		virtual const core::matrix4& getViewMatrixAffector() const;
+ 
+ 		//! It is possible to send mouse and key events to the camera. Most cameras
+-		//! may ignore this input, but camera scene nodes which are created for 
++		//! may ignore this input, but camera scene nodes which are created for
+ 		//! example with scene::ISceneManager::addMayaCameraSceneNode or
+ 		//! scene::ISceneManager::addMeshViewerCameraSceneNode, may want to get this input
+-		//! for changing their position, look at target or whatever. 
++		//! for changing their position, look at target or whatever.
+ 		virtual bool OnEvent(const SEvent& event);
+ 
+ 		//! Sets the look at target of the camera
+@@ -111,7 +111,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! Render
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! Returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -153,9 +153,9 @@
+ 		core::vector3df Target;
+ 		core::vector3df UpVector;
+ 
+-		f32 Fovy;	// Field of view, in radians. 
+-		f32 Aspect;	// Aspect ratio. 
+-		f32 ZNear;	// value of the near view-plane. 
++		f32 Fovy;	// Field of view, in radians.
++		f32 Aspect;	// Aspect ratio.
++		f32 ZNear;	// value of the near view-plane.
+ 		f32 ZFar;	// Z-value of the far view-plane.
+ 
+ 		SViewFrustum ViewArea;
+--- CCubeSceneNode.cpp	Mon Dec 03 21:10:32 2012
++++ CCubeSceneNode.cpp	Tue May 12 16:03:23 2015
+@@ -61,10 +61,13 @@
+ 
+ 
+ //! renders the node.
+-void CCubeSceneNode::render()
++void CCubeSceneNode::render(f32 interpolate)
+ {
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++
++	core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
++
++	driver->setTransform(video::ETS_WORLD, matr);
+ 
+ 	if (Shadow)
+ 		Shadow->updateShadowVolumes();
+--- CCubeSceneNode.h	Sat Nov 03 18:08:10 2012
++++ CCubeSceneNode.h	Tue May 12 15:28:11 2015
+@@ -27,7 +27,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -66,7 +66,7 @@
+ 		virtual IMesh* getMesh(void) { return Mesh; }
+ 
+ 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
+-		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes 
++		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes
+ 		referencing this mesh to change too. */
+ 		virtual void setReadOnlyMaterials(bool readonly) {}
+ 
+--- CDummyTransformationSceneNode.h	Sat Nov 03 18:07:58 2012
++++ CDummyTransformationSceneNode.h	Tue May 12 15:28:15 2015
+@@ -31,7 +31,7 @@
+ 		virtual core::matrix4 getRelativeTransformation() const;
+ 
+ 		//! does nothing.
+-		virtual void render() {}
++		virtual void render(f32 interpolate=1.f) {}
+ 
+ 		//! Returns type of the scene node
+ 		virtual ESCENE_NODE_TYPE getType() const { return ESNT_DUMMY_TRANSFORMATION; }
+@@ -42,7 +42,7 @@
+ 
+ 	private:
+ 
+-		// TODO: We can add least add some warnings to find troubles faster until we have 
++		// TODO: We can add least add some warnings to find troubles faster until we have
+ 		// fixed bug id 2318691.
+ 		virtual const core::vector3df& getScale() const;
+ 		virtual void setScale(const core::vector3df& scale);
+--- CEmptySceneNode.cpp	Sat Nov 03 18:07:56 2012
++++ CEmptySceneNode.cpp	Tue May 12 15:28:23 2015
+@@ -33,7 +33,7 @@
+ 
+ 
+ //! render
+-void CEmptySceneNode::render()
++void CEmptySceneNode::render(f32 interpolate)
+ {
+ 	// do nothing
+ }
+--- CEmptySceneNode.h	Sat Nov 03 18:08:16 2012
++++ CEmptySceneNode.h	Tue May 12 15:28:27 2015
+@@ -26,7 +26,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! does nothing.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! Returns type of the scene node
+ 		virtual ESCENE_NODE_TYPE getType() const { return ESNT_EMPTY; }
+--- CLightSceneNode.cpp	Sat Nov 03 18:08:08 2012
++++ CLightSceneNode.cpp	Tue May 12 15:55:33 2015
+@@ -44,15 +44,17 @@
+ 
+ 
+ //! render
+-void CLightSceneNode::render()
++void CLightSceneNode::render(f32 interpolate)
+ {
++    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
++
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 	if (!driver)
+ 		return;
+ 
+ 	if ( DebugDataVisible & scene::EDS_BBOX )
+ 	{
+-		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++		driver->setTransform(video::ETS_WORLD, mat);
+ 		video::SMaterial m;
+ 		m.Lighting = false;
+ 		driver->setMaterial(m);
+--- CLightSceneNode.h	Sat Nov 03 18:07:52 2012
++++ CLightSceneNode.h	Tue May 12 15:28:43 2015
+@@ -12,7 +12,7 @@
+ namespace scene
+ {
+ 
+-//! Scene node which is a dynamic light. You can switch the light on and off by 
++//! Scene node which is a dynamic light. You can switch the light on and off by
+ //! making it visible or not, and let it be animated by ordinary scene node animators.
+ class CLightSceneNode : public ILightSceneNode
+ {
+@@ -28,7 +28,7 @@
+ 	virtual void OnRegisterSceneNode();
+ 
+ 	//! render
+-	virtual void render();
++	virtual void render(f32 interpolate=1.f);
+ 
+ 	//! set node light data from light info
+ 	virtual void setLightData(const video::SLight& light);
+@@ -58,7 +58,7 @@
+ 	virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
+ 
+ 	//! Creates a clone of this scene node and its children.
+-	virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0); 
++	virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
+ 
+ 
+ 	//! Sets the light's radius of influence.
+--- CMeshSceneNode.cpp	Mon Nov 12 12:02:44 2012
++++ CMeshSceneNode.cpp	Tue May 12 16:04:19 2015
+@@ -111,10 +111,16 @@
+ 	}
+ }
+ 
++void CMeshSceneNode::fastRegister()
++{
++    SceneManager->registerNodeForRendering(this, scene::ESNRP_SOLID);
++}
+ 
+ //! renders the node.
+-void CMeshSceneNode::render()
++void CMeshSceneNode::render(f32 interpolate)
+ {
++    core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
++
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 
+ 	if (!Mesh || !driver)
+@@ -125,7 +131,7 @@
+ 
+ 	++PassCount;
+ 
+-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++	driver->setTransform(video::ETS_WORLD, matr);
+ 	Box = Mesh->getBoundingBox();
+ 
+ 	if (Shadow && PassCount==1)
+@@ -175,7 +181,7 @@
+ 		}
+ 	}
+ 
+-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++	driver->setTransform(video::ETS_WORLD, matr);
+ 
+ 	// for debug purposes only:
+ 	if (DebugDataVisible && PassCount==1)
+@@ -226,6 +232,39 @@
+ 	}
+ }
+ 
++
++void CMeshSceneNode::fastRender(const irr::core::vector3df &camWorldPos)
++{
++    video::IVideoDriver* driver = SceneManager->getVideoDriver();
++
++	if (!Mesh || !driver)
++		return;
++
++    //if ((camWorldPos-getPosition()).getLengthSQ()>(getBoundingBox().getExtent()*0.5f+100.f).getLengthSQ()) return;
++
++	if (SceneManager->getSceneNodeRenderPass() == scene::ESNRP_TRANSPARENT) return;
++
++    driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++
++    for (u32 i=0; i<Mesh->getMeshBufferCount(); ++i)
++    {
++        scene::IMeshBuffer* mb = Mesh->getMeshBuffer(i);
++        if (mb)
++        {
++            const video::SMaterial& material = ReadOnlyMaterials ? mb->getMaterial() : Materials[i];
++
++            video::IMaterialRenderer* rnd = driver->getMaterialRenderer(material.MaterialType);
++            bool transparent = (rnd && rnd->isTransparent());
++
++            if (transparent == false)
++            {
++                driver->setMaterial(material);
++                driver->drawMeshBuffer(mb);
++            }
++        }
++    }
++
++}
+ 
+ //! Removes a child from this scene node.
+ //! Implemented here, to be able to remove the shadow properly, if there is one,
+--- CMeshSceneNode.h	Sat Nov 03 18:07:58 2012
++++ CMeshSceneNode.h	Tue May 12 15:29:00 2015
+@@ -29,8 +29,12 @@
+ 		//! frame
+ 		virtual void OnRegisterSceneNode();
+ 
++		virtual void fastRegister();
++
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
++
++		virtual void fastRender(const irr::core::vector3df &camWorldPos);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -41,7 +45,7 @@
+ 		//! optimal position for minimizing renderstate changes, but can also be used
+ 		//! to directly modify the material of a scene node.
+ 		virtual video::SMaterial& getMaterial(u32 i);
+-		
++
+ 		//! returns amount of materials used by this scene node.
+ 		virtual u32 getMaterialCount() const;
+ 
+@@ -66,7 +70,7 @@
+ 			s32 id, bool zfailmethod=true, f32 infinity=10000.0f);
+ 
+ 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
+-		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes 
++		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes
+ 		referencing this mesh to change too. */
+ 		virtual void setReadOnlyMaterials(bool readonly);
+ 
+--- COctreeSceneNode.cpp	Sat Nov 03 18:08:10 2012
++++ COctreeSceneNode.cpp	Tue May 12 15:56:26 2015
+@@ -87,7 +87,7 @@
+ 
+ 
+ //! renders the node.
+-void COctreeSceneNode::render()
++void COctreeSceneNode::render(f32 interpolate)
+ {
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 
+@@ -102,7 +102,8 @@
+ 		SceneManager->getSceneNodeRenderPass() == scene::ESNRP_TRANSPARENT;
+ 	++PassCount;
+ 
+-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
++	driver->setTransform(video::ETS_WORLD, mat);
+ 
+ 	if (Shadow)
+ 		Shadow->updateShadowVolumes();
+--- COctreeSceneNode.h	Sat Nov 03 18:07:52 2012
++++ COctreeSceneNode.h	Tue May 12 15:29:19 2015
+@@ -27,7 +27,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+--- COpenGLDriver.cpp	Sun Nov 17 20:11:00 2013
++++ COpenGLDriver.cpp	Wed Sep 03 19:36:42 2014
+@@ -394,15 +394,15 @@
+ 			if (PixelFormat)
+ 				break;
+ 		}
+-	}
+ 
+-	// set pixel format
+-	if (!SetPixelFormat(HDc, PixelFormat, &pfd))
+-	{
+-		os::Printer::log("Cannot set the pixel format.", ELL_ERROR);
+-		return false;
++		// set pixel format
++        if (!SetPixelFormat(HDc, PixelFormat, &pfd))
++        {
++            os::Printer::log("Cannot set the pixel format.", ELL_ERROR);
++            return false;
++        }
++        os::Printer::log("Pixel Format", core::stringc(PixelFormat).c_str(), ELL_DEBUG);
+ 	}
+-	os::Printer::log("Pixel Format", core::stringc(PixelFormat).c_str(), ELL_DEBUG);
+ 
+ 	// create rendering context
+ #ifdef WGL_ARB_create_context
+@@ -3541,6 +3541,7 @@
+ {
+ 	GLfloat data[4] = {color.r, color.g, color.b, color.a};
+ 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, data);
++	AmbientLight = color;
+ }
+ 
+ 
+@@ -3839,6 +3840,7 @@
+ {
+ 	CNullDriver::OnResize(size);
+ 	glViewport(0, 0, size.Width, size.Height);
++	ViewPort = core::rect<s32>(0,0, size.Width, size.Height);
+ 	Transformation3DChanged = true;
+ }
+ 
+@@ -4153,6 +4155,7 @@
+ 		{
+ 			// we want to set a new target. so do this.
+ 			glViewport(0, 0, texture->getSize().Width, texture->getSize().Height);
++			ViewPort = core::rect<s32>(0,0, texture->getSize().Width, texture->getSize().Height);
+ 			RenderTargetTexture = static_cast<COpenGLTexture*>(texture);
+ 			// calls glDrawBuffer as well
+ 			RenderTargetTexture->bindRTT();
+@@ -4162,6 +4165,7 @@
+ 		else
+ 		{
+ 			glViewport(0,0,ScreenSize.Width,ScreenSize.Height);
++			ViewPort = core::rect<s32>(0,0, ScreenSize.Width, ScreenSize.Height);
+ 			RenderTargetTexture = 0;
+ 			CurrentRendertargetSize = core::dimension2d<u32>(0,0);
+ 			CurrentTarget=ERT_FRAME_BUFFER;
+--- CParticleSystemSceneNode.cpp	Sat Nov 03 18:08:10 2012
++++ CParticleSystemSceneNode.cpp	Tue May 12 15:57:35 2015
+@@ -304,7 +304,7 @@
+ 
+ 
+ //! render
+-void CParticleSystemSceneNode::render()
++void CParticleSystemSceneNode::render(f32 interpolate)
+ {
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 	ICameraSceneNode* camera = SceneManager->getActiveCamera();
+@@ -378,7 +378,7 @@
+ 	// render all
+ 	core::matrix4 mat;
+ 	if (!ParticlesAreGlobal)
+-		mat.setTranslation(AbsoluteTransformation.getTranslation());
++		mat.setTranslation(interpolatedAbsoluteTransform(interpolate).getTranslation());
+ 	driver->setTransform(video::ETS_WORLD, mat);
+ 
+ 	driver->setMaterial(Buffer->Material);
+@@ -389,7 +389,7 @@
+ 	// for debug purposes only:
+ 	if ( DebugDataVisible & scene::EDS_BBOX )
+ 	{
+-		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++		driver->setTransform(video::ETS_WORLD, interpolatedAbsoluteTransform(interpolate));
+ 		video::SMaterial deb_m;
+ 		deb_m.Lighting = false;
+ 		driver->setMaterial(deb_m);
+--- CParticleSystemSceneNode.h	Sat Nov 03 18:07:56 2012
++++ CParticleSystemSceneNode.h	Tue May 12 15:29:33 2015
+@@ -58,7 +58,7 @@
+ 	virtual void OnRegisterSceneNode();
+ 
+ 	//! render
+-	virtual void render();
++	virtual void render(f32 interpolate=1.f);
+ 
+ 	//! returns the axis aligned bounding box of this node
+ 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
+--- CQuake3ShaderSceneNode.cpp	Sat Nov 03 18:08:08 2012
++++ CQuake3ShaderSceneNode.cpp	Tue May 12 15:58:15 2015
+@@ -30,7 +30,7 @@
+ 			scene::ISceneNode* parent, scene::ISceneManager* mgr,s32 id,
+ 			io::IFileSystem *fileSystem, const scene::IMeshBuffer *original,
+ 			const IShader * shader)
+-: scene::IMeshSceneNode(parent, mgr, id, 
++: scene::IMeshSceneNode(parent, mgr, id,
+ 		core::vector3df(0.f, 0.f, 0.f),
+ 		core::vector3df(0.f, 0.f, 0.f),
+ 		core::vector3df(1.f, 1.f, 1.f)),
+@@ -58,7 +58,7 @@
+ 	Original->grab();
+ 
+ 	// clone meshbuffer to modifiable buffer
+-	cloneBuffer(MeshBuffer, Original, 
++	cloneBuffer(MeshBuffer, Original,
+ 			Original->getMaterial().ColorMask != 0);
+ 
+ 	// load all Textures in all stages
+@@ -249,7 +249,7 @@
+ 		ret = ESNRP_TRANSPARENT_EFFECT;
+ 	}
+ 	else
+-*/	
++*/
+ 	if ( group->isDefined( "sort", "opaque" ) )
+ 	{
+ 		ret = ESNRP_SOLID;
+@@ -298,8 +298,9 @@
+ /*
+ 	render in multipass technique
+ */
+-void CQuake3ShaderSceneNode::render()
++void CQuake3ShaderSceneNode::render(f32 interpolate)
+ {
++    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 	E_SCENE_NODE_RENDER_PASS pass = SceneManager->getSceneNodeRenderPass();
+ 
+@@ -411,8 +412,8 @@
+ 		video::SMaterial deb_m;
+ 
+ 		IAnimatedMesh * arrow = SceneManager->addArrowMesh (
+-				"__debugnormalq3", 
+-				0xFFECEC00,0xFF999900, 
++				"__debugnormalq3",
++				0xFFECEC00,0xFF999900,
+ 				4, 8,
+ 				8.f, 6.f,
+ 				0.5f,1.f
+@@ -475,7 +476,7 @@
+ 
+ 			v = (const video::S3DVertex*) ( (u8*) v + vSize );
+ 		}
+-		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++		driver->setTransform(video::ETS_WORLD, mat);
+ 	}
+ 
+ 
+@@ -489,7 +490,7 @@
+ 		video::SMaterial deb_m;
+ 		deb_m.Lighting = false;
+ 		driver->setMaterial(deb_m);
+-		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++		driver->setTransform(video::ETS_WORLD, mat);
+ 		driver->draw3DBox( getBoundingBox(), video::SColor(255,255,0,0));
+ 	}
+ 
+@@ -534,7 +535,7 @@
+ 3.3.1 deformVertexes wave <div> <func> <base> <amplitude> <phase> <freq>
+ 	Designed for water surfaces, modifying the values differently at each point.
+ 	It accepts the standard wave functions of the type sin, triangle, square, sawtooth
+-	or inversesawtooth. The "div" parameter is used to control the wave "spread" 
++	or inversesawtooth. The "div" parameter is used to control the wave "spread"
+ 	- a value equal to the tessSize of the surface is a good default value
+ 	(tessSize is subdivision size, in game units, used for the shader when seen in the game world) .
+ */
+@@ -572,15 +573,15 @@
+ 
+ /*!
+ 	deformVertexes move x y z func base amplitude phase freq
+-	The move parameter is used to make a brush, curve patch or model 
++	The move parameter is used to make a brush, curve patch or model
+ 	appear to move together as a unit. The x y z values are the distance
+-	and direction in game units the object appears to move relative to 
++	and direction in game units the object appears to move relative to
+ 	it's point of origin in the map. The func base amplitude phase freq values are
+ 	the same as found in other waveform manipulations.
+ 
+ 	The product of the function modifies the values x, y, and z.
+-	Therefore, if you have an amplitude of 5 and an x value of 2, 
+-	the object will travel 10 units from its point of origin along the x axis. 
++	Therefore, if you have an amplitude of 5 and an x value of 2,
++	the object will travel 10 units from its point of origin along the x axis.
+ 	This results in a total of 20 units of motion along the x axis, since the
+ 	amplitude is the variation both above and below the base.
+ 
+@@ -588,7 +589,7 @@
+ 	change position, it only appears to.
+ 
+ 	Design Notes:
+-	If an object is made up of surfaces with different shaders, all must have 
++	If an object is made up of surfaces with different shaders, all must have
+ 	matching deformVertexes move values or the object will appear to tear itself apart.
+ */
+ void CQuake3ShaderSceneNode::deformvertexes_move( f32 dt, SModifierFunction &function )
+@@ -626,7 +627,7 @@
+ 		be no visible effect.
+ 
+ 		Design Notes: Putting values of 0.1 t o 0.5 in Amplitude and 1.0 to 4.0 in the
+-		Frequency can produce some satisfying results. Some things that have been 
++		Frequency can produce some satisfying results. Some things that have been
+ 		done with it: A small fluttering bat, falling leaves, rain, flags.
+ */
+ void CQuake3ShaderSceneNode::deformvertexes_normal( f32 dt, SModifierFunction &function )
+@@ -663,31 +664,31 @@
+ 
+ 	Specific parameter definitions for deform keywords:
+ 		<div>	This is roughly defined as the size of the waves that occur.
+-				It is measured in game units. Smaller values create a greater 
+-				density of smaller wave forms occurring in a given area. 
++				It is measured in game units. Smaller values create a greater
++				density of smaller wave forms occurring in a given area.
+ 				Larger values create a lesser density of waves, or otherwise put,
+-				the appearance of larger waves. To look correct this value should 
++				the appearance of larger waves. To look correct this value should
+ 				closely correspond to the value (in pixels) set for tessSize (tessellation size)
+-				of the texture. A value of 100.0 is a good default value 
++				of the texture. A value of 100.0 is a good default value
+ 				(which means your tessSize should be close to that for things to look "wavelike").
+ 
+-		<func>	This is the type of wave form being created. Sin stands for sine wave, 
++		<func>	This is the type of wave form being created. Sin stands for sine wave,
+ 				a regular smoothly flowing wave. Triangle is a wave with a sharp ascent
+ 				and a sharp decay. It will make a choppy looking wave forms.
+-				A square wave is simply on or off for the period of the 
++				A square wave is simply on or off for the period of the
+ 				frequency with no in between. The sawtooth wave has the ascent of a
+-				triangle wave, but has the decay cut off sharply like a square wave. 
++				triangle wave, but has the decay cut off sharply like a square wave.
+ 				An inversesawtooth wave reverses this.
+ 
+-		<base>	This is the distance, in game units that the apparent surface of the 
+-				texture is displaced from the actual surface of the brush as placed 
+-				in the editor. A positive value appears above the brush surface. 
+-				A negative value appears below the brush surface. 
+-				An example of this is the Quad effect, which essentially is a 
+-				shell with a positive base value to stand it away from the model 
++		<base>	This is the distance, in game units that the apparent surface of the
++				texture is displaced from the actual surface of the brush as placed
++				in the editor. A positive value appears above the brush surface.
++				A negative value appears below the brush surface.
++				An example of this is the Quad effect, which essentially is a
++				shell with a positive base value to stand it away from the model
+ 				surface and a 0 (zero) value for amplitude.
+ 
+-		<amplitude> The distance that the deformation moves away from the base value. 
++		<amplitude> The distance that the deformation moves away from the base value.
+ 					See Wave Forms in the introduction for a description of amplitude.
+ 
+ 		<phase> See Wave Forms in the introduction for a description of phase)
+@@ -696,7 +697,7 @@
+ 
+ 		Design Note: The div and amplitude parameters, when used in conjunction with
+ 		liquid volumes like water should take into consideration how much the water
+-		will be moving. A large ocean area would have have massive swells (big div values) 
++		will be moving. A large ocean area would have have massive swells (big div values)
+ 		that rose and fell dramatically (big amplitude values). While a small, quiet pool
+ 		may move very little.
+ */
+@@ -735,14 +736,14 @@
+ 	function.count = 1;
+ }
+ 
+-						
++
+ /*!
+ 	deformVertexes autosprite
+ 
+-	This function can be used to make any given triangle quad 
++	This function can be used to make any given triangle quad
+ 	(pair of triangles that form a square rectangle) automatically behave
+-	like a sprite without having to make it a separate entity. This means 
+-	that the "sprite" on which the texture is placed will rotate to always 
++	like a sprite without having to make it a separate entity. This means
++	that the "sprite" on which the texture is placed will rotate to always
+ 	appear at right angles to the player's view as a sprite would. Any four-sided
+ 	brush side, flat patch, or pair of triangles in a model can have the autosprite
+ 	effect on it. The brush face containing a texture with this shader keyword must
+@@ -784,7 +785,7 @@
+ /*!
+ 	deformVertexes autosprite2
+ 	Is a slightly modified "sprite" that only rotates around the middle of its longest axis.
+-	This allows you to make a pillar of fire that you can walk around, or an energy beam 
++	This allows you to make a pillar of fire that you can walk around, or an energy beam
+ 	stretched across the room.
+ */
+ 
+@@ -859,7 +860,7 @@
+ 				MeshBuffer->Vertices[i].Color.set(0xFF7F7F7F);
+ 			break;
+ 
+-		case EXACTVERTEX:		
++		case EXACTVERTEX:
+ 			// alphagen exactvertex TODO lighting
+ 		case VERTEX:
+ 			// rgbgen vertex
+@@ -905,7 +906,7 @@
+ 				MeshBuffer->Vertices[i].Color.setAlpha ( 0xFF );
+ 			break;
+ 
+-		case EXACTVERTEX:	
++		case EXACTVERTEX:
+ 			// alphagen exactvertex TODO lighting
+ 		case VERTEX:
+ 			// alphagen vertex
+@@ -1014,8 +1015,8 @@
+ 				n += Original->Vertices[i].Normal;
+ 				n.normalize();
+ 
+-				MeshBuffer->Vertices[i].TCoords.X = 0.5f*(1.f+(n.X*m[0]+n.Y*m[1]+n.Z*m[2])); 
+-				MeshBuffer->Vertices[i].TCoords.Y = 0.5f*(1.f+(n.X*m[4]+n.Y*m[5]+n.Z*m[6])); 
++				MeshBuffer->Vertices[i].TCoords.X = 0.5f*(1.f+(n.X*m[0]+n.Y*m[1]+n.Z*m[2]));
++				MeshBuffer->Vertices[i].TCoords.Y = 0.5f*(1.f+(n.X*m[4]+n.Y*m[5]+n.Z*m[6]));
+ 			}
+ 
+ 		} break;
+@@ -1101,9 +1102,9 @@
+ 	{
+ 		const SVariable &v = group->Variable[g];
+ 
+-		// get the modifier 
++		// get the modifier
+ 		static const c8 * modifierList[] =
+-		{ 
++		{
+ 			"tcmod","deformvertexes","rgbgen","tcgen","map","alphagen"
+ 		};
+ 
+@@ -1125,7 +1126,7 @@
+ 
+ 		// get the modifier function
+ 		static const c8 * funclist[] =
+-		{ 
++		{
+ 			"scroll","scale","rotate","stretch","turb",
+ 			"wave","identity","vertex",
+ 			"texture","lightmap","environment","$lightmap",
+@@ -1156,7 +1157,7 @@
+ 				break;
+ 			case ROTATE:
+ 				// tcmod rotate <degress per second>
+-				m2.setTextureRotationCenter(	getAsFloat( v.content, pos ) * 
++				m2.setTextureRotationCenter(	getAsFloat( v.content, pos ) *
+ 												core::DEGTORAD *
+ 												TimeAbs
+ 											);
+@@ -1228,8 +1229,8 @@
+ 					case TURBULENCE:
+ 						//tcMod turb <base> <amplitude> <phase> <freq>
+ 						//function.tcgen = TURBULENCE;
+-						m2.setTextureRotationCenter(	function.frequency * 
+-														core::DEGTORAD * 
++						m2.setTextureRotationCenter(	function.frequency *
++														core::DEGTORAD *
+ 														TimeAbs
+ 													);
+ 						break;
+@@ -1283,7 +1284,7 @@
+ 					default:
+ 						break;
+ 				}
+-				
++
+ 			} break;
+ 			case TEXTURE:
+ 			case LIGHTMAP:
+@@ -1366,7 +1367,7 @@
+ 	if ( Q3Texture [ i ].TextureIndex )
+ 		m.setTexture(0, Q3Texture [ i ].Texture [ Q3Texture [ i ].TextureIndex ]);
+ 	return m;
+-}	
++}
+ 
+ 
+ } // end namespace scene
+--- CQuake3ShaderSceneNode.h	Sat Nov 03 18:08:16 2012
++++ CQuake3ShaderSceneNode.h	Tue May 12 15:29:47 2015
+@@ -32,7 +32,7 @@
+ 	virtual ~CQuake3ShaderSceneNode();
+ 
+ 	virtual void OnRegisterSceneNode();
+-	virtual void render();
++	virtual void render(f32 interpolate=1.f);
+ 	virtual void OnAnimate(u32 timeMs);
+ 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
+ 
+--- CSceneManager.cpp	Tue Oct 29 21:34:58 2013
++++ CSceneManager.cpp	Tue May 12 16:07:15 2015
+@@ -1139,7 +1139,7 @@
+ 
+ 
+ //! renders the node.
+-void CSceneManager::render()
++void CSceneManager::render(f32 interpolate)
+ {
+ }
+ 
+@@ -1337,10 +1337,9 @@
+ 	return taken;
+ }
+ 
+-
+ //! This method is called just before the rendering process of the whole scene.
+ //! draws all scene nodes
+-void CSceneManager::drawAll()
++void CSceneManager::drawAll(f32 interpolate)
+ {
+ 	if (!Driver)
+ 		return;
+@@ -1377,7 +1376,7 @@
+ 	camWorldPos.set(0,0,0);
+ 	if (ActiveCamera)
+ 	{
+-		ActiveCamera->render();
++		ActiveCamera->render(interpolate);
+ 		camWorldPos = ActiveCamera->getAbsolutePosition();
+ 	}
+ 
+@@ -1396,7 +1395,7 @@
+ 			LightManager->OnRenderPassPreRender(CurrentRendertime);
+ 
+ 		for (i=0; i<CameraList.size(); ++i)
+-			CameraList[i]->render();
++			CameraList[i]->render(interpolate);
+ 
+ 		CameraList.set_used(0);
+ 
+@@ -1442,7 +1441,7 @@
+ 			maxLights = core::min_ ( Driver->getMaximalDynamicLightAmount(), maxLights);
+ 
+ 		for (i=0; i< maxLights; ++i)
+-			LightList[i]->render();
++			LightList[i]->render(interpolate);
+ 
+ 		if (LightManager)
+ 			LightManager->OnRenderPassPostRender(CurrentRendertime);
+@@ -1460,14 +1459,14 @@
+ 			{
+ 				ISceneNode* node = SkyBoxList[i];
+ 				LightManager->OnNodePreRender(node);
+-				node->render();
++				node->render(interpolate);
+ 				LightManager->OnNodePostRender(node);
+ 			}
+ 		}
+ 		else
+ 		{
+ 			for (i=0; i<SkyBoxList.size(); ++i)
+-				SkyBoxList[i]->render();
++				SkyBoxList[i]->render(interpolate);
+ 		}
+ 
+ 		SkyBoxList.set_used(0);
+@@ -1491,14 +1490,14 @@
+ 			{
+ 				ISceneNode* node = SolidNodeList[i].Node;
+ 				LightManager->OnNodePreRender(node);
+-				node->render();
++				node->render(interpolate);
+ 				LightManager->OnNodePostRender(node);
+ 			}
+ 		}
+ 		else
+ 		{
+ 			for (i=0; i<SolidNodeList.size(); ++i)
+-				SolidNodeList[i].Node->render();
++				SolidNodeList[i].Node->render(interpolate);
+ 		}
+ 
+ #ifdef _IRR_SCENEMANAGER_DEBUG
+@@ -1522,14 +1521,14 @@
+ 			{
+ 				ISceneNode* node = ShadowNodeList[i];
+ 				LightManager->OnNodePreRender(node);
+-				node->render();
++				node->render(interpolate);
+ 				LightManager->OnNodePostRender(node);
+ 			}
+ 		}
+ 		else
+ 		{
+ 			for (i=0; i<ShadowNodeList.size(); ++i)
+-				ShadowNodeList[i]->render();
++				ShadowNodeList[i]->render(interpolate);
+ 		}
+ 
+ 		if (!ShadowNodeList.empty())
+@@ -1556,14 +1555,14 @@
+ 			{
+ 				ISceneNode* node = TransparentNodeList[i].Node;
+ 				LightManager->OnNodePreRender(node);
+-				node->render();
++				node->render(interpolate);
+ 				LightManager->OnNodePostRender(node);
+ 			}
+ 		}
+ 		else
+ 		{
+ 			for (i=0; i<TransparentNodeList.size(); ++i)
+-				TransparentNodeList[i].Node->render();
++				TransparentNodeList[i].Node->render(interpolate);
+ 		}
+ 
+ #ifdef _IRR_SCENEMANAGER_DEBUG
+@@ -1590,14 +1589,14 @@
+ 			{
+ 				ISceneNode* node = TransparentEffectNodeList[i].Node;
+ 				LightManager->OnNodePreRender(node);
+-				node->render();
++				node->render(interpolate);
+ 				LightManager->OnNodePostRender(node);
+ 			}
+ 		}
+ 		else
+ 		{
+ 			for (i=0; i<TransparentEffectNodeList.size(); ++i)
+-				TransparentEffectNodeList[i].Node->render();
++				TransparentEffectNodeList[i].Node->render(interpolate);
+ 		}
+ #ifdef _IRR_SCENEMANAGER_DEBUG
+ 		Parameters.setAttribute ( "drawn_transparent_effect", (s32) TransparentEffectNodeList.size() );
+@@ -1607,6 +1606,156 @@
+ 
+ 	if (LightManager)
+ 		LightManager->OnPostRender();
++
++	LightList.set_used(0);
++	clearDeletionList();
++
++	CurrentRendertime = ESNRP_NONE;
++}
++
++void CSceneManager::fastDrawAll_init(const core::vector3df &camPos)
++{
++    for (u32 i=video::ETS_COUNT-1; i>=video::ETS_TEXTURE_0; --i)
++		Driver->setTransform ( (video::E_TRANSFORMATION_STATE)i, core::IdentityMatrix );
++    registerCloseNodes();
++    camWorldPos = camPos;
++}
++
++void CSceneManager::fastDrawAll(const core::matrix4 &projectionMatrix,const core::matrix4 &viewMatrix)
++{
++	if (!Driver)
++		return;
++
++	u32 i; // new ISO for scoping problem in some compilers
++
++	// reset all transforms
++	Driver->setMaterial(video::SMaterial());
++	Driver->setTransform ( video::ETS_PROJECTION, projectionMatrix );
++	Driver->setTransform ( video::ETS_VIEW, viewMatrix );
++
++	// TODO: This should not use an attribute here but a real parameter when necessary (too slow!)
++	//Driver->setAllowZWriteOnTransparent(Parameters.getAttributeAsBool( ALLOW_ZWRITE_ON_TRANSPARENT) );
++
++	// do animations and other stuff.
++	//OnAnimate(os::Timer::getTime());
++
++	/*!
++		First Scene Node for prerendering should be the active camera
++		consistent Camera is needed for culling
++	*/
++	/*camWorldPos.set(0,0,0);
++	if (ActiveCamera)
++	{
++		ActiveCamera->render();
++		camWorldPos = ActiveCamera->getAbsolutePosition();
++	}*/
++
++	// let close nodes register themselves
++
++	//registerCloseNodes();
++
++	/*if (LightManager)
++		LightManager->OnPreRender(LightList);*/
++
++	//render camera scenes
++	{
++		CurrentRendertime = ESNRP_CAMERA;
++		//Driver->getOverrideMaterial().Enabled = ((Driver->getOverrideMaterial().EnablePasses & CurrentRendertime) != 0);
++
++		/*if (LightManager)
++			LightManager->OnRenderPassPreRender(CurrentRendertime);*/
++
++		/*for (i=0; i<CameraList.size(); ++i)
++			CameraList[i]->render();*/
++
++		/*if (LightManager)
++			LightManager->OnRenderPassPostRender(CurrentRendertime);*/
++	}
++
++	//render lights scenes
++	{
++		CurrentRendertime = ESNRP_LIGHT;
++	}
++
++	// render skyboxes
++	{
++		CurrentRendertime = ESNRP_SKY_BOX;
++	}
++
++
++	// render default objects
++	{
++		CurrentRendertime = ESNRP_SOLID;
++		Driver->getOverrideMaterial().Enabled = ((Driver->getOverrideMaterial().EnablePasses & CurrentRendertime) != 0);
++
++		//SolidNodeList.sort(); // sort by textures
++
++        for (u32 i=0; i<SolidNodeList.size(); ++i) {
++            SolidNodeList[i].Node->fastRender(camWorldPos);
++        }
++	}
++
++	// render shadows
++	{
++		CurrentRendertime = ESNRP_SHADOW;
++	}
++
++	// render transparent objects.
++	{
++		CurrentRendertime = ESNRP_TRANSPARENT;
++	}
++
++	// render transparent effect objects.
++	{
++		CurrentRendertime = ESNRP_TRANSPARENT_EFFECT;
++	}
++
++	/*if (LightManager)
++		LightManager->OnPostRender();*/
++
++	CurrentRendertime = ESNRP_NONE;
++}
++
++void CSceneManager::fastDrawAll_end()
++{
++    //render camera scenes
++	{
++		CameraList.set_used(0);
++	}
++
++	//render lights scenes
++	{
++		Driver->deleteAllDynamicLights();
++	}
++
++	// render skyboxes
++	{
++		SkyBoxList.set_used(0);
++	}
++
++
++	// render default objects
++	{
++		SolidNodeList.set_used(0);
++	}
++
++	// render shadows
++	{
++		ShadowNodeList.set_used(0);
++	}
++
++	// render transparent objects.
++	{
++		TransparentNodeList.set_used(0);
++	}
++
++	// render transparent effect objects.
++	{
++		TransparentEffectNodeList.set_used(0);
++	}
++
++	/*if (LightManager)
++		LightManager->OnPostRender();*/
+ 
+ 	LightList.set_used(0);
+ 	clearDeletionList();
+--- CSceneManager.h	Tue Oct 29 21:34:58 2013
++++ CSceneManager.h	Tue May 12 16:07:58 2015
+@@ -102,7 +102,7 @@
+ 			const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f));
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -111,7 +111,7 @@
+ 		virtual u32 registerNodeForRendering(ISceneNode* node, E_SCENE_NODE_RENDER_PASS pass = ESNRP_AUTOMATIC);
+ 
+ 		//! draws all scene nodes
+-		virtual void drawAll();
++		virtual void drawAll(f32 interpolate=1.f);
+ 
+ 		//! Adds a scene node for rendering using a octree to the scene graph. This a good method for rendering
+ 		//! scenes with lots of geometry. The Octree is built on the fly from the mesh, much
+@@ -521,6 +521,9 @@
+ 		//! returns if node is culled
+ 		virtual bool isCulled(const ISceneNode* node) const;
+ 
++        virtual void fastDrawAll_init(const core::vector3df &camPos);
++        virtual void fastDrawAll(const core::matrix4 &projectionMatrix,const core::matrix4 &viewMatrix);
++        virtual void fastDrawAll_end();
+ 	private:
+ 
+ 		//! clears the deletion list
+@@ -650,6 +653,13 @@
+ 		const core::stringw IRR_XML_FORMAT_NODE_ATTR_TYPE;
+ 
+ 		IGeometryCreator* GeometryCreator;
++
++		void registerCloseNodes() {
++            ISceneNodeList::Iterator it = Children.begin();
++            for (; it != Children.end(); ++it) {
++                (*it)->fastRegister();
++            }
++		};
+ 	};
+ 
+ } // end namespace video
+--- CShadowVolumeSceneNode.cpp	Sat Nov 03 18:07:58 2012
++++ CShadowVolumeSceneNode.cpp	Tue May 12 15:32:55 2015
+@@ -304,7 +304,7 @@
+ }
+ 
+ //! renders the node.
+-void CShadowVolumeSceneNode::render()
++void CShadowVolumeSceneNode::render(f32 interpolate)
+ {
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 
+--- CShadowVolumeSceneNode.h	Sat Nov 03 18:07:52 2012
++++ CShadowVolumeSceneNode.h	Tue May 12 15:33:06 2015
+@@ -18,7 +18,7 @@
+ 	public:
+ 
+ 		//! constructor
+-		CShadowVolumeSceneNode(const IMesh* shadowMesh, ISceneNode* parent, ISceneManager* mgr, 
++		CShadowVolumeSceneNode(const IMesh* shadowMesh, ISceneNode* parent, ISceneManager* mgr,
+ 			s32 id,  bool zfailmethod=true, f32 infinity=10000.0f);
+ 
+ 		//! destructor
+@@ -37,7 +37,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+--- CSkyBoxSceneNode.cpp	Sat Nov 03 18:08:16 2012
++++ CSkyBoxSceneNode.cpp	Tue May 12 15:33:31 2015
+@@ -128,7 +128,7 @@
+ 
+ 
+ //! renders the node.
+-void CSkyBoxSceneNode::render()
++void CSkyBoxSceneNode::render(f32 interpolate)
+ {
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 	scene::ICameraSceneNode* camera = SceneManager->getActiveCamera();
+--- CSkyBoxSceneNode.h	Sat Nov 03 18:08:08 2012
++++ CSkyBoxSceneNode.h	Tue May 12 15:33:34 2015
+@@ -26,7 +26,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -45,7 +45,7 @@
+ 		virtual ESCENE_NODE_TYPE getType() const { return ESNT_SKY_BOX; }
+ 
+ 		//! Creates a clone of this scene node and its children.
+-		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0); 
++		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
+ 
+ 	private:
+ 
+--- CSkyDomeSceneNode.cpp	Sat Nov 03 18:08:10 2012
++++ CSkyDomeSceneNode.cpp	Tue May 12 15:41:38 2015
+@@ -131,7 +131,7 @@
+ 
+ 
+ //! renders the node.
+-void CSkyDomeSceneNode::render()
++void CSkyDomeSceneNode::render(f32 interpolate)
+ {
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 	scene::ICameraSceneNode* camera = SceneManager->getActiveCamera();
+--- CSkyDomeSceneNode.h	Sat Nov 03 18:08:14 2012
++++ CSkyDomeSceneNode.h	Tue May 12 15:41:42 2015
+@@ -22,7 +22,7 @@
+ 			ISceneNode* parent, ISceneManager* smgr, s32 id);
+ 		virtual ~CSkyDomeSceneNode();
+ 		virtual void OnRegisterSceneNode();
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+ 		virtual video::SMaterial& getMaterial(u32 i);
+ 		virtual u32 getMaterialCount() const;
+--- CSphereSceneNode.cpp	Mon Dec 03 21:10:32 2012
++++ CSphereSceneNode.cpp	Tue May 12 15:58:33 2015
+@@ -40,14 +40,15 @@
+ 
+ 
+ //! renders the node.
+-void CSphereSceneNode::render()
++void CSphereSceneNode::render(f32 interpolate)
+ {
++    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 
+ 	if (Mesh && driver)
+ 	{
+ 		driver->setMaterial(Mesh->getMeshBuffer(0)->getMaterial());
+-		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++		driver->setTransform(video::ETS_WORLD, mat);
+ 		if (Shadow)
+ 			Shadow->updateShadowVolumes();
+ 
+--- CSphereSceneNode.h	Sat Nov 03 18:08:16 2012
++++ CSphereSceneNode.h	Tue May 12 15:37:08 2015
+@@ -28,7 +28,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -62,7 +62,7 @@
+ 		virtual IMesh* getMesh() { return Mesh; }
+ 
+ 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
+-		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes 
++		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes
+ 		referencing this mesh to change too. */
+ 		virtual void setReadOnlyMaterials(bool readonly) {}
+ 
+--- CTerrainSceneNode.cpp	Sat Nov 03 18:08:08 2012
++++ CTerrainSceneNode.cpp	Tue May 12 15:59:25 2015
+@@ -720,8 +720,9 @@
+ 
+ 
+ 	//! Render the scene node
+-	void CTerrainSceneNode::render()
++	void CTerrainSceneNode::render(f32 interpolate)
+ 	{
++        core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
+ 		if (!IsVisible || !SceneManager->getActiveCamera())
+ 			return;
+ 
+@@ -768,7 +769,7 @@
+ 				driver->drawMeshBufferNormals(RenderBuffer, debugNormalLength, debugNormalColor);
+ 			}
+ 
+-			driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++			driver->setTransform(video::ETS_WORLD, mat);
+ 
+ 			static u32 lastTime = 0;
+ 
+--- CTerrainSceneNode.h	Sat Nov 03 18:08:00 2012
++++ CTerrainSceneNode.h	Tue May 12 15:37:18 2015
+@@ -118,7 +118,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! Render the scene node
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! Return the bounding box of the entire terrain.
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -258,10 +258,10 @@
+ 			core::aabbox3df	BoundingBox;
+ 			core::array<f64> LODDistanceThreshold;
+ 		};
+-    
+-    
++
++
+     virtual void preRenderCalculationsIfNeeded();
+-    
++
+ 		virtual void preRenderLODCalculations();
+ 		virtual void preRenderIndicesCalculations();
+ 
+--- CTextSceneNode.cpp	Sat Nov 03 18:08:08 2012
++++ CTextSceneNode.cpp	Tue May 12 16:07:26 2015
+@@ -52,7 +52,7 @@
+ }
+ 
+ //! renders the node.
+-void CTextSceneNode::render()
++void CTextSceneNode::render(f32 interpolate)
+ {
+ 	if (!Font || !Coll)
+ 		return;
+@@ -239,7 +239,7 @@
+ void CBillboardTextSceneNode::OnAnimate(u32 timeMs)
+ {
+ 	ISceneNode::OnAnimate(timeMs);
+-	
++
+ 	if (!IsVisible || !Font || !Mesh)
+ 		return;
+ 
+@@ -331,16 +331,17 @@
+ 
+ 
+ //! render
+-void CBillboardTextSceneNode::render()
++void CBillboardTextSceneNode::render(f32 interpolate)
+ {
++    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
+ 	if ( !Mesh )
+ 		return;
+ 
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 
+ 	// draw
+-	core::matrix4 mat;
+-	driver->setTransform(video::ETS_WORLD, mat);
++	core::matrix4 matr;
++	driver->setTransform(video::ETS_WORLD, matr);
+ 
+ 	for (u32 i = 0; i < Mesh->getMeshBufferCount(); ++i)
+ 	{
+@@ -350,7 +351,7 @@
+ 
+ 	if ( DebugDataVisible & scene::EDS_BBOX )
+ 	{
+-		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++		driver->setTransform(video::ETS_WORLD, mat);
+ 		video::SMaterial m;
+ 		m.Lighting = false;
+ 		driver->setMaterial(m);
+--- CTextSceneNode.h	Sat Nov 03 18:08:08 2012
++++ CTextSceneNode.h	Tue May 12 15:38:15 2015
+@@ -34,7 +34,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+@@ -76,7 +76,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+--- CTriangleSelector.cpp	Sat Nov 03 18:08:08 2012
++++ CTriangleSelector.cpp	Mon Sep 29 18:23:11 2014
+@@ -94,6 +94,7 @@
+ 					buf->getPosition(indices[j+0]),
+ 					buf->getPosition(indices[j+1]),
+ 					buf->getPosition(indices[j+2])));
++			Triangles[Triangles.size()-1].index = i;
+ 			const core::triangle3df& tri = Triangles.getLast();
+ 			BoundingBox.addInternalPoint(tri.pointA);
+ 			BoundingBox.addInternalPoint(tri.pointB);
+@@ -216,7 +217,7 @@
+ 	const u32 cnt = Triangles.size();
+ 	for (u32 i=0; i<cnt; ++i)
+ 	{
+-		// This isn't an accurate test, but it's fast, and the 
++		// This isn't an accurate test, but it's fast, and the
+ 		// API contract doesn't guarantee complete accuracy.
+ 		if (Triangles[i].isTotalOutsideBox(tBox))
+ 		   continue;
+--- CVolumeLightSceneNode.cpp	Sat Nov 03 18:07:58 2012
++++ CVolumeLightSceneNode.cpp	Tue May 12 16:00:05 2015
+@@ -50,13 +50,14 @@
+ 
+ 
+ //! renders the node.
+-void CVolumeLightSceneNode::render()
++void CVolumeLightSceneNode::render(f32 interpolate)
+ {
++    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
+ 	if (!Mesh)
+ 		return;
+ 
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++	driver->setTransform(video::ETS_WORLD, mat);
+ 
+ 	driver->setMaterial(Mesh->getMeshBuffer(0)->getMaterial());
+ 	driver->drawMeshBuffer(Mesh->getMeshBuffer(0));
+--- CVolumeLightSceneNode.h	Sat Nov 03 18:08:12 2012
++++ CVolumeLightSceneNode.h	Tue May 12 15:38:35 2015
+@@ -32,7 +32,7 @@
+ 		virtual void OnRegisterSceneNode();
+ 
+ 		//! renders the node.
+-		virtual void render();
++		virtual void render(f32 interpolate=1.f);
+ 
+ 		//! returns the axis aligned bounding box of this node
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const;

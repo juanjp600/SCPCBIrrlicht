@@ -1,0 +1,281 @@
+--- EMaterialFlags.h	Sat Nov 03 18:08:32 2012
++++ EMaterialFlags.h	Sun Oct 19 17:58:51 2014
+@@ -84,7 +84,9 @@
+ 		EMF_BLEND_OPERATION = 0x40000,
+ 
+ 		//! Flag for polygon offset
+-		EMF_POLYGON_OFFSET = 0x80000
++		EMF_POLYGON_OFFSET = 0x80000,
++
++		EMF_MATERIAL_TYPE = 0x100000
+ 	};
+ 
+ } // end namespace video
+--- IBoneSceneNode.h	Sat Nov 03 18:08:32 2012
++++ IBoneSceneNode.h	Tue May 12 15:42:18 2015
+@@ -84,7 +84,7 @@
+ 
+ 		//! The render method.
+ 		/** Does nothing as bones are not visible. */
+-		virtual void render() { }
++		virtual void render(f32 interpolate=1.f) { }
+ 
+ 		//! How the relative transformation of the bone is used
+ 		virtual void setSkinningSpace( E_BONE_SKINNING_SPACE space ) =0;
+--- IReferenceCounted.h	Sat Nov 03 18:08:32 2012
++++ IReferenceCounted.h	Sun Nov 23 20:51:30 2014
+@@ -7,6 +7,10 @@
+ 
+ #include "irrTypes.h"
+ 
++#ifdef _IRR_COMPILE_WITH_LEAK_HUNTER_
++	#include "leakHunter.h"
++#endif
++
+ namespace irr
+ {
+ 
+@@ -46,11 +50,17 @@
+ 		IReferenceCounted()
+ 			: DebugName(0), ReferenceCounter(1)
+ 		{
++#ifdef _IRR_COMPILE_WITH_LEAK_HUNTER_
++			LeakHunter::addObject(this);
++#endif
+ 		}
+ 
+ 		//! Destructor.
+ 		virtual ~IReferenceCounted()
+ 		{
++#ifdef _IRR_COMPILE_WITH_LEAK_HUNTER_
++				LeakHunter::removeObject(this);
++#endif
+ 		}
+ 
+ 		//! Grabs the object. Increments the reference counter by one.
+--- IrrCompileConfig.h	Tue Oct 29 21:34:58 2013
++++ IrrCompileConfig.h	Sun Mar 15 22:31:55 2015
+@@ -114,7 +114,14 @@
+ 
+ 
+ //! Maximum number of texture an SMaterial can have, up to 8 are supported by Irrlicht.
+-#define _IRR_MATERIAL_MAX_TEXTURES_ 4
++#define _IRR_MATERIAL_MAX_TEXTURES_ 8
++
++//! Add a leak-hunter to Irrlicht which helps finding unreleased reference counted objects.
++//! NOTE: This is slow and should only be used for debugging
++#define _IRR_COMPILE_WITH_LEAK_HUNTER_
++#ifdef NO_IRR_COMPILE_WITH_LEAK_HUNTER_
++#undef _IRR_COMPILE_WITH_LEAK_HUNTER_
++#endif
+ 
+ //! Define _IRR_COMPILE_WITH_DIRECT3D_8_ and _IRR_COMPILE_WITH_DIRECT3D_9_ to
+ //! compile the Irrlicht engine with Direct3D8 and/or DIRECT3D9.
+@@ -148,6 +155,8 @@
+ //! Only define _IRR_COMPILE_WITH_DIRECT3D_8_ if you have an appropriate DXSDK, e.g. Summer 2004
+ // #define _IRR_COMPILE_WITH_DIRECT3D_8_
+ #define _IRR_COMPILE_WITH_DIRECT3D_9_
++
++#define NO_IRR_COMPILE_WITH_DIRECT3D_9_
+ 
+ #ifdef NO_IRR_COMPILE_WITH_DIRECT3D_8_
+ #undef _IRR_COMPILE_WITH_DIRECT3D_8_
+--- ISceneManager.h	Mon Jun 17 11:09:20 2013
++++ ISceneManager.h	Tue May 12 16:08:07 2015
+@@ -1153,7 +1153,7 @@
+ 		IVideoDriver::beginScene() and IVideoDriver::endScene(). Please note that
+ 		the scene is not only drawn when calling this, but also animated
+ 		by existing scene node animators, culling of scene nodes is done, etc. */
+-		virtual void drawAll() = 0;
++		virtual void drawAll(f32 interpolate=1.f) = 0;
+ 
+ 		//! Creates a rotation animator, which rotates the attached scene node around itself.
+ 		/** \param rotationSpeed Specifies the speed of the animation in degree per 10 milliseconds.
+@@ -1653,6 +1653,10 @@
+ 		\return True if node is not visible in the current scene, else
+ 		false. */
+ 		virtual bool isCulled(const ISceneNode* node) const =0;
++
++        virtual void fastDrawAll_init(const core::vector3df &camPos) =0;
++		virtual void fastDrawAll(const core::matrix4 &projectionMatrix,const core::matrix4 &viewMatrix) = 0;
++        virtual void fastDrawAll_end() =0;
+ 	};
+ 
+ 
+--- ISceneNode.h	Sat Nov 03 18:08:34 2012
++++ ISceneNode.h	Tue May 12 16:06:15 2015
+@@ -98,6 +98,20 @@
+ 			}
+ 		}
+ 
++		virtual void fastRegister() {}
++
++        virtual void captureState()
++        {
++            CapturedRotation = RelativeRotation;
++            CapturedTranslation = RelativeTranslation;
++            CapturedScale = RelativeScale;
++            if (IsVisible)
++			{
++				ISceneNodeList::Iterator it = Children.begin();
++				for (; it != Children.end(); ++it)
++					(*it)->captureState();
++			}
++        }
+ 
+ 		//! OnAnimate() is called just before rendering the whole scene.
+ 		/** Nodes may calculate or store animations here, and may do other useful things,
+@@ -135,7 +149,9 @@
+ 
+ 
+ 		//! Renders the node.
+-		virtual void render() = 0;
++		virtual void render(f32 interpolate=1.f) = 0;
++
++		virtual void fastRender(const irr::core::vector3df &camWorldPos) {};
+ 
+ 
+ 		//! Returns the name of the node.
+@@ -184,10 +200,10 @@
+ 
+ 
+ 		//! Get the absolute transformation of the node. Is recalculated every OnAnimate()-call.
+-		/** NOTE: For speed reasons the absolute transformation is not 
+-		automatically recalculated on each change of the relative 
++		/** NOTE: For speed reasons the absolute transformation is not
++		automatically recalculated on each change of the relative
+ 		transformation or by a transformation change of an parent. Instead the
+-		update usually happens once per frame in OnAnimate. You can enforce 
++		update usually happens once per frame in OnAnimate. You can enforce
+ 		an update with updateAbsolutePosition().
+ 		\return The absolute transformation matrix. */
+ 		virtual const core::matrix4& getAbsoluteTransformation() const
+@@ -513,10 +529,10 @@
+ 		//! Gets the absolute position of the node in world coordinates.
+ 		/** If you want the position of the node relative to its parent,
+ 		use getPosition() instead.
+-		NOTE: For speed reasons the absolute position is not 
+-		automatically recalculated on each change of the relative 
+-		position or by a position change of an parent. Instead the 
+-		update usually happens once per frame in OnAnimate. You can enforce 
++		NOTE: For speed reasons the absolute position is not
++		automatically recalculated on each change of the relative
++		position or by a position change of an parent. Instead the
++		update usually happens once per frame in OnAnimate. You can enforce
+ 		an update with updateAbsolutePosition().
+ 		\return The current absolute position of the scene node (updated on last call of updateAbsolutePosition). */
+ 		virtual core::vector3df getAbsolutePosition() const
+@@ -660,6 +676,27 @@
+ 				AbsoluteTransformation = getRelativeTransformation();
+ 		}
+ 
++        virtual core::matrix4 interpolatedAbsoluteTransform(f32 interpolate=1.f)
++        {
++            core::matrix4 mat;
++			mat.setRotationDegrees((RelativeRotation*interpolate)+(CapturedRotation*(1.f-interpolate)));
++			mat.setTranslation((RelativeTranslation*interpolate)+(CapturedTranslation*(1.f-interpolate)));
++
++			//if (RelativeScale != core::vector3df(1.f,1.f,1.f))
++			//{
++            core::matrix4 smat;
++            smat.setScale((RelativeScale*interpolate)+(CapturedScale*(1.f-interpolate)));
++            mat *= smat;
++			//}
++
++            if (Parent)
++			{
++				mat =
++					Parent->interpolatedAbsoluteTransform(interpolate) * mat;
++			}
++
++            return mat;
++        }
+ 
+ 		//! Returns the parent of this scene node
+ 		/** \return A pointer to the parent. */
+@@ -812,12 +849,15 @@
+ 
+ 		//! Relative translation of the scene node.
+ 		core::vector3df RelativeTranslation;
++		core::vector3df CapturedTranslation;
+ 
+ 		//! Relative rotation of the scene node.
+ 		core::vector3df RelativeRotation;
++		core::vector3df CapturedRotation;
+ 
+ 		//! Relative scale of the scene node.
+ 		core::vector3df RelativeScale;
++		core::vector3df CapturedScale;
+ 
+ 		//! Pointer to the parent
+ 		ISceneNode* Parent;
+--- IVideoDriver.h	Sat Nov 03 18:08:34 2012
++++ IVideoDriver.h	Sun Oct 19 17:58:58 2014
+@@ -200,6 +200,7 @@
+ 						case EMF_POLYGON_OFFSET:
+ 							material.PolygonOffsetDirection = Material.PolygonOffsetDirection;
+ 							material.PolygonOffsetFactor = Material.PolygonOffsetFactor; break;
++						case EMF_MATERIAL_TYPE: material.MaterialType = Material.MaterialType; break;
+ 						}
+ 					}
+ 				}
+@@ -255,6 +256,8 @@
+ 	*/
+ 	class IVideoDriver : public virtual IReferenceCounted
+ 	{
++	protected:
++        SColorf AmbientLight;
+ 	public:
+ 
+ 		//! Applications must call this method before performing any rendering.
+@@ -1440,6 +1443,10 @@
+ 		scene::ISceneManager::setAmbientLight().
+ 		\param color New color of the ambient light. */
+ 		virtual void setAmbientLight(const SColorf& color) =0;
++
++		SColorf getAmbientLight() {
++            return AmbientLight;
++		};
+ 
+ 		//! Only used by the engine internally.
+ 		/** Passes the global material flag AllowZWriteOnTransparent.
+--- SMaterial.h	Sat Nov 03 18:08:34 2012
++++ SMaterial.h	Sun Oct 19 18:06:01 2014
+@@ -366,7 +366,7 @@
+ 		u8 ZBuffer;
+ 
+ 		//! Sets the antialiasing mode
+-		/** Values are chosen from E_ANTI_ALIASING_MODE. Default is 
++		/** Values are chosen from E_ANTI_ALIASING_MODE. Default is
+ 		EAAM_SIMPLE|EAAM_LINE_SMOOTH, i.e. simple multi-sample
+ 		anti-aliasing and lime smoothing is enabled. */
+ 		u8 AntiAliasing;
+@@ -380,7 +380,7 @@
+ 
+ 		//! Defines the interpretation of vertex color in the lighting equation
+ 		/** Values should be chosen from E_COLOR_MATERIAL.
+-		When lighting is enabled, vertex color can be used instead of the 
++		When lighting is enabled, vertex color can be used instead of the
+ 		material values for light modulation. This allows to easily change e.g. the
+ 		diffuse light behavior of each face. The default, ECM_DIFFUSE, will result in
+ 		a very similar rendering as with lighting turned off, just with light shading. */
+@@ -617,6 +617,8 @@
+ 					return BlendOperation != EBO_NONE;
+ 				case EMF_POLYGON_OFFSET:
+ 					return PolygonOffsetFactor != 0;
++				break;
++				default:break;
+ 			}
+ 
+ 			return false;
+--- triangle3d.h	Sat Nov 03 18:08:32 2012
++++ triangle3d.h	Mon Sep 29 18:10:42 2014
+@@ -240,6 +240,8 @@
+ 		vector3d<T> pointB;
+ 		vector3d<T> pointC;
+ 
++		u32 index;
++
+ 	private:
+ 		// Using f64 instead of <T> to avoid integer overflows when T=int (maybe also less floating point troubles).
+ 		bool isOnSameSide(const vector3d<f64>& p1, const vector3d<f64>& p2,
