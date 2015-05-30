@@ -20,6 +20,9 @@ Libraries used:
   
 ### How to compile
 
-1. Download source code for Irrlicht 1.8.1, replace any files with the modified files included in this repository, and compile in Debug mode.
-2. Download (and compile if necessary) all the other libraries listed above.
-3. Open project in Code::Blocks, add proper include directories and linker options, and compile.
+1. Download source code for Irrlicht 1.8.1.
+2. Apply the patches in the "Irrlicht/source" and "Irrlicht/include" folders in this repository, as well as the new files.
+3. Compile Irrlicht in Debug mode.
+4. Download (and compile if necessary) all the other libraries listed above.
+5. Open SCPCBIrrlicht.cbp in Code::Blocks, add proper include directories and linker options, and compile.
+
