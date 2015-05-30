@@ -2,9 +2,12 @@
 #include "Player.h"
 
 #include "NPCs/NPC096.h"
+#include "NPCs/NPC173.h"
 
 #include "Rooms/Room.h"
 #include "Rooms/RMesh.h"
+
+#include "Rooms/Door.h"
 
 #include <iostream>
 #include <cmath>
@@ -106,7 +109,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
     irrDriverType = irr::video::EDT_OPENGL;
     irrReceiver = new MainEventReceiver;
-    irrDevice = irr::createDevice(irrDriverType,irr::core::dimension2d<irr::u32>(width,height),32,fullscreen,false,false,irrReceiver);
+    irrDevice = irr::createDevice(irrDriverType,irr::core::dimension2d<irr::u32>(width,height),32,fullscreen,false,true,irrReceiver);
     irrDriver = irrDevice->getVideoDriver();
 	irrSmgr = irrDevice->getSceneManager();
 	irrColl = irrSmgr->getSceneCollisionManager();
@@ -168,7 +171,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
 	plainLightShader = irr::video::EMT_SOLID; // Fallback material type
     plainLightCallback= new PlainLightShaderCallBack;
-    plainLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/LightingVert_sm.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/LightingFrag_sm.frag", "main", irr::video::EPST_PS_1_1,plainLightCallback, irr::video::EMT_SOLID);
+    plainLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/LightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/LightingFrag.frag", "main", irr::video::EPST_PS_1_1,plainLightCallback, irr::video::EMT_SOLID);
     plainLightCallback->ambient = irr::video::SColor(255,20,20,20);
 
 	postProcShader = irr::video::EMT_SOLID; // Fallback material type
@@ -372,7 +375,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	/*Roompj*/rme = loadRMesh(std::string("GFX/map/Roompj_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Roompj::setBase(rme);
 	/*Room914*/rme = loadRMesh(std::string("GFX/map/machineRoom_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room914::setBase(rme);
 #endif
-#if 1
+#if 0
 	//HCZ
 	/*Room008*/rme = loadRMesh(std::string("GFX/map/008_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room008::setBase(rme);
 	/*RoomCoffin*/rme = loadRMesh(std::string("GFX/map/coffin_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomCoffin::setBase(rme);
@@ -394,7 +397,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	/*Room4tunnels*/rme = loadRMesh(std::string("GFX/map/4tunnels_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room4tunnels::setBase(rme);
 	/*Room513*/rme = loadRMesh(std::string("GFX/map/Room513_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room513::setBase(rme);
 #endif
-#if 1
+#if 0
 	//EZ
 	/*Room860*/rme = loadRMesh(std::string("GFX/map/Room860_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room860::setBase(rme);
 	/*RoomExit1*/rme = loadRMesh(std::string("GFX/map/exit1_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomExit1::setBase(rme);
@@ -443,17 +446,63 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC096::baseNode->setScale(irr::core::vector3df(4.f,4.f,4.f));
     NPC096::baseNode->setFrameLoop(1059,1074);
     NPC096::baseNode->setAnimationSpeed(64.0f);
-    testNPC = NPC096::createNPC096();
+
+    NPC173::baseNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/173_2.b3d"));
+
+    NPC173::baseNode->setScale(irr::core::vector3df(1.3*RoomScale));
+
+    NPC173::baseOcclusionNode = irrSmgr->addCubeSceneNode(10.0f,nullptr,-1,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,0),irr::core::vector3df(0.7f, 2.2f, 0.7f));
+    NPC173::baseOcclusionNode->getMaterial(0).MaterialType = irr::video::EMT_TRANSPARENT_ADD_COLOR;
+    NPC173::driver = irrDriver;
+    //node->setPosition(irr::core::vector3df(x*204.8f*RoomScale,10.f*RoomScale,y*204.8f*RoomScale));
+    //node->setMaterialFlag(irr::video::EMF_LIGHTING, true);
+    //node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
+
+    //node->getMaterial(0).Lighting = true;
+    NPC173::baseNode->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)normalsShader;
+
+    //rbody = dynamics->addTriMesh_moving(node,16000.f,20,1,1);
+    //rbody->setAngularFactor(btVector3(0,0,0));
+
+    NPC173::baseNode->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/NPCs/173_norm.jpg"));
+    NPC173::baseNode->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/173_Spec.jpg"));
+
+    //testNPC = NPC173::createNPC173();
+    //static_cast<NPC173*>(testNPC)->boxNode = irrSmgr->addCubeSceneNode();
 
 	mainPlayer = new Player(this,irrSmgr,dynamics,irrReceiver);
 
-	mainPlayer->update();
+	//mainPlayer->update();
 
 	Item::setPlayer(mainPlayer);
+	NPC::player = mainPlayer; //add setplayer?
+
+	mainPlayer->testNode = NPC173::baseNode;
+
+    Door::baseDoorNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Door01.x"));
+    Door::baseDoorNode[0]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
+    Door::baseDoorNode[0]->setScale(irr::core::vector3df(RoomScale*1.95f,RoomScale*1.35f,RoomScale*1.95f));
+    Door::baseFrameNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/DoorFrame.x"));
+    Door::baseFrameNode->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
+    Door::baseFrameNode->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
+    Door::baseFrameNode->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.12f));
+    Door::baseButtonNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Button.x"));
+    Door::baseButtonNode[0]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
+    Door::baseButtonNode[0]->setScale(irr::core::vector3df(RoomScale*1.f,RoomScale*1.f,RoomScale*1.f));
+    Door::dynamics = dynamics;
+    //rbody = dynamics->addBoxObject(Door::baseFrameNode,1000.f);
+    //rbody->setLinearFactor(btVector3(0.f,0.f,0.f));
 
 	createMap(0);
-	testNPC->update();
-	//mainPlayer->teleport(testNPC->getPosition()+irr::core::vector3df(0.f,10.f,0.f));
+	//testNPC->update();
+	//mainPlayer->teleport(testNPC->getPosition()+irr::core::vector3df(0.f,30.f,0.f));
+	/*Door::baseDoorNode[0]->setPosition(mainPlayer->getPosition()-irr::core::vector3df(0.f,mainPlayer->getPosition().Y,1018.f*0.1f*RoomScale));
+	Door::baseFrameNode->setPosition(mainPlayer->getPosition()-irr::core::vector3df(0.f,mainPlayer->getPosition().Y,1024.f*0.1f*RoomScale));
+	Door::baseButtonNode[0]->setPosition(mainPlayer->getPosition()-irr::core::vector3df(150.f*0.1f*RoomScale,mainPlayer->getPosition().Y-165.f*0.1f*RoomScale,1000.f*0.1f*RoomScale));
+	Door::baseButtonNode[0]->setRotation(irr::core::vector3df(0.f,180.f,0.f));
+	btTransform rTransform = rbody->getCenterOfMassTransform();
+	rTransform.setOrigin(irrToBtVec(Door::baseFrameNode->getPosition()));
+	rbody->setCenterOfMassTransform(rTransform);*/
 
 	for (int i=0;i<50;i++) {
         fogBillboards[i]=irrSmgr->addBillboardSceneNode(nullptr,irr::core::dimension2df(500.f*0.1f*RoomScale,500.f*0.1f*RoomScale));
@@ -474,27 +523,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 		for (int x=19;x>=0;x--) {
 			if (roomArray[x][y]!=nullptr) {
 				//test node
-				irr::scene::IMesh* mesh1 = irrSmgr->getMesh("GFX/NPCs/173_2.b3d");
 
-				node = irrSmgr->addMeshSceneNode(mesh1);
-
-				node->setScale(irr::core::vector3df(1.3*RoomScale));
-				node->setPosition(irr::core::vector3df(x*204.8f*RoomScale,10.f*RoomScale,y*204.8f*RoomScale));
-				node->setMaterialFlag(irr::video::EMF_LIGHTING, true);
-				node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
-
-				node->getMaterial(0).Lighting = true;
-				node->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)normalsShader;
-
-				rbody = dynamics->addTriMesh_moving(node,16000.f,20,1,1);
-				rbody->setAngularFactor(btVector3(0,0,0));
-
-				node->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/NPCs/173_norm.jpg"));
-				node->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/173_Spec.jpg"));
-
-				node->getMaterial(0).EmissiveColor = irr::video::SColor(100,100,100,100);
-
-				mainPlayer->testNode = node;
 				//------------
 
 				/*mesh1 = irrSmgr->getMesh("GFX/NPCs/scp-066.b3d");
@@ -564,23 +593,26 @@ World::~World() {
 			std::cout<<"\n";
 		}
 	}
+
+	gContactAddedCallback = CustomMaterialCombinerCallback;
 }
 
 bool World::run() {
     time = irrTimer->getRealTime();
     irrReceiver->setTime(time);
 
-	if (prevTime==0) { fpsFactor = 1.0; } else {
+	/*if (prevTime==0) { fpsFactor = 1.0; } else {
 		fpsFactor = (time-prevTime)/(1000.0/70.0);
-	}
+	}*/
 	prevTime = time;
 
 	if (menusOpen==menus::NONE) {
 
 		float prec = 0.65f;
 
+        std::cout<<mainPlayer->getPosition().X<<"\n";
 		mainPlayer->update();
-		dynamics->simStep(time,60.f * prec);
+		dynamics->simStep(1.f/60.f,60.f * prec);
 		mainPlayer->resetSpeeds();
 		//testNPC->update();
 		//testNPC->updateModel();
@@ -626,7 +658,7 @@ bool World::run() {
 						}
 					}
 					std::vector<pointLight> nLights = roomArray[px][py]->getPointLights();
-					/*if (roomArray[px][py+1]!=nullptr && py+1<20) {
+					if (roomArray[px][py+1]!=nullptr && py+1<20) {
                         const std::vector<pointLight> &addLights = roomArray[px][py+1]->getPointLights();
                         for (unsigned int i=0;i<addLights.size();i++) {
                             nLights.push_back(addLights[i]);
@@ -646,6 +678,31 @@ bool World::run() {
 					}
 					if (roomArray[px-1][py]!=nullptr && px-1>0) {
                         const std::vector<pointLight> &addLights = roomArray[px-1][py]->getPointLights();
+                        for (unsigned int i=0;i<addLights.size();i++) {
+                            nLights.push_back(addLights[i]);
+                        }
+					}
+
+					/*if (roomArray[px][py+2]!=nullptr && py+2<20) {
+                        const std::vector<pointLight> &addLights = roomArray[px][py+2]->getPointLights();
+                        for (unsigned int i=0;i<addLights.size();i++) {
+                            nLights.push_back(addLights[i]);
+                        }
+					}
+					if (roomArray[px][py-2]!=nullptr && py-2>0) {
+                        const std::vector<pointLight> &addLights = roomArray[px][py-2]->getPointLights();
+                        for (unsigned int i=0;i<addLights.size();i++) {
+                            nLights.push_back(addLights[i]);
+                        }
+					}
+					if (roomArray[px+2][py]!=nullptr && px+2<20) {
+                        const std::vector<pointLight> &addLights = roomArray[px+2][py]->getPointLights();
+                        for (unsigned int i=0;i<addLights.size();i++) {
+                            nLights.push_back(addLights[i]);
+                        }
+					}
+					if (roomArray[px-2][py]!=nullptr && px-2>0) {
+                        const std::vector<pointLight> &addLights = roomArray[px-2][py]->getPointLights();
                         for (unsigned int i=0;i<addLights.size();i++) {
                             nLights.push_back(addLights[i]);
                         }
@@ -672,7 +729,7 @@ bool World::run() {
 			menusOpen = menus::PAUSEOPEN;
 		}
 	} else {
-		dynamics->resetTimer(time);
+		//dynamics->resetTimer(time);
 	}
 
     irrDriver->beginScene(true, true, irr::video::SColor(255, 255, 0, 255));
@@ -686,7 +743,7 @@ bool World::run() {
     irrDriver->endScene();
 
     time = irrTimer->getRealTime();
-	//if (time-prevTime<17) irrDevice->sleep(17-(time-prevTime));
+	if (time-prevTime<17) irrDevice->sleep(17-(time-prevTime));
 
 	Sound::processDrops();
 	irrReceiver->perLoopUpdate();
@@ -695,7 +752,7 @@ bool World::run() {
 }
 
 void World::draw3D() {
-	postProcCallback->fpsFactor = fpsFactor;
+	//postProcCallback->fpsFactor = fpsFactor;
 
     /*irrDriver->setRenderTarget(fogTexture);
 
@@ -742,7 +799,7 @@ void World::draw3D() {
         }
 
         fogBillboards[i]->updateAbsolutePosition();
-        fogBillboards[i]->setPosition(fogBillboards[i]->getAbsolutePosition()*(1.f-(0.05f*fpsFactor))+fogBillTargetPos[i]*0.05f*fpsFactor);
+        fogBillboards[i]->setPosition(fogBillboards[i]->getAbsolutePosition()*(1.f-(0.05f))+fogBillTargetPos[i]*0.05f);
         fogBillboards[i]->updateAbsolutePosition();
 
         /*float dist2 = mainPlayer->getPosition().getDistanceFrom(fogBillboards[i]->getAbsolutePosition());
@@ -807,7 +864,7 @@ void World::draw3D() {
     //irrDriver->clearZBuffer();
 
 	//screenQuad->render();
-	//irrDriver->draw2DImage(blurImage2,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(std::min(blurAlpha/fpsFactor,200.0f),255,255,255), false);
+	//irrDriver->draw2DImage(blurImage2,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(std::min(blurAlpha,200.0f),255,255,255), false);
 
     renderLights();
     irrDriver->draw2DImage(lightPass[0],irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight),0);
@@ -819,6 +876,8 @@ void World::draw3D() {
     //renderLights();
     irrDriver->setRenderTarget(0);
     irrSmgr->drawAll();
+    irrDriver->runAllOcclusionQueries(true);
+    irrDriver->updateAllOcclusionQueries();
 }
 
 void World::drawHUD() {
@@ -826,7 +885,7 @@ void World::drawHUD() {
     itemSelected = mainPlayer->drawSelectedItem();
 
 	if (hudMsgTimer>0.f) {
-		hudMsgTimer-=getFPSfactor();
+		hudMsgTimer-=1.f;
 
 		float alpha = std::min(std::max(hudMsgTimer*0.01f,0.f),1.f);
 		font1->draw(hudMsg.c_str(),irr::core::rect<irr::s32>(mainWidth/2+2,mainHeight+2,mainWidth/2+2,mainHeight/2+102),irr::video::SColor(150*alpha,0,0,0),true,true);
@@ -862,7 +921,7 @@ void World::drawHUD() {
             }
         }
     }
-    irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,0),irr::core::recti((19-coordToRoomGrid(testNPC->getPosition().X))*10,coordToRoomGrid(testNPC->getPosition().Z)*10,(19-coordToRoomGrid(testNPC->getPosition().X))*10+8,coordToRoomGrid(testNPC->getPosition().Z)*10+8));
+    //irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,0),irr::core::recti((19-coordToRoomGrid(testNPC->getPosition().X))*10,coordToRoomGrid(testNPC->getPosition().Z)*10,(19-coordToRoomGrid(testNPC->getPosition().X))*10+8,coordToRoomGrid(testNPC->getPosition().Z)*10+8));
     irrDriver->draw2DRectangle(irr::video::SColor(255,0,255,0),irr::core::recti((19-coordToRoomGrid(mainPlayer->getPosition().X))*10,coordToRoomGrid(mainPlayer->getPosition().Z)*10,(19-coordToRoomGrid(mainPlayer->getPosition().X))*10+8,coordToRoomGrid(mainPlayer->getPosition().Z)*10+8));
 
 #if 0
@@ -1063,7 +1122,7 @@ void World::drawHUD() {
 								invImgs[targetSlot] = invImgs[dragItem];
 								invImgs[dragItem] = nullptr;
 							} else {
-								hudMsg = "This Item can't be used this way";
+								hudMsg = "This item can't be used this way";
 								hudMsgTimer = 70.f*2.f;
 							}
 						} else {
@@ -1120,9 +1179,9 @@ void World::drawHUD() {
 		} else {
 			font2->draw("OPTIONS",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
 
-			if (button(std::string("Graphics"),mainWidth/2-175*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) subMenusOpen=0;
-			if (button(std::string("Audio"),mainWidth/2-20*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) subMenusOpen=1;
-			if (button(std::string("Controls"),mainWidth/2+135*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) subMenusOpen=2;
+			if (button(std::string("Graphics"),mainWidth/2-175*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=0; }
+			if (button(std::string("Audio"),mainWidth/2-20*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=1; }
+			if (button(std::string("Controls"),mainWidth/2+135*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=2; }
 
 			irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-150*scale2D,mainWidth/2+280*scale2D,mainHeight/2+200*scale2D),irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-150*scale2D,mainWidth/2+280*scale2D,mainHeight/2+200*scale2D));
 			irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-177*scale2D,mainHeight/2-147*scale2D,mainWidth/2+277*scale2D,mainHeight/2+197*scale2D),irr::core::recti(mainWidth/2-177*scale2D,mainHeight/2-147*scale2D,mainWidth/2+277*scale2D,mainHeight/2+197*scale2D));
@@ -1214,9 +1273,9 @@ bool World::button(const std::string &text,int x,int y,int w,int h) {
 	return clicking;
 }
 
-float World::getFPSfactor() {
+/*float World::getFPSfactor() {
     return fpsFactor;
-}
+}*/
 
 void trimFileName(std::string &inStr) {
 	for (unsigned int i=inStr.size();i>0;i--) {

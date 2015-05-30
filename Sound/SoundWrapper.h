@@ -8,7 +8,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-const unsigned char sourceCount = 28;
+const unsigned char SOURCECOUNT = 28;
 
 class Sound {
 	private:
@@ -23,9 +23,9 @@ class Sound {
 		static ALCdevice* device;
 		static ALCcontext* context;
 
-		static ALuint sources[sourceCount];
-		static Sound* playingSounds[sourceCount];
-		static bool pauseState[sourceCount];
+		static ALuint sources[SOURCECOUNT];
+		static Sound* playingSounds[SOURCECOUNT];
+		static bool pauseState[SOURCECOUNT];
 
 		static unsigned int frozenCategories;
 
@@ -42,7 +42,7 @@ class Sound {
 		std::string name;
 
 		ALuint buffer;
-		//bool paused[sourceCount];
+		//bool paused[SOURCECOUNT];
 		//unsigned char lastSource = 0;
 
 		Sound();

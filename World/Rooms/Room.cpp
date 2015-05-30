@@ -70,7 +70,7 @@ irr::scene::IMeshSceneNode* Room::getNewNode(irr::scene::IMesh* mesh) {
 void Room::setActivation(bool s) {
 	if (s!=isActivated) {
 		if (s) {
-			dynamics->registerNewRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
+			dynamics->registerNewRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,0.f,0));
 			node->setVisible(true);
 		} else {
 			dynamics->unregisterRBody(rbody);
@@ -106,7 +106,7 @@ void Room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 	rme->shape->calculateLocalInertia(0.0, localInertia);
 
 	rbody = new btRigidBody(0.0, MotionState, rme->shape, localInertia);
-	Room::dynamics->registerNewRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,-0.5f,0));
+	Room::dynamics->registerNewRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,0.f,0));
 
 	rotMatrix.setRotationDegrees(irr::core::vector3df(0,inAngle*90.f,0));
 
@@ -140,7 +140,7 @@ void Room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 	rbody->setRollingFriction(1.f);
 	rbody->setContactProcessingThreshold(1.f);
 
-	rbody->setCollisionFlags(rbody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+	rbody->setCollisionFlags(rbody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 }
 
 void Room::destroy() {

@@ -17,6 +17,7 @@ class NPC {
         virtual irr::core::vector3df getPosition() =0;
         static class World* owner;
         static class irrDynamics* dynamics;
+        static class Player* player;
 };
 
 #endif // NPC_H_INCLUDED

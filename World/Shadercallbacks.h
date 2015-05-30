@@ -31,7 +31,7 @@ class PostProcShaderCallBack : public irr::video::IShaderConstantSetCallBack {
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 		irr::f32 minBlur = 0.f;
 		irr::f32 maxBlur = 15.f;
-		irr::f32 fpsFactor = 1.f;
+		//irr::f32 fpsFactor = 1.f;
 		irr::f32 currmBlur = 0.f;
 		irr::f32 currMBlur = 15.f;
 

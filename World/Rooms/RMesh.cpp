@@ -3,6 +3,44 @@
 
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
+bool CustomMaterialCombinerCallback(btManifoldPoint& cp,const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1)
+{
+
+    std::cout<<"CUSTOM CALLBACK\n"; std::terminate();
+
+    btAdjustInternalEdgeContacts(cp,colObj1Wrap,colObj0Wrap, partId1,index1);
+    //btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_BACKFACE_MODE);
+    //btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1, BT_TRIANGLE_CONVEX_DOUBLE_SIDED+BT_TRIANGLE_CONCAVE_DOUBLE_SIDED);
+
+	float friction0 = colObj0Wrap->getCollisionObject()->getFriction();
+	float friction1 = colObj1Wrap->getCollisionObject()->getFriction();
+	float restitution0 = colObj0Wrap->getCollisionObject()->getRestitution();
+	float restitution1 = colObj1Wrap->getCollisionObject()->getRestitution();
+
+	/*if (colObj0Wrap->getCollisionObject()->getCollisionFlags() & btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK)
+	{
+		friction0 = 1.0;//partId0,index0
+		restitution0 = 0.f;
+	}
+	if (colObj1Wrap->getCollisionObject()->getCollisionFlags() & btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK)
+	{
+		if (index1&1)
+		{
+			friction1 = 1.0f;//partId1,index1
+		} else
+		{
+			friction1 = 0.f;
+		}
+		restitution1 = 0.f;
+	}*/
+
+	cp.m_combinedFriction = friction0*friction1;
+	cp.m_combinedRestitution = restitution0*restitution1;
+
+	//this return value is currently ignored, but to be on the safe side: return false if you don't calculate friction
+	return true;
+}
+
 RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneManager* smgr,irr::video::ITexture** reflection,irr::video::E_MATERIAL_TYPE* roomShaders,PlainLightShaderCallBack* plainLightCallback) {
     irr::video::IVideoDriver* driver = smgr->getVideoDriver();
 
@@ -72,7 +110,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
         irr::scene::SMeshBuffer* buf = nullptr;
 
         btTriangleMesh *pTriMesh = new btTriangleMesh();
-		pTriMesh->m_weldingThreshold = 3.f;
+		//pTriMesh->m_weldingThreshold = 3.f;
 
 		struct loadedTexture {
             std::string name;
@@ -225,9 +263,38 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 
 							indices.push_back(irr::core::vector3di(i1,i2,i3));
 
-							float x1 = vertices[i1].Pos.X; float y1 = vertices[i1].Pos.Y; float z1 = vertices[i1].Pos.Z;
-							float x2 = vertices[i2].Pos.X; float y2 = vertices[i2].Pos.Y; float z2 = vertices[i2].Pos.Z;
-							float x3 = vertices[i3].Pos.X; float y3 = vertices[i3].Pos.Y; float z3 = vertices[i3].Pos.Z;
+							float ax1 = vertices[i1].Pos.X; float ay1 = vertices[i1].Pos.Y; float az1 = vertices[i1].Pos.Z;
+							float ax2 = vertices[i2].Pos.X; float ay2 = vertices[i2].Pos.Y; float az2 = vertices[i2].Pos.Z;
+							float ax3 = vertices[i3].Pos.X; float ay3 = vertices[i3].Pos.Y; float az3 = vertices[i3].Pos.Z;
+							/*if (ay1>-1.f && ay1<1.f && ay2>-1.f && ay2<1.f && ay3>-1.f && ay3<1.f) {
+                                ay1 = 0.f;
+                                ay2 = 0.f;
+                                ay3 = 0.f;
+							}*/
+
+                            irr::core::vector3df triangleCenter(ax1,ay1,az1);
+                            triangleCenter+=irr::core::vector3df(ax2,ay2,az2);
+                            triangleCenter+=irr::core::vector3df(ax3,ay3,az3);
+                            triangleCenter*=1.f/3.f;
+
+                            irr::core::vector3df v1(ax1,ay1,az1);
+                            irr::core::vector3df v2(ax2,ay2,az2);
+                            irr::core::vector3df v3(ax3,ay3,az3);
+                            /*if (v1.getDistanceFrom(triangleCenter)>=1.f) {
+                                float m1 = (v1.getDistanceFrom(triangleCenter)+1.1f)/v1.getDistanceFrom(triangleCenter);
+                                v1 = (v1*m1)+(triangleCenter*(1.f-m1));
+                            }
+                            if (v2.getDistanceFrom(triangleCenter)>=1.f) {
+                                float m2 = (v2.getDistanceFrom(triangleCenter)+1.1f)/v2.getDistanceFrom(triangleCenter);
+                                v2 = (v2*m2)+(triangleCenter*(1.f-m2));
+                            }
+                            if (v3.getDistanceFrom(triangleCenter)>=1.f) {
+                                float m3 = (v3.getDistanceFrom(triangleCenter)+1.1f)/v3.getDistanceFrom(triangleCenter);
+                                v3 = (v3*m3)+(triangleCenter*(1.f-m3));
+                            }*/
+                            float x1 = v1.X; float y1 = v1.Y; float z1 = v1.Z;
+                            float x2 = v2.X; float y2 = v2.Y; float z2 = v2.Z;
+                            float x3 = v3.X; float y3 = v3.Y; float z3 = v3.Z;
 
 							float nx1 = (y3-y1)*(z2-z1)-(y2-y1)*(z3-z1);
 							float ny1 = (z3-z1)*(x2-x1)-(z2-z1)*(x3-x1);
@@ -243,14 +310,18 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 
 							if (entType==0) {
 								btVector3 btVertices[3];
-								if (ny1<-0.9f || ny1>0.9f) {
-                                    btVertices[0] = btVector3(vertices[i1].Pos.X,vertices[i1].Pos.Y,vertices[i1].Pos.Z);
-                                    btVertices[1] = btVector3(vertices[i2].Pos.X,vertices[i1].Pos.Y,vertices[i2].Pos.Z);
-                                    btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i1].Pos.Y,vertices[i3].Pos.Z);
+								if (ny1<-0.9f) {
+                                    btVertices[0] = btVector3(x1,y1,z1);
+                                    btVertices[1] = btVector3(x2,y1,z2);
+                                    btVertices[2] = btVector3(x3,y1,z3);
+                                } else if (ny1>0.9f) {
+                                    btVertices[0] = btVector3(x1,y1,z1);
+                                    btVertices[1] = btVector3(x2,y1,z2);
+                                    btVertices[2] = btVector3(x3,y1,z3);
                                 } else {
-                                    btVertices[0] = btVector3(vertices[i1].Pos.X,vertices[i1].Pos.Y,vertices[i1].Pos.Z);
-                                    btVertices[1] = btVector3(vertices[i2].Pos.X,vertices[i2].Pos.Y,vertices[i2].Pos.Z);
-                                    btVertices[2] = btVector3(vertices[i3].Pos.X,vertices[i3].Pos.Y,vertices[i3].Pos.Z);
+                                    btVertices[0] = btVector3(x1,y1,z1);
+                                    btVertices[1] = btVector3(x2,y2,z2);
+                                    btVertices[2] = btVector3(x3,y3,z3);
 								}
 								//faces that barely make a difference to the shape of the object are removed
 								if (btVertices[0].distance(btVertices[1])>5.f || btVertices[1].distance(btVertices[2])>5.f || btVertices[0].distance(btVertices[2])>5.f) {
@@ -289,16 +360,16 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 
 										bufLM->getMaterial().MaterialType = irr::video::EMT_LIGHTMAP;
 										if (loadedTextures[textures[1]-1].bump!=nullptr) {
-											bufLM->getMaterial().MaterialType = roomShaders[0];
+											bufLM->getMaterial().MaterialType = roomShaders[1];
 											bufLM->getMaterial().setTexture(2,loadedTextures[textures[1]-1].bump);
                                             bufLM->getMaterial().setTexture(3,reflection[0]);
 
                                             std::string lmString = loadedTextures[textures[0]-1].name;
                                             lmString.replace(lmString.find("lm"),2,"lm_t_");
-                                            bufLM->getMaterial().setTexture(4,driver->getTexture(lmString.c_str()));
+                                            //bufLM->getMaterial().setTexture(4,driver->getTexture(lmString.c_str()));
                                             lmString = loadedTextures[textures[0]-1].name;
                                             lmString.replace(lmString.find("lm"),2,"lm_b_");
-                                            bufLM->getMaterial().setTexture(5,driver->getTexture(lmString.c_str()));
+                                            //bufLM->getMaterial().setTexture(5,driver->getTexture(lmString.c_str()));
 										} else {
                                             //using a shader is faster than defaulting to fixed pipeline
                                             bufLM->getMaterial().MaterialType = roomShaders[1];
@@ -554,7 +625,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 			}
 		}
 
-		/*buf = new irr::scene::SMeshBuffer();
+		buf = new irr::scene::SMeshBuffer();
         mesh->addMeshBuffer(buf);
         buf->drop();
 
@@ -592,17 +663,17 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
             buf->Indices[j]=indices[j];
         }
 
-        mesh->addMeshBuffer(buf);*/
+        mesh->addMeshBuffer(buf);
 
         mesh->recalculateBoundingBox();
         mesh->setHardwareMappingHint(irr::scene::EHM_STATIC);
         smgr->getMeshManipulator()->recalculateNormals(mesh);
         retRMesh->mesh = mesh;
         retRMesh->shape = new btBvhTriangleMeshShape(pTriMesh,true);
-        retRMesh->shape->setMargin(1.0f);
-        btTriangleInfoMap* triangleInfoMap = new btTriangleInfoMap();
-        triangleInfoMap->m_edgeDistanceThreshold = 1.5f;
-		btGenerateInternalEdgeInfo(retRMesh->shape, triangleInfoMap);
+        retRMesh->shape->setMargin(0.25f);
+        /*btTriangleInfoMap* triangleInfoMap = new btTriangleInfoMap();
+        triangleInfoMap->m_edgeDistanceThreshold = 5.0f;
+		btGenerateInternalEdgeInfo(retRMesh->shape, triangleInfoMap);*/
 
         file->drop();
 

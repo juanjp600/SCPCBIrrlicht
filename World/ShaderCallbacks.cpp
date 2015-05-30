@@ -1,4 +1,4 @@
-#include "shadercallbacks.h"
+#include "ShaderCallbacks.h"
 #include <iostream>
 
 #include "Rooms/RMesh.h"
@@ -59,8 +59,8 @@ void VertLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServic
 }
 
 void PostProcShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
-	currmBlur += (minBlur-currmBlur) * 0.1f * fpsFactor;
-	currMBlur += (maxBlur-currMBlur) * 0.1f * fpsFactor;
+	currmBlur += (minBlur-currmBlur) * 0.1f;
+	currMBlur += (maxBlur-currMBlur) * 0.1f;
 
 	services->setVertexShaderConstant("minBlur", &currmBlur, 1);
 	services->setVertexShaderConstant("maxBlur", &currMBlur, 1);
@@ -90,7 +90,7 @@ void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices
 
 	irr::core::matrix4 lightTransform = worldViewProj*invWorld;
 
-	sortLights(lightTransform);
+	sortLights(invWorld);
 
 	for (irr::u32 i=0;i<4;++i) {
 		std::string lightPosition = "lightPos";
@@ -156,7 +156,7 @@ void LightsShaderCallBack::sortLights(irr::core::matrix4 transfrm) {
 	std::sort(lightList.begin(),lightList.end());
 }
 
-#if 0
+#if 1
 void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::video::IVideoDriver* driver = services->getVideoDriver();
 
@@ -171,7 +171,7 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 
 	irr::core::matrix4 lightTransform = worldViewProj*invWorld;
 
-	sortLights(lightTransform);
+	sortLights(invWorld);
 
 	for (irr::u32 i=0;i<4;++i) {
 		std::string lightPosition = "lightPos";
@@ -206,7 +206,7 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 }
 #endif
 
-#if 1
+#if 0
 void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::video::IVideoDriver* driver = services->getVideoDriver();
 

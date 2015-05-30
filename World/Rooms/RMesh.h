@@ -14,7 +14,7 @@
 #include <vector>
 #include <string>
 
-#include "../shadercallbacks.h"
+#include "../ShaderCallbacks.h"
 
 struct pointLight {
     irr::core::vector3df position;

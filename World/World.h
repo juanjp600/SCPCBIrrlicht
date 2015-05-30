@@ -14,13 +14,16 @@
 #include <irrDynamics.h>
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
-#include "items/items.h"
+#include "Items/Items.h"
 #include "Rooms/Room.h"
-#include "../Sound/soundWrapper.h"
+#include "../Sound/SoundWrapper.h"
 
-#include "shadercallbacks.h"
+#include "ShaderCallbacks.h"
 
 const float RoomScale = 0.75f;
+
+//extern ContactAddedCallback gContactAddedCallback;
+bool CustomMaterialCombinerCallback(btManifoldPoint& cp,	const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1);
 
 class MainEventReceiver : public irr::IEventReceiver {
 	private:
@@ -172,7 +175,7 @@ class World {
         irr::video::ITexture* staminaMeterIMG;
 
         irr::u32 prevTime = 0;
-        float fpsFactor = 1;
+        //float fpsFactor = 1;
 
         irr::video::E_MATERIAL_TYPE roomShader, roomShader_noNormals, vertLightShader, vertLightShader_alpha,
                                     fogBillboardShader, normalsShader, plainLightShader, postProcShader,
@@ -196,7 +199,7 @@ class World {
         Room* addRandomRoom(unsigned short x,unsigned short y,RoomTypes type,char angle,int zone);
 
         //pathfinding
-        short stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,int depth=0);
+        short stepPath(const irr::core::vector2di &endPos,TempPathList &roomPath,int depth=0);
 
         irr::gui::CGUITTFont* font1;
         irr::gui::CGUITTFont* font2;
@@ -242,14 +245,15 @@ class World {
         World(unsigned int width,unsigned int height,bool fullscreen = false);
         ~World();
 
-        float getFPSfactor();
+        //float getFPSfactor();
 
         bool run();
 
         unsigned char pickPlayerTriangle(irr::core::vector3df* intersec = nullptr,const irr::core::vector3df customEnd = (irr::core::vector3df(0.f,-204.8*RoomScale,0.f)));
-        void getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &RoomPath);
-        void getRoomListToPlayer(const irr::core::vector2di &startPos,std::vector<irr::core::vector2di> &RoomPath);
+        void getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath);
+        void getRoomListToPlayer(const irr::core::vector2di &startPos,std::vector<irr::core::vector2di> &roomPath);
         void npcPathFind(const irr::core::vector3df &startPos,const irr::core::vector3df &endPos,const irr::core::vector2di &RoomPos,std::vector<irr::core::vector3df> &posList);
+        void npcPathFindToPlayer(const irr::core::vector3df &startPos,const irr::core::vector2di &RoomPos,std::vector<irr::core::vector3df> &posList);
 };
 
 //#include "Player.h"

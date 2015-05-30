@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-void World::getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &RoomPath) {
+void World::getRoomList(const irr::core::vector2di &startPos,const irr::core::vector2di &endPos,std::vector<irr::core::vector2di> &roomPath) {
 
 	if (roomArray[startPos.X][startPos.Y]==nullptr) { std::cout<<"err1\n"; return; }
 	if (roomArray[endPos.X][endPos.Y]==nullptr) { std::cout<<"err2\n"; return; }
@@ -17,7 +17,9 @@ void World::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
 	if (endPos.X>=20) { std::cout<<"err8\n"; return; }
 	if (endPos.Y<0) { std::cout<<"err9\n"; return; }
 	if (endPos.Y>=20) { std::cout<<"err10\n"; return; }
-	RoomPath.clear();
+	roomPath.clear();
+	roomPath.push_back(startPos);
+	if (startPos==endPos) { return; }
 
     irr::core::vector2di sPos = startPos;
 
@@ -86,6 +88,7 @@ void World::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
 		}
 	}
 
+    if (sPos==roomPath[0]) { roomPath.clear(); }
 	TempPathList* testList = new TempPathList;
     testList->x = sPos.X;
     testList->y = sPos.Y;
@@ -138,20 +141,37 @@ void World::getRoomList(const irr::core::vector2di &startPos,const irr::core::ve
     short result = stepPath(endPos,*testList);
     if (result>=0) {
         while (testList!=nullptr) {
-            RoomPath.push_back(irr::core::vector2di(testList->x,testList->y));
+            roomPath.push_back(irr::core::vector2di(testList->x,testList->y));
             TempPathList* tempList = testList;
             testList = testList->next;
             delete tempList;
         }
     }
+    if (roomPath.size()>0) {
+        if (roomPath.size()>1) {
+            if ((roomPath[roomPath.size()-2].X==endPos.X && roomPath[roomPath.size()-1].X==endPos.X) || (roomPath[roomPath.size()-2].Y==endPos.Y && roomPath[roomPath.size()-1].Y==endPos.Y)) {
+                roomPath.erase(roomPath.end()-1);
+            }
+        }
+
+        if (roomPath[roomPath.size()-1]!=endPos) {
+            roomPath.push_back(endPos);
+        }
+    }
+
+    if (roomPath.size()>1) {
+        if ((roomPath[1].X==startPos.X && roomPath[2].X==startPos.X) || (roomPath[1].Y==startPos.Y && roomPath[2].Y==startPos.Y)) {
+            roomPath.erase(roomPath.begin()+1);
+        }
+    }
 }
 
-short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,int depth) {
+short World::stepPath(const irr::core::vector2di &endPos,TempPathList &roomPath,int depth) {
     ////std::cout<<"asdasdasda"<<depth<<"\n";
 	short minDist = -1;
 
-    unsigned char x=RoomPath.x;
-    unsigned char y=RoomPath.y;
+    unsigned char x=roomPath.x;
+    unsigned char y=roomPath.y;
 
     if (roomArray[x][y]->getType()==RoomTypes::ROOM1 || roomArray[x][y]->getType()==RoomTypes::ROOM2) {
         //std::cout<<"something is wrong with this\n";
@@ -201,7 +221,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
 	short rDist = roomArray[x][y]->getLinkedTurnDist(0);
 	if (rDist>0) {
 		bool isntInList = true;
-        TempPathList* tempList = &RoomPath;
+        TempPathList* tempList = &roomPath;
         while (tempList!=nullptr) {
             if (tempList->x==x+rDist && tempList->y==y) {
                 isntInList = false;
@@ -210,7 +230,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
             tempList=tempList->prev;
         }
         if (isntInList) {
-            tempList = RoomPath.next;
+            tempList = roomPath.next;
             while (tempList!=nullptr) {
                 if (tempList->x==x+rDist && tempList->y==y) {
                     isntInList = false;
@@ -223,7 +243,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
             testList = new TempPathList;
             testList->x = x+rDist;
             testList->y = y;
-            testList->prev = &RoomPath;
+            testList->prev = &roomPath;
             short dist = stepPath(endPos,*testList,depth+1);
             if ((dist+rDist<minDist || minDist<=0) && dist>=0) {
                 minDist = dist+rDist;
@@ -245,7 +265,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
 	rDist = roomArray[x][y]->getLinkedTurnDist(1);
 	if (rDist>0) {
 		bool isntInList = true;
-        TempPathList* tempList = &RoomPath;
+        TempPathList* tempList = &roomPath;
         while (tempList!=nullptr) {
             if (tempList->x==x && tempList->y==y-rDist) {
                 isntInList = false;
@@ -254,7 +274,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
             tempList=tempList->prev;
         }
         if (isntInList) {
-            tempList = RoomPath.next;
+            tempList = roomPath.next;
             while (tempList!=nullptr) {
                 if (tempList->x==x && tempList->y==y-rDist) {
                     isntInList = false;
@@ -267,7 +287,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
             testList = new TempPathList;
             testList->x = x;
             testList->y = y-rDist;
-            testList->prev = &RoomPath;
+            testList->prev = &roomPath;
             short dist = stepPath(endPos,*testList,depth+1);
             if ((dist+rDist<minDist || minDist<=0) && dist>=0) {
                 minDist = dist+rDist;
@@ -289,7 +309,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
 	rDist = roomArray[x][y]->getLinkedTurnDist(2);
 	if (rDist>0) {
 		bool isntInList = true;
-        TempPathList* tempList = &RoomPath;
+        TempPathList* tempList = &roomPath;
         while (tempList!=nullptr) {
             if (tempList->x==x-rDist && tempList->y==y) {
                 isntInList = false;
@@ -298,7 +318,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
             tempList=tempList->prev;
         }
         if (isntInList) {
-            tempList = RoomPath.next;
+            tempList = roomPath.next;
             while (tempList!=nullptr) {
                 if (tempList->x==x-rDist && tempList->y==y) {
                     isntInList = false;
@@ -311,7 +331,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
             testList = new TempPathList;
             testList->x = x-rDist;
             testList->y = y;
-            testList->prev = &RoomPath;
+            testList->prev = &roomPath;
             short dist = stepPath(endPos,*testList,depth+1);
             if ((dist+rDist<minDist || minDist<=0) && dist>=0) {
                 minDist = dist+rDist;
@@ -333,7 +353,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
 	rDist = roomArray[x][y]->getLinkedTurnDist(3);
 	if (rDist>0) {
 		bool isntInList = true;
-        TempPathList* tempList = &RoomPath;
+        TempPathList* tempList = &roomPath;
         while (tempList!=nullptr) {
             if (tempList->x==x && tempList->y==y+rDist) {
                 isntInList = false;
@@ -342,7 +362,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
             tempList=tempList->prev;
         }
         if (isntInList) {
-            tempList = RoomPath.next;
+            tempList = roomPath.next;
             while (tempList!=nullptr) {
                 if (tempList->x==x && tempList->y==y+rDist) {
                     isntInList = false;
@@ -355,7 +375,7 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
             testList = new TempPathList;
             testList->x = x;
             testList->y = y+rDist;
-            testList->prev = &RoomPath;
+            testList->prev = &roomPath;
             short dist = stepPath(endPos,*testList,depth+1);
             if ((dist+rDist<minDist || minDist<=0) && dist>=0) {
                 minDist = dist+rDist;
@@ -375,14 +395,13 @@ short World::stepPath(const irr::core::vector2di &endPos,TempPathList &RoomPath,
         }
 	}
 
-    if (newList!=nullptr) { RoomPath.next = newList; }
+    if (newList!=nullptr) { roomPath.next = newList; }
 
     return minDist;
 }
 
-void World::getRoomListToPlayer(const irr::core::vector2di &startPos,std::vector<irr::core::vector2di> &RoomPath) {
-    std::cout<<"::::: "<<mainPlayer->getPosition().X<<"\n";
-    getRoomList(startPos,irr::core::vector2di(coordToRoomGrid(mainPlayer->getPosition().X),coordToRoomGrid(mainPlayer->getPosition().Z)),RoomPath);
+void World::getRoomListToPlayer(const irr::core::vector2di &startPos,std::vector<irr::core::vector2di> &roomPath) {
+    getRoomList(startPos,irr::core::vector2di(coordToRoomGrid(mainPlayer->getPosition().X),coordToRoomGrid(mainPlayer->getPosition().Z)),roomPath);
 }
 
 void Room::findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
@@ -410,6 +429,14 @@ void Room::findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector
         }
     }
     if (found1&&found2) {
+        if (found1index==found2index) {
+            irr::core::vector3df pushPos = rme->waypoints[found1index]->position;
+            rotMatrix.transformVect(pushPos);
+            node->updateAbsolutePosition();
+            pushPos+=node->getAbsolutePosition();
+            posList.push_back(pushPos);
+            return;
+        }
         TempWPPathList* startPathList = new TempWPPathList;
         startPathList->prev = nullptr;
         startPathList->next = nullptr;
@@ -530,4 +557,8 @@ void World::npcPathFind(const irr::core::vector3df &startPos,const irr::core::ve
     if (roomArray[RoomPos.X][RoomPos.Y]==nullptr) { std::cout<<"error with NPCpathfind: Room is null\n"; return; }
     marked = RoomPos;
     roomArray[RoomPos.X][RoomPos.Y]->findWPPath(startPos,endPos,posList);
+}
+
+void World::npcPathFindToPlayer(const irr::core::vector3df &startPos,const irr::core::vector2di &RoomPos,std::vector<irr::core::vector3df> &posList) {
+    roomArray[RoomPos.X][RoomPos.Y]->findWPPath(startPos,mainPlayer->getPosition(),posList);
 }

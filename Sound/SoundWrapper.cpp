@@ -9,9 +9,9 @@ ALCdevice* Sound::device = nullptr;
 ALCcontext* Sound::context = nullptr;
 unsigned int Sound::bufferAmount = 0;
 unsigned int Sound::frozenCategories = 0;
-ALuint Sound::sources[sourceCount];
-Sound* Sound::playingSounds[sourceCount];
-bool Sound::pauseState[sourceCount];
+ALuint Sound::sources[SOURCECOUNT];
+Sound* Sound::playingSounds[SOURCECOUNT];
+bool Sound::pauseState[SOURCECOUNT];
 
 std::vector<Sound*> Sound::loadedSounds;
 irr::core::vector3df Sound::listenerPos;
@@ -34,7 +34,7 @@ bool Sound::initSounds() {
 		}
 		alcMakeContextCurrent(context);
 
-		for (unsigned char i=0;i<sourceCount;i++) {
+		for (unsigned char i=0;i<SOURCECOUNT;i++) {
 			alGenSources(1,&Sound::sources[i]);
 			alSourceStop(Sound::sources[i]);
 			ALenum error = alGetError();
@@ -73,7 +73,7 @@ void Sound::killSounds() {
 		delete Sound::loadedSounds[i];
 	}
 
-	for (unsigned int i=0;i<sourceCount;i++) {
+	for (unsigned int i=0;i<SOURCECOUNT;i++) {
 		alDeleteSources(1,&Sound::sources[i]);
 	}
 
@@ -217,7 +217,7 @@ unsigned char Sound::playSound(const irr::core::vector3df &sourcePos,float near,
 	ALuint selectedSound = 0;
 	bool foundCandidate = false;
 	unsigned char i;
-	for (i=0;i<sourceCount;i++) {
+	for (i=0;i<SOURCECOUNT;i++) {
 		ALint state;
 
 		alGetSourcei(Sound::sources[i], AL_SOURCE_STATE, &state);
@@ -253,7 +253,7 @@ unsigned char Sound::playSound(bool isLooping,float gain) {
 	ALuint selectedSound = 0;
 	bool foundCandidate = false;
 	unsigned char i;
-	for (i=0;i<sourceCount;i++) {
+	for (i=0;i<SOURCECOUNT;i++) {
 		ALint state;
 
 		alGetSourcei(sources[i], AL_SOURCE_STATE, &state);
@@ -284,7 +284,7 @@ unsigned char Sound::playSound(bool isLooping,float gain) {
 
 void Sound::pauseSound(unsigned char sourceNum) {
 	if (Sound::frozenCategories & (1<<category)) return;
-	sourceNum%=sourceCount;
+	sourceNum%=SOURCECOUNT;
 	if (Sound::playingSounds[sourceNum]==this) {
 		Sound::pauseState[sourceNum]=true;
 		alSourcePause(Sound::sources[sourceNum]);
@@ -293,7 +293,7 @@ void Sound::pauseSound(unsigned char sourceNum) {
 
 void Sound::pauseSound() {
 	if (Sound::frozenCategories & (1<<category)) return;
-	for (unsigned char i=0;i<sourceCount;i++) {
+	for (unsigned char i=0;i<SOURCECOUNT;i++) {
 		if (Sound::playingSounds[i]==this) pauseSound(i);
 	}
 }
@@ -302,7 +302,7 @@ void Sound::freezeCategory(unsigned char categ) {
 	if (categ>31) return;
 	if (!(Sound::frozenCategories & (1<<categ))) {
 		Sound::frozenCategories = (Sound::frozenCategories | (1<<categ));
-		for (unsigned int i=0;i<sourceCount;i++) {
+		for (unsigned int i=0;i<SOURCECOUNT;i++) {
 			if (Sound::playingSounds[i]!=nullptr) {
 				if (Sound::playingSounds[i]->category==categ) {
 					ALint state;
@@ -322,7 +322,7 @@ void Sound::unfreezeCategory(unsigned char categ) {
 	if (categ>31) return;
 	if (Sound::frozenCategories & (1<<categ)) {
 		Sound::frozenCategories = (Sound::frozenCategories ^ (1<<categ));
-		for (unsigned int i=0;i<sourceCount;i++) {
+		for (unsigned int i=0;i<SOURCECOUNT;i++) {
 			if (Sound::playingSounds[i]!=nullptr) {
 				if (Sound::playingSounds[i]->category==categ) {
 					ALint state;
@@ -340,7 +340,7 @@ void Sound::unfreezeCategory(unsigned char categ) {
 
 void Sound::stopSound(unsigned char sourceNum) {
 	if (Sound::frozenCategories & (1<<category)) return;
-	sourceNum%=sourceCount;
+	sourceNum%=SOURCECOUNT;
 	if (Sound::playingSounds[sourceNum]==this) {
 		Sound::pauseState[sourceNum]=false;
 		alSourceStop(Sound::sources[sourceNum]);
@@ -350,14 +350,14 @@ void Sound::stopSound(unsigned char sourceNum) {
 
 void Sound::stopSound() {
 	if (Sound::frozenCategories & (1<<category)) return;
-	for (unsigned char i=0;i<sourceCount;i++) {
+	for (unsigned char i=0;i<SOURCECOUNT;i++) {
 		stopSound(i);
 	}
 }
 
 void Sound::resumeSound(unsigned char sourceNum) {
 	if (Sound::frozenCategories & (1<<category)) return;
-	sourceNum%=sourceCount;
+	sourceNum%=SOURCECOUNT;
 	if (Sound::playingSounds[sourceNum]==this) {
 		ALint state;
 		alGetSourcei(Sound::sources[sourceNum],AL_SOURCE_STATE,&state);
@@ -371,14 +371,14 @@ void Sound::resumeSound(unsigned char sourceNum) {
 
 void Sound::resumeSound() {
 	if (Sound::frozenCategories & (1<<category)) return;
-	for (unsigned char i=0;i<sourceCount;i++) {
+	for (unsigned char i=0;i<SOURCECOUNT;i++) {
 		if (Sound::playingSounds[i]==this) resumeSound(i);
 	}
 }
 
 void Sound::moveSource(unsigned char sourceNum,const irr::core::vector3df& sourcePos) {
     if (Sound::frozenCategories & (1<<category)) return;
-    sourceNum%=sourceCount;
+    sourceNum%=SOURCECOUNT;
     if (Sound::playingSounds[sourceNum]==this) {
         alSource3f(Sound::sources[sourceNum],AL_POSITION,sourcePos.X,sourcePos.Y,sourcePos.Z);
     }
@@ -389,7 +389,7 @@ bool Sound::isPlaying() {
 	if (this == nullptr) return false;
 	if (Sound::frozenCategories & (1<<category)) return false;
 
-	for (unsigned char i=0;i<sourceCount;i++) {
+	for (unsigned char i=0;i<SOURCECOUNT;i++) {
 		if (Sound::playingSounds[i]==this) {
 			ALint state;
 
@@ -423,7 +423,7 @@ irr::core::vector3df Sound::getListenerPos() {
 void Sound::processDrops() {
 	for (unsigned int i=0;i<Sound::loadedSounds.size();i++) {
 		if (Sound::loadedSounds[i]->grabs<=0) {
-			for (unsigned char j=0;j<sourceCount;j++) {
+			for (unsigned char j=0;j<SOURCECOUNT;j++) {
 				if (Sound::playingSounds[i]==Sound::loadedSounds[i]) {
 					alSourceStop(Sound::sources[j]);
 					Sound::playingSounds[j] = nullptr;

@@ -2,6 +2,7 @@
 #define PLAYER_H_INCLUDED
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include "KinematicCharacterController/KinematicCharacterController.h"
 
 const unsigned int inventory_size = 10;
 
@@ -11,13 +12,16 @@ class Player {
         irr::scene::ISceneManager* irrSmgr;
         irrDynamics* dynamics;
         MainEventReceiver* irrReceiver;
-        btVector3 prevLinearVelocity;
+        btVector3 linearVelocity;
         float walkingSpeed;
         //irr::scene::ICameraSceneNode* Camera;
+//#if 0
         btRigidBody* capsule;
-#if defined(PLAYER_PENETRATION_RECOVER)
+//#endif
+//#if defined(PLAYER_PENETRATION_RECOVER)
         btPairCachingGhostObject* ghostObject;
-#endif
+        CharacterController* controller;
+//#endif
         irr::core::vector3df selfRotation;
 
         Item* inventory[inventory_size];
@@ -91,7 +95,7 @@ class Player {
         irr::scene::IMeshSceneNode* testNode;
 
         irr::core::vector3df getPosition() {
-            return irr::core::vector3df(capsule->getCenterOfMassPosition()[0],capsule->getCenterOfMassPosition()[1],capsule->getCenterOfMassPosition()[2]);
+            return btToIrrVec(controller->getPosition());//irr::core::vector3df();//capsule->getCenterOfMassPosition()[0],capsule->getCenterOfMassPosition()[1],capsule->getCenterOfMassPosition()[2]);
         }
 
         bool getLastMouseDown(unsigned char index) {

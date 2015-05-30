@@ -36,28 +36,53 @@ void NPC096::update() {
     chasingPlayer = true;
     if (roomList.size()>0) {
         if (waypointList.size()>0) {
-            irr::core::vector3df wpDist = node->getPosition()-waypointList[wpListIndex];
-            wpDist.Y=0.f;
-            if (wpDist.getLength()<0.25f*collider->getLinearVelocity().distance(btVector3())*NPC::owner->getFPSfactor()) {
-                wpListIndex++;
-                if (wpListIndex>=waypointList.size()) {
-                    waypointList.clear();
-                    std::cout<<"096 this Room is done, go to next one\n";
-                } else {
+            boxNode->setPosition(waypointList[waypointList.size()-1]);
+            if ((roomList[rListIndex].X==coordToRoomGrid(getPosition().X)) && (roomList[rListIndex].Y==coordToRoomGrid(getPosition().Z))) {
+                currRoom=roomList[rListIndex];
+            }
+            if (currRoom==roomList[rListIndex]) {
+                irr::core::vector3df wpDist = node->getPosition()-waypointList[wpListIndex];
+                wpDist.Y=0.f;
+                if (wpDist.getLength()<0.25f*collider->getLinearVelocity().distance(btVector3())) {
+                    wpListIndex++;
+                    if (wpListIndex>=waypointList.size()) {
+                        waypointList.clear(); std::cout<<"CLEAR1\n";
+                        std::cout<<"096 this Room is done, go to next one\n";
+                    } else {
 
+                    }
+                }
+                if (waypointList.size()>0) {
+                    node->updateAbsolutePosition();
+                    collider->setLinearVelocity((irrToBtVec((waypointList[wpListIndex]-node->getAbsolutePosition()).normalize())*150.f));
+                    collider->setFriction(0.f);
+                    collider->setDamping(0.f,0.f);
+                    collider->setRestitution(0.f);
+                    collider->forceActivationState(ACTIVE_TAG); collider->activate();
+                    //node->updateAbsolutePosition();
+                    //node->setPosition(node->getAbsolutePosition()+(waypointList[wpListIndex]-node->getAbsolutePosition()).normalize());
+                    //std::cout<<waypointList[wpListIndex].Y<<"\n";
+                }
+            } else {
+                std::cout<<"here we go\n";
+                node->updateAbsolutePosition();
+                if (rListIndex>0) {
+                    irr::core::vector3df doorPos = irr::core::vector3df(roomList[rListIndex].X*204.8f*RoomScale,5.f,roomList[rListIndex].Y*204.8f*RoomScale);
+                    doorPos=(doorPos*0.51f)+irr::core::vector3df(roomList[rListIndex-1].X*204.8f*RoomScale,5.f,roomList[rListIndex-1].Y*204.8f*RoomScale)*0.49f;
+
+                    collider->setLinearVelocity((irrToBtVec((doorPos-node->getAbsolutePosition()).normalize())*150.f));
+                    collider->setFriction(0.f);
+                    collider->setDamping(0.f,0.f);
+                    collider->setRestitution(0.f);
+                    collider->forceActivationState(ACTIVE_TAG); collider->activate();
+                } else {
+                    currRoom=roomList[rListIndex];
                 }
             }
-            if (waypointList.size()>0) {
-                node->updateAbsolutePosition();
-                collider->setLinearVelocity((irrToBtVec((waypointList[wpListIndex]-node->getAbsolutePosition()).normalize())*75.f));
-                collider->setFriction(0.f);
-                collider->setDamping(0.f,0.f);
-                //node->updateAbsolutePosition();
-                //node->setPosition(node->getAbsolutePosition()+(waypointList[wpListIndex]-node->getAbsolutePosition()).normalize());
-                //std::cout<<waypointList[wpListIndex].Y<<"\n";
-            }
+            searchTimer-=0.1f;
         }
         if (waypointList.size()==0) {
+            collider->setLinearVelocity(btVector3(0,0,0));
             std::cout<<"096 waypointlist empty\n";
             wpListIndex = 0;
             rListIndex++;
@@ -65,23 +90,44 @@ void NPC096::update() {
                 roomList.clear();
                 std::cout<<"096 end of search\n";
             } else {
-                currRoom = roomList[rListIndex];
+                //currRoom = roomList[rListIndex];
                 if (rListIndex<roomList.size()-1) {
-                    owner->npcPathFind( irr::core::vector3df((roomList[rListIndex-1].X+roomList[rListIndex].X)*204.8f*RoomScale*0.5f,0,(roomList[rListIndex-1].Y+roomList[rListIndex].Y)*204.8f*RoomScale*0.5f),
+                    owner->npcPathFind( getPosition(),//irr::core::vector3df((roomList[rListIndex-1].X+roomList[rListIndex].X)*204.8f*RoomScale*0.5f,0,(roomList[rListIndex-1].Y+roomList[rListIndex].Y)*204.8f*RoomScale*0.5f),
                                         irr::core::vector3df((roomList[rListIndex+1].X+roomList[rListIndex].X)*204.8f*RoomScale*0.5f,0,(roomList[rListIndex+1].Y+roomList[rListIndex].Y)*204.8f*RoomScale*0.5f),
-                                        currRoom,waypointList);
+                                        roomList[rListIndex],waypointList);
+                    //searchTimer-=1.f;
                     if (waypointList.size()<=0) {
                         std::cout<<"error detected here!\n";
                     } else {
                         std::cout<<"waypointlist.size() = "<<waypointList.size()<<"\n";
+                        for (int i=0;i<waypointList.size();i++) {
+                            waypointList[i].Y+=5.f;
+                        }
                     }
                 } else {
-
+                    owner->npcPathFindToPlayer( getPosition(),//irr::core::vector3df((roomList[rListIndex-1].X+roomList[rListIndex].X)*204.8f*RoomScale*0.5f,0,(roomList[rListIndex-1].Y+roomList[rListIndex].Y)*204.8f*RoomScale*0.5f),
+                                        roomList[rListIndex],waypointList);
+                    //searchTimer-=1.f;
+                    if (waypointList.size()<=0) {
+                        std::cout<<"error detected here!\n";
+                    } else {
+                        std::cout<<"waypointlist.size() = "<<waypointList.size()<<"\n";
+                        for (int i=0;i<waypointList.size();i++) {
+                            waypointList[i].Y+=5.f;
+                        }
+                    }
                 }
             }
         }
+        std::cout<<"SEARCHTIMER:"<<searchTimer<<"\n";
+        if (searchTimer<=0.f) {
+            roomList.clear();
+            //waypointList.clear(); std::cout<<"CLEAR2\n";
+        }
     } else {
-        waypointList.clear();
+        collider->setLinearVelocity(btVector3(0,0,0));
+
+        waypointList.clear(); std::cout<<"CLEAR3\n";
         wpListIndex = 0;
         rListIndex = 0;
         std::cout<<"096 Roomlist empty\n";
@@ -105,7 +151,7 @@ void NPC096::update() {
                             roomList.push_back(irr::core::vector2di(tempRoomList[i].X,tempRoomList[i].Y-add));
                         }
                     }
-                } else {
+                } else if (tempRoomList[i].Y==tempRoomList[i+1].Y) {
                     if (tempRoomList[i].X<tempRoomList[i+1].X) {
                         for (int j=tempRoomList[i].X+1;j<tempRoomList[i+1].X;j++) {
                             add++;
@@ -125,106 +171,44 @@ void NPC096::update() {
             if (std::abs(roomList[i].X-roomList[i+1].X)>1 || std::abs(roomList[i].Y-roomList[i+1].Y)>1) {
                 std::cout<<"error generating final 096 Roomlist: "<<(roomList[i].X-roomList[i+1].X)<<" "<<(roomList[i].Y-roomList[i+1].Y)<<"\n";
                 mustFix = true;
+                break;
             }
         }
-        if (mustFix) { std::terminate(); }
+        //if (mustFix) { std::terminate(); }
         std::cout<<" "<<tempRoomList.size()<<" vs "<<roomList.size()<<"\n";
-        teleport(irr::core::vector3df(roomList[0].X*204.8f*RoomScale,10.f,roomList[0].Y*204.8f*RoomScale));
-    }
-    /*if (chasingPlayer) {
-        if (roomList.size()>0) {
-            if (waypointList.size()>0) {
-                if (node->getPosition().getDistanceFromSQ(waypointList[wpListIndex])<3.f*RoomScale) {
-                    wpListIndex++;
-                    if (wpListIndex>=waypointList.size()) {
-                        waypointList.clear();
-                        std::cout<<"096 this Room is done, go to next one\n";
-                    } else {
 
-                    }
-                }
-                if (waypointList.size()>0) {
-                    node->updateAbsolutePosition();
-                    node->setPosition(node->getAbsolutePosition()+(waypointList[wpListIndex]-node->getAbsolutePosition()).normalize());
-                    std::cout<<waypointList[wpListIndex].Y<<"\n";
-                }
-            } else if (rShift<rDist) {
-                std::cout<<"adasdasdasqwew\n";
-                rShift++;
-                irr::core::vector2di prevCurrRoom = currRoom;
-                switch (rDir) {
-                    case 0:
-                        currRoom.X++;
-                    break;
-                    case 1:
-                        currRoom.Y--;
-                    break;
-                    case 2:
-                        currRoom.X--;
-                    break;
-                    case 3:
-                        currRoom.Y++;
-                    break;
-                }
-                std::cout<<((currRoom-prevCurrRoom)).X<<" ... "<<((currRoom-prevCurrRoom)).Y<<"\n";
-                owner->NPCPathFind(node->getAbsolutePosition(),irr::core::vector3df((currRoom+(currRoom-prevCurrRoom)).X*204.8*RoomScale,0,(currRoom+(currRoom-prevCurrRoom)).Y*204.8*RoomScale),currRoom,waypointList);
-                if (waypointList.size()<=0) {
-                    std::cout<<"error detected here!11\n";
-                    //std::terminate();
-                }
-                wpListIndex = 0;
-            } else {
-                std::cout<<"096 waypointlist empty\n";
-                wpListIndex = 0;
-                rListIndex++;
-                if (rListIndex>=roomList.size()) {
-                    roomList.clear();
-                    std::cout<<"096 end of search\n";
-                } else {
-                    currRoom = roomList[rListIndex];
-                    if (rListIndex<roomList.size()-1) {
-                        rDist = std::max(std::abs(roomList[rListIndex].X-roomList[rListIndex+1].X),std::abs(roomList[rListIndex].Y-roomList[rListIndex+1].Y));
-                        if (roomList[rListIndex].Y>roomList[rListIndex+1].Y) { rDir = 1; }
-                        if (roomList[rListIndex+1].Y>roomList[rListIndex].Y) { rDir = 3; }
-                        if (roomList[rListIndex].X>roomList[rListIndex+1].X) { rDir = 2; }
-                        if (roomList[rListIndex+1].X>roomList[rListIndex].X) { rDir = 0; }
-                        rShift = 0;
-                        owner->NPCPathFind(node->getPosition(),irr::core::vector3df(roomList[rListIndex+1].X,0,roomList[rListIndex+1].Y),currRoom,waypointList);
-                        if (waypointList.size()<=0) {
-                            std::cout<<"error detected here!\n";
-                        }
-                    } else {
-
-                    }
-                }
-            }
-        } else {
-            waypointList.clear();
-            wpListIndex = 0;
-            rListIndex = 0;
-            std::cout<<"096 Roomlist empty\n";
-            currRoom = irr::core::vector2di(coordToRoomGrid(node->getPosition().X),coordToRoomGrid(node->getPosition().Z));
-            owner->getRoomListToPlayer(currRoom,roomList);
-            node->setPosition(irr::core::vector3df(roomList[0].X*204.8f*RoomScale,0.f,roomList[0].Y*204.8f*RoomScale));
-            if (roomList.size()>1) {
-                rShift = 0;
-                rDist = std::max(std::abs(roomList[0].X-roomList[1].X),std::abs(roomList[0].Y-roomList[1].Y));
-                if (roomList[0].Y>roomList[1].Y) { rDir = 1; }
-                if (roomList[1].Y>roomList[0].Y) { rDir = 3; }
-                if (roomList[0].X>roomList[1].X) { rDir = 2; }
-                if (roomList[1].X>roomList[0].X) { rDir = 0; }
-            }
+        while (roomList[rListIndex].getDistanceFrom(roomList[roomList.size()-1])>6) {
+            rListIndex++;
         }
-    }*/
+
+        if ((irr::core::vector3df(roomList[rListIndex].X*204.8f*RoomScale,10.f,roomList[rListIndex].Y*204.8f*RoomScale)-(node->getPosition())).getLength()>205.f*RoomScale) {
+            teleport(irr::core::vector3df(roomList[rListIndex].X*204.8f*RoomScale,10.f,roomList[rListIndex].Y*204.8f*RoomScale));
+        }
+
+        if (rListIndex<roomList.size()-2 && roomList.size()>1) {
+            owner->npcPathFind( getPosition(),//irr::core::vector3df((roomList[rListIndex-1].X+roomList[rListIndex].X)*204.8f*RoomScale*0.5f,0,(roomList[rListIndex-1].Y+roomList[rListIndex].Y)*204.8f*RoomScale*0.5f),
+                                irr::core::vector3df((roomList[rListIndex+1].X+roomList[rListIndex].X)*204.8f*RoomScale*0.5f,0,(roomList[rListIndex+1].Y+roomList[rListIndex].Y)*204.8f*RoomScale*0.5f),
+                                roomList[rListIndex],waypointList);
+        } else {
+            owner->npcPathFindToPlayer( getPosition(),//irr::core::vector3df((roomList[rListIndex-1].X+roomList[rListIndex].X)*204.8f*RoomScale*0.5f,0,(roomList[rListIndex-1].Y+roomList[rListIndex].Y)*204.8f*RoomScale*0.5f),
+                                roomList[rListIndex],waypointList);
+        }
+
+        for (int i=0;i<waypointList.size();i++) {
+            waypointList[i].Y+=5.f;
+        }
+
+        searchTimer = 60.f;
+    }
 }
 
 void NPC096::updateModel() {
     irr::core::vector3df rot;
     irr::core::vector3df pointAt;
-    pointAt = node->getPosition()-waypointList[wpListIndex];
+    pointAt = btToIrrVec(collider->getLinearVelocity());
     pointAt.Y = 0.f;
     if (pointAt.getLength()>30.f*RoomScale) {
-        rot.Y = (std::atan2(pointAt.X,pointAt.Z)*irr::core::RADTODEG)+180.f;
+        rot.Y = (std::atan2(pointAt.X,pointAt.Z)*irr::core::RADTODEG);
 
         while (rot.Y>180.f) {
             rot.Y-=360.f;
