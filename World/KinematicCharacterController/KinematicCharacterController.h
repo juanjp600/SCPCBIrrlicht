@@ -90,6 +90,8 @@ protected:
    void updateTargetPositionBasedOnCollision (const btVector3& hit_normal, btScalar tangentMag = btScalar(0.0), btScalar normalMag = btScalar(1.0));
    void stepForwardAndStrafe (btCollisionWorld* collisionWorld, const btVector3& walkMove);
    void stepDown (btCollisionWorld* collisionWorld, btScalar dt);
+
+   bool movedUpwards;
 public:
    CharacterController(btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight, int upAxis = 1);
    ~CharacterController();

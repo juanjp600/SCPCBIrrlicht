@@ -324,7 +324,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
                                     btVertices[2] = btVector3(x3,y3,z3);
 								}
 								//faces that barely make a difference to the shape of the object are removed
-								if (btVertices[0].distance(btVertices[1])>5.f || btVertices[1].distance(btVertices[2])>5.f || btVertices[0].distance(btVertices[2])>5.f) {
+								if (btVertices[0].distance(btVertices[1])>5.f*RoomScale || btVertices[1].distance(btVertices[2])>5.f*RoomScale || btVertices[0].distance(btVertices[2])>5.f*RoomScale) {
 									pTriMesh->addTriangle(btVertices[0], btVertices[1], btVertices[2],true);
 								}
 							}
@@ -670,7 +670,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
         smgr->getMeshManipulator()->recalculateNormals(mesh);
         retRMesh->mesh = mesh;
         retRMesh->shape = new btBvhTriangleMeshShape(pTriMesh,true);
-        retRMesh->shape->setMargin(0.25f);
+        retRMesh->shape->setMargin(0.25f*RoomScale);
         /*btTriangleInfoMap* triangleInfoMap = new btTriangleInfoMap();
         triangleInfoMap->m_edgeDistanceThreshold = 5.0f;
 		btGenerateInternalEdgeInfo(retRMesh->shape, triangleInfoMap);*/

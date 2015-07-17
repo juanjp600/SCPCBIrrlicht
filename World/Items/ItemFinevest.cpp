@@ -46,3 +46,4 @@ bool ItemFinevest::updateItem() {
 
 void ItemFinevest::updateWearing() {}
 void ItemFinevest::drawItem() {}
+void ItemFinevest::setDrawCoords(irr::core::vector2di newCoords) {}

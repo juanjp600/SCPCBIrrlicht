@@ -46,3 +46,4 @@ bool ItemMisc::updateItem() {
 
 void ItemMisc::updateWearing() {}
 void ItemMisc::drawItem() {}
+void ItemMisc::setDrawCoords(irr::core::vector2di newCoords) {}

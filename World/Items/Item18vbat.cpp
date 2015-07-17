@@ -46,3 +46,4 @@ bool Item18vbat::updateItem() {
 
 void Item18vbat::updateWearing() {}
 void Item18vbat::drawItem() {}
+void Item18vbat::setDrawCoords(irr::core::vector2di newCoords) {}

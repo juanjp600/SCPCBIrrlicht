@@ -53,3 +53,5 @@ void ItemPaper::drawItem() {
     float scale = Item::screenHeight/1024.f;
     Item::irrDriver->draw2DImage(docTex,irr::core::recti((Item::screenWidth/2)-(width*scale/2),(Item::screenHeight/2)-(height*scale/2),(Item::screenWidth/2)+(width*scale/2),(Item::screenHeight/2)+(height*scale/2)),irr::core::recti(0,0,width,height));
 }
+
+void ItemPaper::setDrawCoords(irr::core::vector2di newCoords) {}

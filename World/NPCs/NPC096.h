@@ -4,7 +4,7 @@
 #include "NPC.h"
 #include <vector>
 
-#include "../../Sound/soundWrapper.h"
+#include "../../Sound/SoundWrapper.h"
 
 class NPC096 : public NPC {
     private:

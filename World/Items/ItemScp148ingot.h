@@ -21,11 +21,12 @@ class ItemScp148ingot : public Item {
         bool updateItem();
 		void updateWearing();
 		void drawItem();
+		void setDrawCoords(irr::core::vector2di newCoords);
 
         static ItemScp148ingot* createItemScp148ingot();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
-		
+
 		virtual std::string getInvName();
 		virtual std::string getInvImgPath();
 

@@ -65,8 +65,8 @@
 		<Unit filename="Irrlicht/CGUITTFont.cpp" />
 		<Unit filename="Irrlicht/irrDynamics.cpp" />
 		<Unit filename="Main.cpp" />
-		<Unit filename="Sound/soundWrapper.cpp" />
-		<Unit filename="Sound/soundWrapper.h" />
+		<Unit filename="Sound/SoundWrapper.cpp" />
+		<Unit filename="Sound/SoundWrapper.h" />
 		<Unit filename="World/Items/Item18vbat.cpp" />
 		<Unit filename="World/Items/Item18vbat.h" />
 		<Unit filename="World/Items/Item18vradio.cpp" />

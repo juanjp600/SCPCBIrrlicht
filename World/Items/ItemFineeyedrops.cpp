@@ -46,3 +46,4 @@ bool ItemFineeyedrops::updateItem() {
 
 void ItemFineeyedrops::updateWearing() {}
 void ItemFineeyedrops::drawItem() {}
+void ItemFineeyedrops::setDrawCoords(irr::core::vector2di newCoords) {}

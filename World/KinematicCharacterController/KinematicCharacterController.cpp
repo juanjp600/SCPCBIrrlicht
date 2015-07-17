@@ -135,18 +135,18 @@ btVector3 CharacterController::perpindicularComponent (const btVector3& directio
 CharacterController::CharacterController (btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight, int upAxis)
 {
    m_upAxis = upAxis;
-   m_addedMargin = 0.02f;
+   m_addedMargin = 0.001f;
    m_walkDirection.setValue(0,0,0);
    m_useGhostObjectSweepTest = true;
    m_ghostObject = ghostObject;
-   m_stepHeight = 1.5f;//stepHeight;
+   m_stepHeight = 0.15f;//stepHeight;
    m_turnAngle = btScalar(0.0);
    m_convexShape=convexShape;
    m_useWalkDirection = true;   // use walk direction by default, legacy behavior
    m_velocityTimeInterval = 0.0;
    m_verticalVelocity = 0.0;
    m_verticalOffset = 0.0;
-   m_gravity = 9.8f * 80.0f ; // 30G acceleration.
+   m_gravity = 9.8f * 9.0f ; // 9G acceleration.
    m_fallSpeed = 550.0f; // Terminal velocity of a sky diver in m/s.
    //m_jumpSpeed = 100.0f; // ?
    m_wasOnGround = false;
@@ -498,6 +498,7 @@ void CharacterController::preStep (  btCollisionWorld* collisionWorld)
 
    m_currentPosition = m_ghostObject->getWorldTransform().getOrigin();
    m_targetPosition = m_currentPosition;
+   movedUpwards = false;
 //   printf("m_targetPosition=%f,%f,%f\n",m_targetPosition[0],m_targetPosition[1],m_targetPosition[2]);
 }
 //---------------------------------------------------------------------------------------
@@ -516,25 +517,13 @@ void CharacterController::playerStep (  btCollisionWorld* collisionWorld, btScal
 
    m_wasOnGround = onGround();
 
-   // Update fall velocity.
-   m_verticalVelocity -= m_gravity * dt;
-   if(m_verticalVelocity > 0.0 && m_verticalVelocity > m_jumpSpeed)
-   {
-      m_verticalVelocity = m_jumpSpeed;
-   }
-   if(m_verticalVelocity < 0.0 && btFabs(m_verticalVelocity) > m_fallSpeed)
-   {
-      m_verticalVelocity = -m_fallSpeed;
-   }
-   m_verticalOffset = m_verticalVelocity * dt;
-
 
    btTransform xform;
    xform = m_ghostObject->getWorldTransform ();
 
 //   printf("walkDirection(%f,%f,%f)\n",walkDirection[0],walkDirection[1],walkDirection[2]);
 //   printf("walkSpeed=%f\n",walkSpeed);
-
+    float y0 = m_currentPosition[1];
    stepUp (collisionWorld);
    if (m_useWalkDirection) {
       stepForwardAndStrafe (collisionWorld, m_walkDirection);
@@ -553,7 +542,23 @@ void CharacterController::playerStep (  btCollisionWorld* collisionWorld, btScal
       // okay, step
       stepForwardAndStrafe(collisionWorld, move);
    }
+   movedUpwards = (y0>m_currentPosition[1]);
    stepDown (collisionWorld, dt);
+
+    // Update fall velocity.
+   if (!movedUpwards)
+   { m_verticalVelocity -= m_gravity * dt; }
+   else
+   { m_verticalVelocity = 0.0<m_verticalVelocity+0.1?0.0:m_verticalVelocity+0.1; }
+   if(m_verticalVelocity > 0.0 && m_verticalVelocity > m_jumpSpeed)
+   {
+      m_verticalVelocity = m_jumpSpeed;
+   }
+   if(m_verticalVelocity < 0.0 && btFabs(m_verticalVelocity) > m_fallSpeed)
+   {
+      m_verticalVelocity = -m_fallSpeed;
+   }
+   m_verticalOffset = m_verticalVelocity * dt;
 
    // printf("\n");
 

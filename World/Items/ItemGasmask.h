@@ -21,6 +21,7 @@ class ItemGasmask : public Item {
         bool updateItem();
         void updateWearing();
 		void drawItem();
+		void setDrawCoords(irr::core::vector2di newCoords);
 
         static ItemGasmask* createItemGasmask();
 

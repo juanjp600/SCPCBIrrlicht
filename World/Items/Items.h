@@ -8,6 +8,7 @@
 #include <string>
 
 enum class ItemTempIDs : unsigned short {
+    ITEM_NULL,
     ITEM_420,
 	ITEM_KEY1,
 	ITEM_KEY2,
@@ -75,6 +76,7 @@ class Item {
         virtual bool updateItem() =0;
 		virtual void updateWearing() =0;
         virtual void drawItem() =0;
+        virtual void setDrawCoords(irr::core::vector2di newCoords) =0;
         virtual std::string getInvName() =0;
         virtual std::string getInvImgPath() =0;
         virtual ItemTempIDs getTempID() =0;
@@ -86,13 +88,14 @@ class Item {
             return picked;
         }
 
-        virtual void Pick();
-        virtual void Unpick(irr::core::vector3df position);
+        virtual void pick();
+        virtual void unpick(irr::core::vector3df position);
 
         virtual irr::core::vector3df getOffset() =0;
 
         virtual irr::core::aabbox3df getBBox();
         virtual irr::core::matrix4 getTransform();
+        virtual irr::core::vector3df getPosition();
 
         static void setDynamics(irrDynamics* dyn);
         static void setDriver(irr::video::IVideoDriver* inDriver);

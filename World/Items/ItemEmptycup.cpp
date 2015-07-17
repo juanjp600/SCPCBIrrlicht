@@ -46,3 +46,4 @@ bool ItemEmptycup::updateItem() {
 
 void ItemEmptycup::updateWearing() {}
 void ItemEmptycup::drawItem() {}
+void ItemEmptycup::setDrawCoords(irr::core::vector2di newCoords) {}

@@ -20,7 +20,7 @@
 
 #include "ShaderCallbacks.h"
 
-const float RoomScale = 0.75f;
+const float RoomScale = 0.2f;
 
 //extern ContactAddedCallback gContactAddedCallback;
 bool CustomMaterialCombinerCallback(btManifoldPoint& cp,	const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1);
@@ -192,6 +192,8 @@ class World {
         std::vector<Item*> itemList;
         irr::scene::IMeshSceneNode* genItemNode(const std::string &meshPath,const std::string &texPath,float scale);
 
+        std::vector<class Door*> doorList;
+
 		Room* roomArray[20][20];
 
         void createMap(unsigned char zone);
@@ -240,6 +242,10 @@ class World {
         void renderLights();
 
         irr::scene::ICameraSceneNode* smCamera;
+
+        std::vector<irr::core::vector2di> drawHandIcon;
+
+        float stepsToMake = 0.f;
     public:
         //main
         World(unsigned int width,unsigned int height,bool fullscreen = false);

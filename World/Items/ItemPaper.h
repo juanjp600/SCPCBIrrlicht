@@ -21,6 +21,7 @@ class ItemPaper : public Item {
         bool updateItem();
         void updateWearing();
 		void drawItem();
+		void setDrawCoords(irr::core::vector2di newCoords);
 
         static ItemPaper* createItemPaper();
 

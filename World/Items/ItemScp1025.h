@@ -21,11 +21,12 @@ class ItemScp1025 : public Item {
         bool updateItem();
 		void updateWearing();
 		void drawItem();
+		void setDrawCoords(irr::core::vector2di newCoords);
 
         static ItemScp1025* createItemScp1025();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
-		
+
 		virtual std::string getInvName();
 		virtual std::string getInvImgPath();
 

@@ -21,11 +21,12 @@ class ItemFinevest : public Item {
         bool updateItem();
 		void updateWearing();
 		void drawItem();
+		void setDrawCoords(irr::core::vector2di newCoords);
 
         static ItemFinevest* createItemFinevest();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
-		
+
 		virtual std::string getInvName();
 		virtual std::string getInvImgPath();
 

@@ -21,11 +21,12 @@ class ItemEmptycup : public Item {
         bool updateItem();
 		void updateWearing();
 		void drawItem();
+		void setDrawCoords(irr::core::vector2di newCoords);
 
         static ItemEmptycup* createItemEmptycup();
 
         static void setMeshNode(irr::scene::IMeshSceneNode* node);
-		
+
 		virtual std::string getInvName();
 		virtual std::string getInvImgPath();
 

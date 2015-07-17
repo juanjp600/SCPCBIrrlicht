@@ -46,3 +46,4 @@ bool ItemVest::updateItem() {
 
 void ItemVest::updateWearing() {}
 void ItemVest::drawItem() {}
+void ItemVest::setDrawCoords(irr::core::vector2di newCoords) {}

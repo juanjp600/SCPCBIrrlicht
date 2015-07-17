@@ -81,17 +81,18 @@
  #ifdef NO_IRR_COMPILE_WITH_DIRECT3D_8_
  #undef _IRR_COMPILE_WITH_DIRECT3D_8_
 --- ISceneManager.h	Mon Jun 17 11:09:20 2013
-+++ ISceneManager.h	Tue May 12 16:08:07 2015
-@@ -1153,7 +1153,7 @@
++++ ISceneManager.h	Sun Jul 12 19:42:18 2015
+@@ -1153,7 +1153,8 @@
  		IVideoDriver::beginScene() and IVideoDriver::endScene(). Please note that
  		the scene is not only drawn when calling this, but also animated
  		by existing scene node animators, culling of scene nodes is done, etc. */
 -		virtual void drawAll() = 0;
 +		virtual void drawAll(f32 interpolate=1.f) = 0;
++		virtual void captureAll() = 0;
  
  		//! Creates a rotation animator, which rotates the attached scene node around itself.
  		/** \param rotationSpeed Specifies the speed of the animation in degree per 10 milliseconds.
-@@ -1653,6 +1653,10 @@
+@@ -1653,6 +1654,10 @@
  		\return True if node is not visible in the current scene, else
  		false. */
  		virtual bool isCulled(const ISceneNode* node) const =0;
@@ -103,7 +104,7 @@
  
  
 --- ISceneNode.h	Sat Nov 03 18:08:34 2012
-+++ ISceneNode.h	Tue May 12 16:06:15 2015
++++ ISceneNode.h	Tue Jul 14 14:13:38 2015
 @@ -98,6 +98,20 @@
  			}
  		}
@@ -165,14 +166,31 @@
  		an update with updateAbsolutePosition().
  		\return The current absolute position of the scene node (updated on last call of updateAbsolutePosition). */
  		virtual core::vector3df getAbsolutePosition() const
-@@ -660,6 +676,27 @@
+@@ -660,6 +676,44 @@
  				AbsoluteTransformation = getRelativeTransformation();
  		}
  
 +        virtual core::matrix4 interpolatedAbsoluteTransform(f32 interpolate=1.f)
 +        {
 +            core::matrix4 mat;
-+			mat.setRotationDegrees((RelativeRotation*interpolate)+(CapturedRotation*(1.f-interpolate)));
++            if (interpolate==1.f) {
++                mat = getRelativeTransformation();
++
++                if (Parent)
++                {
++                    mat = Parent->getAbsoluteTransformation() * mat;
++                }
++
++                return mat;
++            }
++
++            irr::core::vector3df rotationDegs = RelativeRotation-CapturedRotation;
++            while (rotationDegs.X>=180.f) { rotationDegs.X-=360.f; } while (rotationDegs.X<-180.f) { rotationDegs.X+=360.f; }
++            while (rotationDegs.Y>=180.f) { rotationDegs.Y-=360.f; } while (rotationDegs.Y<-180.f) { rotationDegs.Y+=360.f; }
++            while (rotationDegs.Z>=180.f) { rotationDegs.Z-=360.f; } while (rotationDegs.Z<-180.f) { rotationDegs.Z+=360.f; }
++            rotationDegs *= interpolate;
++
++			mat.setRotationDegrees(CapturedRotation+rotationDegs);
 +			mat.setTranslation((RelativeTranslation*interpolate)+(CapturedTranslation*(1.f-interpolate)));
 +
 +			//if (RelativeScale != core::vector3df(1.f,1.f,1.f))
@@ -193,7 +211,7 @@
  
  		//! Returns the parent of this scene node
  		/** \return A pointer to the parent. */
-@@ -812,12 +849,15 @@
+@@ -812,12 +866,15 @@
  
  		//! Relative translation of the scene node.
  		core::vector3df RelativeTranslation;
@@ -210,7 +228,7 @@
  		//! Pointer to the parent
  		ISceneNode* Parent;
 --- IVideoDriver.h	Sat Nov 03 18:08:34 2012
-+++ IVideoDriver.h	Sun Oct 19 17:58:58 2014
++++ IVideoDriver.h	Mon Jul 06 19:36:49 2015
 @@ -200,6 +200,7 @@
  						case EMF_POLYGON_OFFSET:
  							material.PolygonOffsetDirection = Material.PolygonOffsetDirection;
@@ -228,17 +246,26 @@
  	public:
  
  		//! Applications must call this method before performing any rendering.
-@@ -1440,6 +1443,10 @@
- 		scene::ISceneManager::setAmbientLight().
+@@ -1441,6 +1444,10 @@
  		\param color New color of the ambient light. */
  		virtual void setAmbientLight(const SColorf& color) =0;
-+
+ 
 +		SColorf getAmbientLight() {
 +            return AmbientLight;
 +		};
- 
++
  		//! Only used by the engine internally.
  		/** Passes the global material flag AllowZWriteOnTransparent.
+ 		Use the SceneManager attribute to set this value from your app.
+@@ -1462,6 +1469,8 @@
+ 		*/
+ 		virtual void convertColor(const void* sP, ECOLOR_FORMAT sF, s32 sN,
+ 				void* dP, ECOLOR_FORMAT dF) const =0;
++
++        irr::scene::ISceneNode* currentlyRenderedNode;
+ 	};
+ 
+ } // end namespace video
 --- SMaterial.h	Sat Nov 03 18:08:34 2012
 +++ SMaterial.h	Sun Oct 19 18:06:01 2014
 @@ -366,7 +366,7 @@

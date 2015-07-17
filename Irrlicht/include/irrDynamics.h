@@ -39,8 +39,7 @@ class irrDynamics
 		  * to call this method prior to drawing the next frame.
 		  * \note If you don't call this method, nothing's gonna happen/move.
 		  * \param curTimeStamp The current timestamp in milliseconds. Use ITimer::getRealTime() or anything similar.*/
-		void simStep(irr::u32 curTimeStamp,float prec=1.f);
-		void resetTimer(irr::u32 curTimeStamp);
+		void simStep(irr::f32 elapsedTime,float prec=1.f);
 		//! Terminate physics and free resources
 		/** Once done with simulating physics, this method removes all bullet representations of your scene nodes,
 		  * constraints and the entire sim world. Suitable to be called when your application exits.*/

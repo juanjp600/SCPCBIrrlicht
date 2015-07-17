@@ -26,6 +26,8 @@ class Player {
 
         Item* inventory[inventory_size];
         unsigned char selectedItem = inventory_size;
+        unsigned char prevSelectedItem = inventory_size;
+        bool temporarySelection = false;
         unsigned char wearingGasMask = inventory_size;
         unsigned char wearing714 = inventory_size;
 
@@ -75,10 +77,10 @@ class Player {
         float blinkTimer=100.0,stamina=100.0;
 
         bool addToInventory(Item* it);
-        Item* takeFromInventory(unsigned char slot);
+        Item* takeFromInventory(unsigned char slot,bool rmove=true);
         unsigned char moveToSlot(unsigned char srcSlot,unsigned char destSlot);
 
-        void selectItem(unsigned char index);
+        void selectItem(unsigned char index,bool temporary=false);
         void selectGasMask(Item* it);
         void select714(Item* it);
         bool drawSelectedItem();
@@ -104,8 +106,11 @@ class Player {
 
 		const irr::scene::SViewFrustum* getViewFrustum();
 
-		std::string getItemName(unsigned char slot);
+		/*std::string getItemName(unsigned char slot);
 		std::string getItemInvImg(unsigned char slot);
+		ItemTempIDs getItemTempID(unsigned char slot);*/
+		unsigned char getSelectedItem();
+		void selectPrevItem();
 
 		bool noclip = false;
 };

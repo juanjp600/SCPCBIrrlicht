@@ -206,9 +206,6 @@ inline core::array<u8> getUnicodeBOM(EUTF_ENCODE mode)
 		case EUTFE_UTF32_LE:
 			COPY_ARRAY(BOM_ENCODE_UTF32_LE, BOM_ENCODE_UTF32_LEN);
 			break;
-        default:
-
-        break;
 	}
 	return ret;
 
@@ -261,7 +258,7 @@ public:
 				_set(c);
 				return *this;
 			}
-
+			
 			//! Increments the value by 1.
 			//! \return Myself.
 			_ustring16_iterator_access& operator++()
@@ -396,7 +393,7 @@ public:
 					return unicode::toUTF32(a[pos], a[pos + 1]);
 				}
 			}
-
+			
 			//! Sets a uchar32_t at our current position.
 			void _set(uchar32_t c)
 			{
@@ -709,7 +706,7 @@ public:
 			//! Moves the iterator to the end of the string.
 			void toEnd()
 			{
-				//const uchar16_t* a = ref->c_str();
+				const uchar16_t* a = ref->c_str();
 				pos = ref->size_raw();
 			}
 
@@ -739,7 +736,7 @@ public:
 			typedef typename _Base::distance_type distance_type;
 			typedef access pointer;
 			typedef access reference;
-
+			
 			using _Base::pos;
 			using _Base::ref;
 
@@ -2037,7 +2034,7 @@ public:
 
 		// TODO: Check for near overflow values.
 		//if (begin > ustring16<TAlloc>::npos - length)
-
+		
 		// Clamp to the string length.
 		if ((length + begin) > len)
 			length = len - begin;
@@ -2118,7 +2115,7 @@ public:
 	}
 #endif
 
-
+	
 	//! Appends a number to this ustring16.
 	//! \param c Number to append.
 	//! \return A reference to our current string.
@@ -2250,7 +2247,7 @@ public:
 
 			return *this;
 		}
-
+		
 		// Determine the delta.
 		size_t delta = replace_size - other_size;
 
@@ -2981,7 +2978,7 @@ public:
 		if (endian != unicode::EUTFEE_NATIVE && getEndianness() != endian)
 		{
 			for (size_t i = 0; i <= used; ++i)
-				*(ptr+1) = unicode::swapEndian16(*ptr);
+				*ptr++ = unicode::swapEndian16(*ptr);
 		}
 		ret.set_used(used + (addBOM ? unicode::BOM_UTF16_LEN : 0));
 		ret.push_back(0);

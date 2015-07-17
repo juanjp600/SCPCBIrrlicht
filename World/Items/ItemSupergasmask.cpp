@@ -58,3 +58,5 @@ void ItemSupergasmask::drawItem() {
     unsigned short height = maskTex->getSize().Height;
     Item::irrDriver->draw2DImage(maskTex,irr::core::recti(0,(Item::screenHeight/2)-((height/2)*screenWidth/screenHeight*0.7f),Item::screenWidth,(Item::screenHeight/2)+((height/2)*screenWidth/screenHeight*0.7f)),irr::core::recti(0,0,width,height),nullptr,nullptr,true);
 }
+
+void ItemSupergasmask::setDrawCoords(irr::core::vector2di newCoords) {}

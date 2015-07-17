@@ -46,3 +46,4 @@ bool ItemFineradio::updateItem() {
 
 void ItemFineradio::updateWearing() {}
 void ItemFineradio::drawItem() {}
+void ItemFineradio::setDrawCoords(irr::core::vector2di newCoords) {}

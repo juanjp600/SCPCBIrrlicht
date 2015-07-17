@@ -46,3 +46,4 @@ bool ItemHand::updateItem() {
 
 void ItemHand::updateWearing() {}
 void ItemHand::drawItem() {}
+void ItemHand::setDrawCoords(irr::core::vector2di newCoords) {}

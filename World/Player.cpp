@@ -1,4 +1,5 @@
 #include "World.h"
+#include "Items/Items.h"
 #include "Player.h"
 
 Player::Player(World* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainEventReceiver* receiver,float iheight,float iradius,float mass) {
@@ -40,7 +41,7 @@ Player::Player(World* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
 
 //#if 0
     //Add capsule
-    capsule = dynamics->addPlayerColliderObject(camera,height,radius,mass,1,1);//dynamics->addCapsuleObject(camera,height,radius,mass,~0,~0);//;
+    capsule = dynamics->addPlayerColliderObject(camera,height*0.95f,radius,mass,1,1);//dynamics->addCapsuleObject(camera,height,radius,mass,~0,~0);//;
     capsule->setAngularFactor(btVector3(0,0,0)); //don't let the capsule rotate until the Player dies
     capsule->setSleepingThresholds (0.0, 0.0);
     capsule->setGravity(btVector3(0.f,-450.f*RoomScale,0.f));
@@ -221,7 +222,7 @@ void Player::update() {
     //float dir = 0.f;
     float prevShake = shake;
     if (shakeFactor>0.f) {
-        shake+=std::max(std::min(shakeFactor*0.15f,10.0f),6.f);
+        shake+=shakeFactor;
     }
     while (shake>720.f) shake-=720.f;
     while (shake<0.f) shake+=720.f;
@@ -289,14 +290,16 @@ void Player::update() {
         d.Y = 0.f;
         d.Z = -std::sin((dir+yaw-90.f)*irr::core::DEGTORAD);
         d = d.normalize();
-        d *= walkSpeed*0.025f;
-        shakeFactor = (walkSpeed/13.f)*(walkSpeed/13.f)*(walkSpeed/13.f)*60.f;
+        d *= walkSpeed*0.025f*RoomScale/0.75f;
+        shakeFactor = sqrt(walkSpeed/13.f)*7.f;
+        //std::cout<<"::: "<<shakeFactor<<"\n";
         if ((prevShake<=270.f && shake>270.f) || (prevShake<=630.f && shake>630.f)) {
             unsigned char chosen = rand()%4;
             stepSound[owner->pickPlayerTriangle()][walkSpeed>13.f][chosen]->playSound(false,std::min(walkSpeed/13.f,1.f));
         }
     } else {
         d = -btToIrrVec(linearVelocity);
+        stamina=std::min(stamina+0.15f,100.f);
     }
     linearVelocity = (linearVelocity*0.8f)+irrToBtVec(d*0.2f);
     controller->setWalkDirection(linearVelocity);
@@ -749,9 +752,9 @@ void Player::updateHead() {
 			camera->setPosition(irr::core::vector3df(Point[0],Point[1]+(height/2.f)-(radius/1.5f),Point[2]));
 		}
 #endif
-        camera->setPosition(btToIrrVec(controller->getPosition())+irr::core::vector3df(0.f,(height*0.5f)-(radius*0.666f),0.f));
+        camera->setPosition(btToIrrVec(controller->getPosition())+irr::core::vector3df(0.f,(height*0.55f)-(radius*0.666f),0.f));
 		camera->updateAbsolutePosition();
-		camera->setPosition(camera->getAbsolutePosition()+irr::core::vector3df(0.f,std::sin(shake*irr::core::DEGTORAD)*(0.4f-(crouchState*0.4f)),0.f));
+		camera->setPosition(camera->getAbsolutePosition()+irr::core::vector3df(0.f,std::sin(shake*irr::core::DEGTORAD)*RoomScale/0.75f*(0.4f-(crouchState*0.4f)),0.f));
 	}
 	//std::cout<<camera->getAbsolutePosition().X<<" "<<camera->getAbsolutePosition().Y<<" "<<camera->getAbsolutePosition().Z<<"\n";
 
@@ -798,19 +801,21 @@ bool Player::addToInventory(Item* it) {
     for (irr::u32 i=0;i<inventory_size;i++) {
         if (inventory[i]==nullptr) {
             inventory[i]=it;
-            it->Pick();
+            it->pick();
             return true;
         }
     }
     return false;
 }
-Item* Player::takeFromInventory(unsigned char slot) {
+Item* Player::takeFromInventory(unsigned char slot,bool rmove) {
 	slot%=inventory_size;
 	if (inventory[slot]!=nullptr) {
-		camera->updateAbsolutePosition();
-		inventory[slot]->Unpick(camera->getAbsolutePosition());
-		Item* it = inventory[slot];
-		inventory[slot]=nullptr;
+        Item* it = inventory[slot];
+        if (rmove) {
+            camera->updateAbsolutePosition();
+            inventory[slot]->unpick(camera->getAbsolutePosition());
+            inventory[slot]=nullptr;
+        }
 		return it;
 	}
 	return nullptr;
@@ -887,7 +892,7 @@ unsigned char World::pickPlayerTriangle(irr::core::vector3df* intersec,const irr
 	return materialType;
 }
 
-
+/*
 std::string Player::getItemName(unsigned char slot) {
 	slot%=inventory_size;
 	if (inventory[slot]==nullptr) return std::string("");
@@ -899,6 +904,13 @@ std::string Player::getItemInvImg(unsigned char slot) {
 	if (inventory[slot]==nullptr) return std::string("");
 	return inventory[slot]->getInvImgPath();
 }
+
+ItemTempIDs Player::getItemTempID(unsigned char slot) {
+    slot%=inventory_size;
+    if (inventory[slot]==nullptr) return ItemTempIDs::ITEM_NULL;
+    return inventory[slot]->getTempID();
+}
+*/
 
 unsigned char Player::moveToSlot(unsigned char srcSlot,unsigned char destSlot) {
 	srcSlot%=inventory_size; destSlot%=inventory_size;
@@ -913,8 +925,18 @@ unsigned char Player::moveToSlot(unsigned char srcSlot,unsigned char destSlot) {
 	}
 }
 
-void Player::selectItem(unsigned char index) {
+void Player::selectItem(unsigned char index,bool temporary) {
+    prevSelectedItem = selectedItem;
     selectedItem = index;
+    temporarySelection = temporary;
+}
+
+void Player::selectPrevItem() {
+    if (temporarySelection) {
+        selectedItem = prevSelectedItem;
+        prevSelectedItem = inventory_size;
+        temporarySelection = false;
+    }
 }
 
 void Player::selectGasMask(Item* it) {
@@ -966,4 +988,8 @@ bool Player::drawSelectedItem() {
     } else {
         return false;
     }
+}
+
+unsigned char Player::getSelectedItem() {
+    return selectedItem;
 }

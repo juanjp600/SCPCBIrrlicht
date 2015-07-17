@@ -869,16 +869,18 @@ void World::createMap(unsigned char zone) {
 			if (roomTemp[x][y].angle>-1 && roomTemp[x][y].angle<127) {
                 if (x+1<20) {
                     if ((roomTemp[x+1][y].angle>-1 && roomTemp[x+1][y].angle<127)) {
-                        Door* newDoor = Door::createDoor();
+                        Door* newDoor = Door::createDoor(0,rand()%7);
                         newDoor->setPosition(irr::core::vector3df(x*204.8f*RoomScale+102.4f*RoomScale,0.f,y*204.8f*RoomScale));
                         newDoor->setRotation(90.f);
+                        doorList.push_back(newDoor);
                     }
                 }
                 if (y+1<20) {
                     if ((roomTemp[x][y+1].angle>-1 && roomTemp[x][y+1].angle<127)) {
-                        Door* newDoor = Door::createDoor();
+                        Door* newDoor = Door::createDoor(0,rand()%7);
                         newDoor->setPosition(irr::core::vector3df(x*204.8f*RoomScale,0.f,y*204.8f*RoomScale+102.4f*RoomScale));
                         newDoor->setRotation(0.f);
+                        doorList.push_back(newDoor);
                     }
                 }
 				switch (roomTemp[x][y].type) {
@@ -887,11 +889,11 @@ void World::createMap(unsigned char zone) {
 							case 0: //LCZ
 								if (currentRoom1==0) {
 									roomArray[x][y] = RoomStart::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,30.f,y*204.8f*RoomScale));
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,30.f*RoomScale,y*204.8f*RoomScale));
 									//testNPC->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
 
 									for (unsigned int i=0;i<itemList.size();i++) {
-										itemList[i]->Unpick(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+										itemList[i]->unpick(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
 									}
 
 								} else if (currentRoom1==(int)(0.4f*(float)Room1amount)) {
@@ -909,7 +911,7 @@ void World::createMap(unsigned char zone) {
 									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10,y*204.8f*RoomScale));
 
 									for (unsigned int i=0;i<itemList.size();i++) {
-										itemList[i]->Unpick(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+										itemList[i]->unpick(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
 									}
 
 								} else if (currentRoom1==(int)(0.5f*(float)Room1amount)) {
@@ -1024,10 +1026,10 @@ void World::createMap(unsigned char zone) {
 					case RoomTypes::ROOM4:
 						switch (zone) {
 							case 0: //LCZ
-                                mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,30.f,y*204.8f*RoomScale));
+                                //mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,30.f*RoomScale,y*204.8f*RoomScale));
 							break;
 							case 1: //HCZ
-
+                                mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,30.f*RoomScale,y*204.8f*RoomScale));
 							break;
 							case 2: //EZ
 

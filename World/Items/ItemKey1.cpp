@@ -48,5 +48,9 @@ void ItemKey1::updateWearing() {}
 
 void ItemKey1::drawItem() {
     irr::video::ITexture* keyTex = Item::irrDriver->getTexture(getInvImgPath().c_str());
-    Item::irrDriver->draw2DImage(keyTex,irr::core::recti(Item::screenWidth/2-32,Item::screenHeight/2-32,Item::screenWidth/2+32,Item::screenHeight/2+32),irr::core::recti(0,0,64,64));
+    Item::irrDriver->draw2DImage(keyTex,irr::core::recti(drawCoords.X-32,drawCoords.Y-32,drawCoords.X+32,drawCoords.Y+32),irr::core::recti(0,0,64,64));
+}
+
+void ItemKey1::setDrawCoords(irr::core::vector2di newCoords) {
+    drawCoords = newCoords;
 }

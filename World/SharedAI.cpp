@@ -453,7 +453,7 @@ void Room::findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector
                 TempWPPathList* tempList = startPathList;
                 startPathList = startPathList->next;
                 delete tempList;
-                std::cout<<"spl ::::: "<<posList.size()<<" "<<result<<"\n";
+                //std::cout<<"spl ::::: "<<posList.size()<<" "<<result<<"\n";
             }
         } else {
             std::cout<<"waypoint pathfinding failed ("<<found1index<<","<<found2index<<";"<<rme->waypoints.size()<<") \n";

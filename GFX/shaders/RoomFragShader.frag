@@ -48,5 +48,5 @@ void main (void)
 	col *= col2;
 	col+=col4;
 	
-    gl_FragColor = col2;//*vec4(abs(normal)*reflectFactor,1.0);
+    gl_FragColor = vec4(vec3(-normal.z+0.4),1.0);//col2;//*vec4(abs(normal)*reflectFactor,1.0);
 }

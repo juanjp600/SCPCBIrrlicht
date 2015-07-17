@@ -51,6 +51,7 @@ class LightsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
 	public:
 
         struct sortHelper {
+            bool prioritize;
             irr::video::SColorf color;
             irr::f32 pos[4];
             irr::f32 intensity;
@@ -65,9 +66,9 @@ class LightsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
         std::vector<sortHelper> lightList;
 
 		irr::video::SColorf ambient;
-		void setLights(const std::vector<class pointLight> &inList);
+		void setLights(const std::vector<class pointLight> &inList,unsigned int prioritize);
 
-		void sortLights(irr::core::matrix4 transfrm);
+		void sortLights(irr::core::vector3df nodePos);
 
 		//virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };

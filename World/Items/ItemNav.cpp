@@ -46,3 +46,4 @@ bool ItemNav::updateItem() {
 
 void ItemNav::updateWearing() {}
 void ItemNav::drawItem() {}
+void ItemNav::setDrawCoords(irr::core::vector2di newCoords) {}

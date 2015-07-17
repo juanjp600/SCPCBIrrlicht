@@ -46,3 +46,4 @@ bool Item18vradio::updateItem() {
 
 void Item18vradio::updateWearing() {}
 void Item18vradio::drawItem() {}
+void Item18vradio::setDrawCoords(irr::core::vector2di newCoords) {}

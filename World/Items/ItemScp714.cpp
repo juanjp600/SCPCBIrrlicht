@@ -54,3 +54,4 @@ void ItemScp714::updateWearing() {
 }
 
 void ItemScp714::drawItem() {}
+void ItemScp714::setDrawCoords(irr::core::vector2di newCoords) {}

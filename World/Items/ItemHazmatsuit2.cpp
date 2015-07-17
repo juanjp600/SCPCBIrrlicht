@@ -46,3 +46,4 @@ bool ItemHazmatsuit2::updateItem() {
 
 void ItemHazmatsuit2::updateWearing() {}
 void ItemHazmatsuit2::drawItem() {}
+void ItemHazmatsuit2::setDrawCoords(irr::core::vector2di newCoords) {}

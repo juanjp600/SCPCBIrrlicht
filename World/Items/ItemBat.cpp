@@ -46,3 +46,4 @@ bool ItemBat::updateItem() {
 
 void ItemBat::updateWearing() {}
 void ItemBat::drawItem() {}
+void ItemBat::setDrawCoords(irr::core::vector2di newCoords) {}

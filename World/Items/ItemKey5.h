@@ -11,6 +11,8 @@ class ItemKey5 : public Item {
 
         ItemKey5();
 
+        irr::core::vector2di drawCoords;
+
         //static irr::scene::IMesh* getMesh();
     public:
 
@@ -21,6 +23,7 @@ class ItemKey5 : public Item {
         bool updateItem();
         void updateWearing();
 		void drawItem();
+		void setDrawCoords(irr::core::vector2di newCoords);
 
         static ItemKey5* createItemKey5();
 

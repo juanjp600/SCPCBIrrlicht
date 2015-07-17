@@ -46,3 +46,4 @@ bool ItemGasmask3::updateItem() {
 
 void ItemGasmask3::updateWearing() {}
 void ItemGasmask3::drawItem() {}
+void ItemGasmask3::setDrawCoords(irr::core::vector2di newCoords) {}

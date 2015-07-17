@@ -40,7 +40,12 @@ irr::core::matrix4 Item::getTransform() {
 	return irrObj->getAbsoluteTransformation();
 }
 
-void Item::Pick() {
+irr::core::vector3df Item::getPosition() {
+    irrObj->updateAbsolutePosition();
+    return irrObj->getAbsolutePosition();
+}
+
+void Item::pick() {
     if (!picked) {
         //rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(0,1000000.0*RoomScale,0));
         irrObj->setVisible(false);
@@ -52,7 +57,7 @@ void Item::Pick() {
     }
 }
 
-void Item::Unpick(irr::core::vector3df position) {
+void Item::unpick(irr::core::vector3df position) {
     if (picked) {
         rbody->translate(-rbody->getCenterOfMassPosition()+btVector3(position.X,position.Y,position.Z));
         irrObj->setVisible(true);
@@ -236,10 +241,10 @@ void Item::loadAssets(irr::scene::IMeshSceneNode* node,btConvexHullShape* shape)
 	shape->calculateLocalInertia(20.0, localInertia);
 
     rbody = new btRigidBody(20.0, MotionState, shape, localInertia);
-    rbody->setSleepingThresholds(5.0f,5.0f);
+    rbody->setSleepingThresholds(2.f,2.f);
 
-	rbody->setCcdMotionThreshold(0.2f);
-	rbody->setCcdSweptSphereRadius(0.1f);
+	rbody->setCcdMotionThreshold(0.01f);
+	rbody->setCcdSweptSphereRadius(0.06f);
 
     irrObj->setVisible(false);
 }

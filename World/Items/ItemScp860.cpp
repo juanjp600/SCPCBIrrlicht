@@ -46,3 +46,4 @@ bool ItemScp860::updateItem() {
 
 void ItemScp860::updateWearing() {}
 void ItemScp860::drawItem() {}
+void ItemScp860::setDrawCoords(irr::core::vector2di newCoords) {}

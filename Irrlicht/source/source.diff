@@ -143,8 +143,21 @@
  
  	//! Size.Width is the bottom edge width
 --- CCameraSceneNode.cpp	Sat Nov 03 18:07:52 2012
-+++ CCameraSceneNode.cpp	Tue May 12 15:27:33 2015
-@@ -242,7 +242,7 @@
++++ CCameraSceneNode.cpp	Tue Jul 14 15:48:05 2015
+@@ -172,6 +172,12 @@
+ 	return UpVector;
+ }
+ 
++void CCameraSceneNode::captureState()
++{
++    CapturedTarget = Target;
++    CapturedUpVector = UpVector;
++    ISceneNode::captureState();
++}
+ 
+ f32 CCameraSceneNode::getNearValue() const
+ {
+@@ -242,15 +248,18 @@
  
  
  //! render
@@ -152,9 +165,31 @@
 +void CCameraSceneNode::render(f32 interpolate)
  {
  	core::vector3df pos = getAbsolutePosition();
- 	core::vector3df tgtv = Target - pos;
+-	core::vector3df tgtv = Target - pos;
++	core::vector3df pos2 = (pos-RelativeTranslation)+CapturedTranslation;
++	pos = (pos*interpolate+pos2*(1.f-interpolate));
++	core::vector3df targ = (Target*interpolate+CapturedTarget*(1.f-interpolate));
++	core::vector3df tgtv = targ - pos;
+ 	tgtv.normalize();
+ 
+ 	// if upvector and vector to the target are the same, we have a
+ 	// problem. so solve this problem:
+-	core::vector3df up = UpVector;
++	core::vector3df up = (UpVector*interpolate)+(CapturedUpVector*(1.f-interpolate));
+ 	up.normalize();
+ 
+ 	f32 dp = tgtv.dotProduct(up);
+@@ -260,7 +269,7 @@
+ 		up.X += 0.5f;
+ 	}
+ 
+-	ViewArea.getTransform(video::ETS_VIEW).buildCameraLookAtMatrixLH(pos, Target, up);
++	ViewArea.getTransform(video::ETS_VIEW).buildCameraLookAtMatrixLH(pos, targ, up);
+ 	ViewArea.getTransform(video::ETS_VIEW) *= Affector;
+ 	recalculateViewArea();
+ 
 --- CCameraSceneNode.h	Sat Nov 03 18:08:00 2012
-+++ CCameraSceneNode.h	Tue May 12 15:27:54 2015
++++ CCameraSceneNode.h	Tue Jul 14 15:37:59 2015
 @@ -18,7 +18,7 @@
  	public:
  
@@ -177,7 +212,16 @@
  		virtual bool OnEvent(const SEvent& event);
  
  		//! Sets the look at target of the camera
-@@ -111,7 +111,7 @@
+@@ -79,6 +79,8 @@
+ 		//! \return Returns the up vector of the camera.
+ 		virtual const core::vector3df& getUpVector() const;
+ 
++        virtual void captureState();
++
+ 		//! Gets distance from the camera to the near plane.
+ 		//! \return Value of the near plane of the camera.
+ 		virtual f32 getNearValue() const;
+@@ -111,7 +113,7 @@
  		virtual void OnRegisterSceneNode();
  
  		//! Render
@@ -186,9 +230,12 @@
  
  		//! Returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -153,9 +153,9 @@
+@@ -152,10 +154,12 @@
+ 
  		core::vector3df Target;
  		core::vector3df UpVector;
++		core::vector3df CapturedTarget;
++		core::vector3df CapturedUpVector;
  
 -		f32 Fovy;	// Field of view, in radians. 
 -		f32 Aspect;	// Aspect ratio. 
@@ -531,6 +578,218 @@
  			RenderTargetTexture = 0;
  			CurrentRendertargetSize = core::dimension2d<u32>(0,0);
  			CurrentTarget=ERT_FRAME_BUFFER;
+--- COpenGLNormalMapRenderer.cpp	Sat Nov 03 18:08:16 2012
++++ COpenGLNormalMapRenderer.cpp	Sun Aug 24 15:48:16 2014
+@@ -38,19 +38,31 @@
+ 	"\n"\
+ 	"#output\n"\
+ 	"OUTPUT OutPos = result.position;\n"\
+-	"OUTPUT OutLightColor1 = result.color.primary;\n"\
+-	"OUTPUT OutLightColor2 = result.color.secondary;\n"\
++	"OUTPUT OutPrimaryColor = result.color.primary; \n"\
++
+ 	"OUTPUT OutTexCoord = result.texcoord[0];\n"\
+ 	"OUTPUT OutLightVector1 = result.texcoord[1];\n"\
+ 	"OUTPUT OutLightVector2 = result.texcoord[2];\n"\
++    "OUTPUT OutLightVector3 = result.texcoord[3];\n"\
++	"OUTPUT OutLightVector4 = result.texcoord[4];\n"\
++
++    "OUTPUT OutLightColor1 = result.texcoord[5];\n"\
++	"OUTPUT OutLightColor2 = result.texcoord[6];\n"\
++	"OUTPUT OutLightColor3 = result.texcoord[7];\n"\
++	"OUTPUT OutLightColor4 = result.texcoord[8];\n"\
++
+ 	"\n"\
+ 	"PARAM MVP[4] = { state.matrix.mvp }; # modelViewProjection matrix.\n"\
+ 	"TEMP Temp;\n"\
+ 	"TEMP TempColor;\n"\
+ 	"TEMP TempLightVector1;\n"\
+ 	"TEMP TempLightVector2;\n"\
++	"TEMP TempLightVector3;\n"\
++	"TEMP TempLightVector4;\n"\
+ 	"TEMP TempTransLightV1;\n"\
+ 	"TEMP TempTransLightV2;\n"\
++	"TEMP TempTransLightV3;\n"\
++	"TEMP TempTransLightV4;\n"\
+ 	"\n"\
+ 	"# transform position to clip space \n"\
+ 	"DP4 OutPos.x, MVP[0], InPos;\n"\
+@@ -63,6 +75,8 @@
+ 	"# vertex - lightpositions \n"\
+ 	"SUB TempLightVector1, program.local[12], InPos; \n"\
+ 	"SUB TempLightVector2, program.local[14], InPos; \n"\
++	"SUB TempLightVector3, program.local[16], InPos; \n"\
++	"SUB TempLightVector4, program.local[18], InPos; \n"\
+ 	"\n"\
+ 	"# transform the light vector 1 with U, V, W \n"\
+ 	"DP3 TempTransLightV1.x, InTangent, TempLightVector1; \n"\
+@@ -74,6 +88,16 @@
+ 	"DP3 TempTransLightV2.y, InBinormal, TempLightVector2; \n"\
+ 	"DP3 TempTransLightV2.z, InNormal, TempLightVector2; \n"\
+ 	"\n"\
++	"# transform the light vector 3 with U, V, W \n"\
++	"DP3 TempTransLightV3.x, InTangent, TempLightVector3; \n"\
++	"DP3 TempTransLightV3.y, InBinormal, TempLightVector3; \n"\
++	"DP3 TempTransLightV3.z, InNormal, TempLightVector3; \n"\
++	"\n"\
++	"# transform the light vector 4 with U, V, W \n"\
++	"DP3 TempTransLightV4.x, InTangent, TempLightVector4; \n"\
++	"DP3 TempTransLightV4.y, InBinormal, TempLightVector4; \n"\
++	"DP3 TempTransLightV4.z, InNormal, TempLightVector4; \n"\
++	"\n"\
+ 	"# normalize light vector 1 \n"\
+ 	"DP3 TempTransLightV1.w, TempTransLightV1, TempTransLightV1; \n"\
+ 	"RSQ TempTransLightV1.w, TempTransLightV1.w; \n"\
+@@ -84,10 +108,22 @@
+ 	"RSQ TempTransLightV2.w, TempTransLightV2.w; \n"\
+ 	"MUL TempTransLightV2, TempTransLightV2, TempTransLightV2.w;\n"\
+ 	"\n"\
++	"# normalize light vector 3 \n"\
++	"DP3 TempTransLightV3.w, TempTransLightV3, TempTransLightV3; \n"\
++	"RSQ TempTransLightV3.w, TempTransLightV3.w; \n"\
++	"MUL TempTransLightV3, TempTransLightV3, TempTransLightV3.w;\n"\
++	"\n"\
++	"# normalize light vector 4 \n"\
++	"DP3 TempTransLightV4.w, TempTransLightV4, TempTransLightV4; \n"\
++	"RSQ TempTransLightV4.w, TempTransLightV4.w; \n"\
++	"MUL TempTransLightV4, TempTransLightV4, TempTransLightV4.w;\n"\
++	"\n"\
+ 	"\n"\
+ 	"# move light vectors out\n"\
+ 	"MAD OutLightVector1, TempTransLightV1, {0.5,0.5,0.5,0.5}, {0.5,0.5,0.5,0.5}; \n"\
+ 	"MAD OutLightVector2, TempTransLightV2, {0.5,0.5,0.5,0.5}, {0.5,0.5,0.5,0.5}; \n"\
++	"MAD OutLightVector3, TempTransLightV3, {0.5,0.5,0.5,0.5}, {0.5,0.5,0.5,0.5}; \n"\
++	"MAD OutLightVector4, TempTransLightV4, {0.5,0.5,0.5,0.5}, {0.5,0.5,0.5,0.5}; \n"\
+ 	"\n"\
+ 	"# calculate attenuation of light 1\n"\
+ 	"MOV TempLightVector1.w, {0,0,0,0}; \n"\
+@@ -103,9 +139,23 @@
+ 	"RSQ TempLightVector2, TempLightVector2.x; \n"\
+ 	"MUL OutLightColor2, TempLightVector2, program.local[15]; # resulting light color = lightcolor * attenuation \n"\
+ 	"\n"\
++	"# calculate attenuation of light 3\n"\
++	"MOV TempLightVector3.w, {0,0,0,0}; \n"\
++	"DP3 TempLightVector3.x, TempLightVector3, TempLightVector3; \n"\
++	"MUL TempLightVector3.x, TempLightVector3.x, program.local[17].w;  \n"\
++	"RSQ TempLightVector3, TempLightVector3.x; \n"\
++	"MUL OutLightColor3, TempLightVector3, program.local[17]; # resulting light color = lightcolor * attenuation \n"\
++	"\n"\
++	"# calculate attenuation of light 4\n"\
++	"MOV TempLightVector4.w, {0,0,0,0}; \n"\
++	"DP3 TempLightVector4.x, TempLightVector4, TempLightVector4; \n"\
++	"MUL TempLightVector4.x, TempLightVector4.x, program.local[19].w;  \n"\
++	"RSQ TempLightVector4, TempLightVector4.x; \n"\
++	"MUL OutLightColor4, TempLightVector4, program.local[19]; # resulting light color = lightcolor * attenuation \n"\
++	"\n"\
+ 	"# move out texture coordinates and original alpha value\n"\
+ 	"MOV OutTexCoord, InTexCoord; \n"\
+-	"MOV OutLightColor1.w, InColor.w; \n"\
++	"MOV OutPrimaryColor, InColor; \n"\
+ 	"\n"\
+ 	"END\n";
+ 
+@@ -118,15 +168,25 @@
+ 	"\n"\
+ 	"#Input\n"\
+ 	"ATTRIB inTexCoord = fragment.texcoord[0];   \n"\
++	"ATTRIB inColor = fragment.color.primary;   \n"\
+ 	"ATTRIB light1Vector = fragment.texcoord[1]; \n"\
+ 	"ATTRIB light2Vector = fragment.texcoord[2];    \n"\
+-	"ATTRIB light1Color = fragment.color.primary;   \n"\
+-	"ATTRIB light2Color = fragment.color.secondary; \n"\
++	"ATTRIB light3Vector = fragment.texcoord[3];\n"\
++	"ATTRIB light4Vector = fragment.texcoord[4];\n"\
++
++	"ATTRIB light1Color = fragment.texcoord[5];   \n"\
++	"ATTRIB light2Color = fragment.texcoord[6]; \n"\
++	"ATTRIB light3Color = fragment.texcoord[7];\n"\
++	"ATTRIB light4Color = fragment.texcoord[8];\n"\
++
+ 	"\n"\
+ 	"#Output\n"\
+ 	"OUTPUT outColor = result.color;\n"\
+ 	"TEMP temp;\n"\
++	"TEMP temp1;\n"\
+ 	"TEMP temp2;\n"\
++	"TEMP temp3;\n"\
++	"TEMP temp4;\n"\
+ 	"TEMP colorMapColor;\n"\
+ 	"TEMP normalMapColor;\n"\
+ 	"\n"\
+@@ -136,18 +196,44 @@
+ 	"\n"\
+ 	"# calculate color of light1; \n"\
+ 	"MAD normalMapColor, normalMapColor, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
+-	"MAD temp, light1Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
+-	"DP3_SAT temp, normalMapColor, temp; \n"\
+-	"MUL temp, light1Color, temp; \n"\
++	"MAD temp1, light1Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
++	"DP3_SAT temp1, normalMapColor, temp1; \n"\
++	/*"MUL temp, light1Color, temp; \n"\*/
+ 	"\n"\
+ 	"# calculate color of light2; \n"\
+ 	"MAD temp2, light2Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
+ 	"DP3_SAT temp2, normalMapColor, temp2; \n"\
+-	"MAD temp, light2Color, temp2, temp; \n"\
++	/*"MAD temp, light2Color, temp2, temp; \n"\*/
++	"\n"\
++
++	"# calculate color of light3; \n"\
++	"MAD temp3, light3Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
++	"DP3_SAT temp3, normalMapColor, temp3; \n"\
++	/*"MAD temp, light3Color, temp3, temp; \n"\*/
+ 	"\n"\
++	"# calculate color of light4; \n"\
++	"MAD temp4, light4Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
++	"DP3_SAT temp4, normalMapColor, temp4; \n"\
++	/*"MAD temp, light4Color, temp4, temp; \n"\*/
++	"\n"\
++
++    "MUL temp1, light1Color, temp1; \n"\
++	"MUL temp2, light2Color, temp2; \n"\
++	"MUL temp3, light3Color, temp3; \n"\
++	"MUL temp4, light4Color, temp4; \n"\
++
++    "ADD temp, temp1, temp; \n"\
++	"ADD temp, temp2, temp; \n"\
++	"ADD temp, temp3, temp; \n"\
++	"ADD temp, temp4, temp; \n"\
++
++	"ADD temp, temp, program.local[0]; \n"\
++
++	"MOV temp.w, 1; \n"\
++
+ 	"# luminance * base color; \n"\
++	"MOV outColor, inColor; #write interpolated vertex alpha value\n"\
+ 	"MUL outColor, temp, colorMapColor; \n"\
+-	"MOV outColor.a, light1Color.a; #write interpolated vertex alpha value\n"\
+ 	"\n"\
+ 	"END\n";
+ 
+@@ -257,7 +343,7 @@
+ 	core::matrix4 invWorldMat;
+ 	driver->getTransform(video::ETS_WORLD).getInverse(invWorldMat);
+ 
+-	for (u32 i=0; i<2; ++i)
++	for (u32 i=0; i<4; ++i)
+ 	{
+ 		video::SLight light;
+ 
+@@ -280,6 +366,14 @@
+ 		services->setVertexShaderConstant(
+ 			reinterpret_cast<const f32*>(&light.DiffuseColor), 13+(i*2), 1);
+ 	}
++
++	//set ambient light
++	//f32 factor = 1.0f;
++
++    SColorf gett = driver->getAmbientLight();
++
++	f32 c6[] = {gett.r, gett.g, gett.b, gett.a};
++	services->setPixelShaderConstant(reinterpret_cast<const f32*>(c6), 0, 1);
+ }
+ 
+ 
 --- CParticleSystemSceneNode.cpp	Sat Nov 03 18:08:10 2012
 +++ CParticleSystemSceneNode.cpp	Tue May 12 15:57:35 2015
 @@ -304,7 +304,7 @@
@@ -870,7 +1129,7 @@
  	virtual const core::aabbox3d<f32>& getBoundingBox() const;
  
 --- CSceneManager.cpp	Tue Oct 29 21:34:58 2013
-+++ CSceneManager.cpp	Tue May 12 16:07:15 2015
++++ CSceneManager.cpp	Sun Jul 12 19:43:47 2015
 @@ -1139,7 +1139,7 @@
  
  
@@ -880,11 +1139,15 @@
  {
  }
  
-@@ -1337,10 +1337,9 @@
+@@ -1337,10 +1337,14 @@
  	return taken;
  }
  
--
++void CSceneManager::captureAll()
++{
++    captureState();
++}
+ 
  //! This method is called just before the rendering process of the whole scene.
  //! draws all scene nodes
 -void CSceneManager::drawAll()
@@ -892,7 +1155,7 @@
  {
  	if (!Driver)
  		return;
-@@ -1377,7 +1376,7 @@
+@@ -1377,7 +1381,7 @@
  	camWorldPos.set(0,0,0);
  	if (ActiveCamera)
  	{
@@ -901,7 +1164,7 @@
  		camWorldPos = ActiveCamera->getAbsolutePosition();
  	}
  
-@@ -1396,7 +1395,7 @@
+@@ -1396,7 +1400,7 @@
  			LightManager->OnRenderPassPreRender(CurrentRendertime);
  
  		for (i=0; i<CameraList.size(); ++i)
@@ -910,7 +1173,7 @@
  
  		CameraList.set_used(0);
  
-@@ -1442,7 +1441,7 @@
+@@ -1442,7 +1446,7 @@
  			maxLights = core::min_ ( Driver->getMaximalDynamicLightAmount(), maxLights);
  
  		for (i=0; i< maxLights; ++i)
@@ -919,7 +1182,7 @@
  
  		if (LightManager)
  			LightManager->OnRenderPassPostRender(CurrentRendertime);
-@@ -1460,14 +1459,14 @@
+@@ -1460,14 +1464,14 @@
  			{
  				ISceneNode* node = SkyBoxList[i];
  				LightManager->OnNodePreRender(node);
@@ -936,24 +1199,28 @@
  		}
  
  		SkyBoxList.set_used(0);
-@@ -1491,14 +1490,14 @@
+@@ -1491,14 +1495,17 @@
  			{
  				ISceneNode* node = SolidNodeList[i].Node;
  				LightManager->OnNodePreRender(node);
 -				node->render();
++				Driver->currentlyRenderedNode = node;
 +				node->render(interpolate);
  				LightManager->OnNodePostRender(node);
  			}
  		}
  		else
  		{
- 			for (i=0; i<SolidNodeList.size(); ++i)
+-			for (i=0; i<SolidNodeList.size(); ++i)
 -				SolidNodeList[i].Node->render();
++			for (i=0; i<SolidNodeList.size(); ++i) {
++                Driver->currentlyRenderedNode = SolidNodeList[i].Node;
 +				SolidNodeList[i].Node->render(interpolate);
++            }
  		}
  
  #ifdef _IRR_SCENEMANAGER_DEBUG
-@@ -1522,14 +1521,14 @@
+@@ -1522,14 +1529,14 @@
  			{
  				ISceneNode* node = ShadowNodeList[i];
  				LightManager->OnNodePreRender(node);
@@ -970,9 +1237,13 @@
  		}
  
  		if (!ShadowNodeList.empty())
-@@ -1556,14 +1555,14 @@
+@@ -1554,16 +1561,20 @@
+ 
+ 			for (i=0; i<TransparentNodeList.size(); ++i)
  			{
++
  				ISceneNode* node = TransparentNodeList[i].Node;
++				Driver->currentlyRenderedNode = node;
  				LightManager->OnNodePreRender(node);
 -				node->render();
 +				node->render(interpolate);
@@ -981,13 +1252,16 @@
  		}
  		else
  		{
- 			for (i=0; i<TransparentNodeList.size(); ++i)
+-			for (i=0; i<TransparentNodeList.size(); ++i)
 -				TransparentNodeList[i].Node->render();
++			for (i=0; i<TransparentNodeList.size(); ++i) {
++                Driver->currentlyRenderedNode = TransparentNodeList[i].Node;
 +				TransparentNodeList[i].Node->render(interpolate);
++            }
  		}
  
  #ifdef _IRR_SCENEMANAGER_DEBUG
-@@ -1590,14 +1589,14 @@
+@@ -1590,14 +1601,14 @@
  			{
  				ISceneNode* node = TransparentEffectNodeList[i].Node;
  				LightManager->OnNodePreRender(node);
@@ -1004,7 +1278,7 @@
  		}
  #ifdef _IRR_SCENEMANAGER_DEBUG
  		Parameters.setAttribute ( "drawn_transparent_effect", (s32) TransparentEffectNodeList.size() );
-@@ -1607,6 +1606,156 @@
+@@ -1607,6 +1618,156 @@
  
  	if (LightManager)
  		LightManager->OnPostRender();
@@ -1162,7 +1436,7 @@
  	LightList.set_used(0);
  	clearDeletionList();
 --- CSceneManager.h	Tue Oct 29 21:34:58 2013
-+++ CSceneManager.h	Tue May 12 16:07:58 2015
++++ CSceneManager.h	Sun Jul 12 19:43:20 2015
 @@ -102,7 +102,7 @@
  			const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f));
  
@@ -1172,16 +1446,17 @@
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -111,7 +111,7 @@
+@@ -111,7 +111,8 @@
  		virtual u32 registerNodeForRendering(ISceneNode* node, E_SCENE_NODE_RENDER_PASS pass = ESNRP_AUTOMATIC);
  
  		//! draws all scene nodes
 -		virtual void drawAll();
 +		virtual void drawAll(f32 interpolate=1.f);
++		virtual void captureAll();
  
  		//! Adds a scene node for rendering using a octree to the scene graph. This a good method for rendering
  		//! scenes with lots of geometry. The Octree is built on the fly from the mesh, much
-@@ -521,6 +521,9 @@
+@@ -521,6 +522,9 @@
  		//! returns if node is culled
  		virtual bool isCulled(const ISceneNode* node) const;
  
@@ -1191,7 +1466,7 @@
  	private:
  
  		//! clears the deletion list
-@@ -650,6 +653,13 @@
+@@ -650,6 +654,13 @@
  		const core::stringw IRR_XML_FORMAT_NODE_ATTR_TYPE;
  
  		IGeometryCreator* GeometryCreator;

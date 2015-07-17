@@ -46,3 +46,4 @@ bool ItemVeryfineradio::updateItem() {
 
 void ItemVeryfineradio::updateWearing() {}
 void ItemVeryfineradio::drawItem() {}
+void ItemVeryfineradio::setDrawCoords(irr::core::vector2di newCoords) {}

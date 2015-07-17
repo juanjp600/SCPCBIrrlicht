@@ -90,9 +90,11 @@ void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices
 
 	irr::core::matrix4 lightTransform = worldViewProj*invWorld;
 
-	sortLights(invWorld);
+    driver->currentlyRenderedNode->updateAbsolutePosition();
+	sortLights(driver->currentlyRenderedNode->getAbsolutePosition());
 
 	for (irr::u32 i=0;i<4;++i) {
+        //std::cout<<lightList[i].dist<<"\n";
 		std::string lightPosition = "lightPos";
 		lightPosition+=std::to_string(i+1);
 		std::string lightColor = "lightColor";
@@ -128,7 +130,7 @@ void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices
 	services->setPixelShaderConstant("ambientLight", (float*)(&ambient), 4);
 }
 
-void LightsShaderCallBack::setLights(const std::vector<pointLight> &inList) {
+void LightsShaderCallBack::setLights(const std::vector<pointLight> &inList,unsigned int prioritize) {
 	lightList.resize(inList.size());
 	for (unsigned int i=0;i<lightList.size();i++) {
 		sortHelper lig;
@@ -143,15 +145,16 @@ void LightsShaderCallBack::setLights(const std::vector<pointLight> &inList) {
             lig.viewMatrix[j] = inList[i].viewMatrix[j];
 		}
 		lig.dist = 0;
+		lig.prioritize = (i<prioritize);
 		lightList[i] = lig;
 	}
 }
 
-void LightsShaderCallBack::sortLights(irr::core::matrix4 transfrm) {
+void LightsShaderCallBack::sortLights(irr::core::vector3df nodePos) {
 	for (unsigned int i=0;i<lightList.size();i++) {
 		irr::core::vector3df pos(lightList[i].pos[0],lightList[i].pos[1],lightList[i].pos[2]);
-		transfrm.transformVect(pos);
-		lightList[i].dist = pos.getLength();
+		lightList[i].dist = (nodePos-pos).getLengthSQ();
+		if (lightList[i].prioritize) { lightList[i].dist-=15000.f; }
 	}
 	std::sort(lightList.begin(),lightList.end());
 }
@@ -171,7 +174,8 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 
 	irr::core::matrix4 lightTransform = worldViewProj*invWorld;
 
-	sortLights(invWorld);
+    driver->currentlyRenderedNode->updateAbsolutePosition();
+	sortLights(driver->currentlyRenderedNode->getAbsolutePosition());
 
 	for (irr::u32 i=0;i<4;++i) {
 		std::string lightPosition = "lightPos";

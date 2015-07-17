@@ -46,3 +46,4 @@ bool ItemKillbat::updateItem() {
 
 void ItemKillbat::updateWearing() {}
 void ItemKillbat::drawItem() {}
+void ItemKillbat::setDrawCoords(irr::core::vector2di newCoords) {}

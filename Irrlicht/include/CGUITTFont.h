@@ -32,6 +32,7 @@
 #define __C_GUI_TTFONT_H_INCLUDED__
 
 #include <irrlicht.h>
+#include <irrUString.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 

@@ -46,3 +46,4 @@ bool ItemSupereyedrops::updateItem() {
 
 void ItemSupereyedrops::updateWearing() {}
 void ItemSupereyedrops::drawItem() {}
+void ItemSupereyedrops::setDrawCoords(irr::core::vector2di newCoords) {}

@@ -46,3 +46,4 @@ bool ItemCigarette::updateItem() {
 
 void ItemCigarette::updateWearing() {}
 void ItemCigarette::drawItem() {}
+void ItemCigarette::setDrawCoords(irr::core::vector2di newCoords) {}

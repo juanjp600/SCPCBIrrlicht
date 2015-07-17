@@ -109,7 +109,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
     irrDriverType = irr::video::EDT_OPENGL;
     irrReceiver = new MainEventReceiver;
-    irrDevice = irr::createDevice(irrDriverType,irr::core::dimension2d<irr::u32>(width,height),32,fullscreen,false,true,irrReceiver);
+    irrDevice = irr::createDevice(irrDriverType,irr::core::dimension2d<irr::u32>(width,height),32,fullscreen,false,false,irrReceiver);
     irrDriver = irrDevice->getVideoDriver();
 	irrSmgr = irrDevice->getSceneManager();
 	irrColl = irrSmgr->getSceneCollisionManager();
@@ -295,24 +295,27 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	ItemScp1025::setMeshNode(genItemNode(std::string("GFX/Items/scp1025.b3d"),std::string(""),3.0f*RoomScale));
 	ItemScp513::setMeshNode(genItemNode(std::string("GFX/Items/513.x"),std::string(""),3.0f*RoomScale));
 
-	for (irr::u32 ui=0;ui<2;ui++) {
-        Item* it = ItemEyedrops::createItemEyedrops();
+	for (irr::u32 ui=0;ui<1;ui++) {
+        /*Item* it = ItemEyedrops::createItemEyedrops();
+        itemList.push_back(it);*/
+
+		Item* it = ItemSupergasmask::createItemSupergasmask();
         itemList.push_back(it);
 
-		it = ItemSupergasmask::createItemSupergasmask();
+        it = ItemKey1::createItemKey1();
         itemList.push_back(it);
 
         it = ItemKey2::createItemKey2();
         itemList.push_back(it);
 
-        it = ItemNav::createItemNav();
+        /*it = ItemNav::createItemNav();
         itemList.push_back(it);
         it = ItemMisc::createItemMisc();
-        itemList.push_back(it);
+        itemList.push_back(it);*/
         it = ItemScp714::createItemScp714();
         itemList.push_back(it);
-        it = ItemPaper::createItemPaper();
-        itemList.push_back(it);
+        /*it = ItemPaper::createItemPaper();
+        itemList.push_back(it);*/
 
         it = ItemKey3::createItemKey3();
         itemList.push_back(it);
@@ -481,14 +484,23 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
     Door::baseDoorNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Door01.x"));
     Door::baseDoorNode[0]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
-    Door::baseDoorNode[0]->setScale(irr::core::vector3df(RoomScale*1.95f,RoomScale*1.35f,RoomScale*1.95f));
+    Door::baseDoorNode[0]->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.1f));
     Door::baseFrameNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/DoorFrame.x"));
     Door::baseFrameNode->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseFrameNode->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
-    Door::baseFrameNode->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.12f));
+    Door::baseFrameNode->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.1f));
     Door::baseButtonNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Button.x"));
     Door::baseButtonNode[0]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseButtonNode[0]->setScale(irr::core::vector3df(RoomScale*1.f,RoomScale*1.f,RoomScale*1.f));
+    Door::baseButtonNode[1] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/ButtonKeycard.x"));
+    Door::baseButtonNode[1]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
+    Door::baseButtonNode[1]->setScale(irr::core::vector3df(RoomScale*1.f,RoomScale*1.f,RoomScale*1.f));
+    Door::openSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorOpen1.ogg"),true);
+    Door::openSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorOpen2.ogg"),true);
+    Door::openSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorOpen3.ogg"),true);
+    Door::closeSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorClose1.ogg"),true);
+    Door::closeSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorClose2.ogg"),true);
+    Door::closeSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorClose3.ogg"),true);
     Door::dynamics = dynamics;
     //rbody = dynamics->addBoxObject(Door::baseFrameNode,1000.f);
     //rbody->setLinearFactor(btVector3(0.f,0.f,0.f));
@@ -564,6 +576,10 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	for (unsigned char i=0;i<inventory_size;i++) {
 		invImgs[i]=nullptr;
 	}
+	for (unsigned int i=0;i<itemList.size();i++) {
+        itemList[i]->pick();
+        itemList[i]->unpick(mainPlayer->getPosition());
+	}
 }
 
 World::~World() {
@@ -604,130 +620,320 @@ bool World::run() {
 	/*if (prevTime==0) { fpsFactor = 1.0; } else {
 		fpsFactor = (time-prevTime)/(1000.0/70.0);
 	}*/
-	prevTime = time;
 
 	if (menusOpen==menus::NONE) {
+        if (prevTime!=0) {
+            stepsToMake += (time-prevTime)/(1000.f/60.f);
+        }
+        while (stepsToMake>0.f) {
+            mainPlayer->selectPrevItem();
+            irrSmgr->captureAll();
+            drawHandIcon.clear();
+            float prec = 1.f;
+            for (unsigned int i=0;i<inventory_size;i++) {
+                if (mainPlayer->takeFromInventory(i,false)!=nullptr) {
+                    switch (mainPlayer->takeFromInventory(i,false)->getTempID()) {
+                        case ItemTempIDs::ITEM_KEY1:
+                        case ItemTempIDs::ITEM_KEY2:
+                        case ItemTempIDs::ITEM_KEY3:
+                        case ItemTempIDs::ITEM_KEY4:
+                        case ItemTempIDs::ITEM_KEY5:
+                        case ItemTempIDs::ITEM_KEY6:
+                            mainPlayer->takeFromInventory(i,false)->setDrawCoords(irr::core::vector2di(mainWidth/2,mainHeight/2));
+                        break;
+                        default: break;
+                    }
+                }
+            }
 
-		float prec = 0.65f;
+            //std::cout<<mainPlayer->getPosition().X<<"\n";
+            mainPlayer->update();
+            dynamics->simStep(1.f/60.f,60.f * prec);
+            mainPlayer->resetSpeeds();
+            //testNPC->update();
+            //testNPC->updateModel();
+            irr::core::matrix4 tMat = irrDriver->getTransform(irr::video::ETS_PROJECTION)*irrDriver->getTransform(irr::video::ETS_VIEW);
+            for (unsigned int i=0;i<itemList.size();i++) {
+                if ((mainPlayer->getPosition()-itemList[i]->getPosition()).getLengthSQ()<500.f*RoomScale*RoomScale) {
+                    irr::scene::SViewFrustum frust = *mainPlayer->getViewFrustum();
+                    //transform the frustum to the node's current absolute transformation
+                    irr::core::matrix4 invTrans(itemList[i]->getTransform(), irr::core::matrix4::EM4CONST_INVERSE);
+                    //invTrans.makeInverse();
+                    frust.transform(invTrans);
+                    if (!itemList[i]->getPicked()) {
+                        if ((mainPlayer->getPosition()-itemList[i]->getPosition()).getLengthSQ()<250.f*RoomScale*RoomScale) {
+                            //irrDriver->draw2DImage(irrDriver->getTexture("GFX/handsymbol.jpg"),irr::core::position2di(mainWidth/2,mainHeight/2));
+                            irr::core::vector3df pos = itemList[i]->getPosition();
+                            tMat.transformVect(pos);
+                            if (pos.Z>0.f) {
+                                drawHandIcon.push_back(irr::core::vector2di(pos.X*mainWidth*0.066f*(150.f-pos.Z)/150.f+(mainWidth/2),-pos.Y*mainHeight*0.066f*(150.f-pos.Z)/150.f+(mainHeight/2)));
+                            }
+                            //std::cout<<"handicon_add\n";
+                            if (mainPlayer->seesBoundingBox(itemList[i]->getBBox(),frust)) {
+                                if (irrReceiver->IsMouseDown(0) != mainPlayer->getLastMouseDown(0) && irrReceiver->IsMouseDown(0)==false) {
+                                    mainPlayer->addToInventory(itemList[i]);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (unsigned int i=0;i<doorList.size();i++) {
+                if ((mainPlayer->getPosition()-doorList[i]->getPosition()).getLength()<4096.f*RoomScale*RoomScale) {
+                    float rot0 = -doorList[i]->getButtonRotation(0);
+                    float rot1 = -doorList[i]->getButtonRotation(1);
 
-        std::cout<<mainPlayer->getPosition().X<<"\n";
-		mainPlayer->update();
-		dynamics->simStep(1.f/60.f,60.f * prec);
-		mainPlayer->resetSpeeds();
-		//testNPC->update();
-		//testNPC->updateModel();
+                    irr::core::vector3df pos0 = doorList[i]->getButtonPosition(0);
+                    irr::core::vector3df pos1 = doorList[i]->getButtonPosition(1);
+                    irr::core::vector3df camPos = irrSmgr->getActiveCamera()->getAbsolutePosition();
+                    irr::core::vector3df dir0 = (camPos-pos0).normalize();
+                    dir0 = dir0.getSphericalCoordinateAngles();
+                    irr::core::vector3df dir1 = (camPos-pos1).normalize();
+                    dir1 = dir1.getSphericalCoordinateAngles();
+                    irr::core::vector3df camTarget = -(irrSmgr->getActiveCamera()->getTarget()-irrSmgr->getActiveCamera()->getAbsolutePosition());
+                    camTarget = camTarget.getSphericalCoordinateAngles();
 
-		if (irrReceiver->IsMouseDown(0) != mainPlayer->getLastMouseDown(0) && irrReceiver->IsMouseDown(0)==false) {
-			for (unsigned int i=0;i<itemList.size();i++) {
-				irr::scene::SViewFrustum frust = *mainPlayer->getViewFrustum();
-				//transform the frustum to the node's current absolute transformation
-				irr::core::matrix4 invTrans(itemList[i]->getTransform(), irr::core::matrix4::EM4CONST_INVERSE);
-				//invTrans.makeInverse();
-				frust.transform(invTrans);
-				if (!itemList[i]->getPicked()) {
-					if (mainPlayer->seesBoundingBox(itemList[i]->getBBox(),frust)) {
-						mainPlayer->addToInventory(itemList[i]);
-						break;
-					}
-				}
-			}
-		}
-		if (irrReceiver->IsMouseDown(1) != mainPlayer->getLastMouseDown(1) && irrReceiver->IsMouseDown(1)==false) {
-			for (unsigned int i=0;i<inventory_size;i++) {
-				if (mainPlayer->takeFromInventory(i)) break;
-			}
-		}
+                    float angleDiff0 = dir0.Y-rot0;
+                    while (angleDiff0>=180.f) { angleDiff0-=360.f; } while (angleDiff0<-180.f) { angleDiff0+=360.f; }
+                    float angleDiff1 = dir1.Y-rot1;
+                    while (angleDiff1>=180.f) { angleDiff1-=360.f; } while (angleDiff1<-180.f) { angleDiff1+=360.f; }
 
-		mainPlayer->updateHead();
+                    float yawvalue,pitchvalue;
+                    bool closetobutton = false;
+                    if (angleDiff0<angleDiff1) {
+                        if ((mainPlayer->getPosition()-doorList[i]->getButtonPosition(0)).getLengthSQ()<150.f*RoomScale*RoomScale) {
+                            yawvalue = camTarget.Y-dir0.Y;
+                            pitchvalue = camTarget.X-dir0.X;
+                            closetobutton = true;
+                        }
+                    } else {
+                        if ((mainPlayer->getPosition()-doorList[i]->getButtonPosition(1)).getLengthSQ()<150.f*RoomScale*RoomScale) {
+                            yawvalue = camTarget.Y-dir1.Y;
+                            pitchvalue = camTarget.X-dir1.X;
+                            closetobutton = true;
+                        }
+                    }
+                    if (closetobutton) {
+                        while (yawvalue>=360) { yawvalue-=360.f; } while (yawvalue<0) { yawvalue+=360.f; }
+                        if (yawvalue > 90 && yawvalue <= 180) { yawvalue = 90; }
+                        if (yawvalue > 180 && yawvalue < 270) { yawvalue = 270; }
+                        while (pitchvalue>=360) { pitchvalue-=360.f; } while (pitchvalue<0) { pitchvalue+=360.f; }
+                        if (pitchvalue > 90 && pitchvalue <= 180) { pitchvalue = 90; }
+                        if (pitchvalue > 180 && pitchvalue < 270) { pitchvalue = 270; }
+                        irr::core::vector2di coords = irr::core::position2di(mainWidth/2 + std::sin(yawvalue * irr::core::DEGTORAD) * (mainWidth / 3),mainHeight/2 + std::sin(pitchvalue * irr::core::DEGTORAD) * (mainHeight / 3));
 
-		int px,py;
-		px = coordToRoomGrid(mainPlayer->getPosition().X);
-		py = coordToRoomGrid(mainPlayer->getPosition().Z);
-		if (px>=0 && px<20 && py>=0 && py<20) {
-			if (roomArray[px][py]!=nullptr) {
-				if (ppx!=px || ppy!=py) {
-					for (int y=0;y<20;y++) {
-						for (int x=0;x<20;x++) {
-							if (roomArray[x][y]!=nullptr) {
-								if (std::max(std::abs(x-px),std::abs(y-py))<3) {
-									roomArray[x][y]->setActivation(true);
-								} else {
-									roomArray[x][y]->setActivation(false);
-								}
-							}
-						}
-					}
-					std::vector<pointLight> nLights = roomArray[px][py]->getPointLights();
-					if (roomArray[px][py+1]!=nullptr && py+1<20) {
-                        const std::vector<pointLight> &addLights = roomArray[px][py+1]->getPointLights();
-                        for (unsigned int i=0;i<addLights.size();i++) {
-                            nLights.push_back(addLights[i]);
-                        }
-					}
-					if (roomArray[px][py-1]!=nullptr && py-1>0) {
-                        const std::vector<pointLight> &addLights = roomArray[px][py-1]->getPointLights();
-                        for (unsigned int i=0;i<addLights.size();i++) {
-                            nLights.push_back(addLights[i]);
-                        }
-					}
-					if (roomArray[px+1][py]!=nullptr && px+1<20) {
-                        const std::vector<pointLight> &addLights = roomArray[px+1][py]->getPointLights();
-                        for (unsigned int i=0;i<addLights.size();i++) {
-                            nLights.push_back(addLights[i]);
-                        }
-					}
-					if (roomArray[px-1][py]!=nullptr && px-1>0) {
-                        const std::vector<pointLight> &addLights = roomArray[px-1][py]->getPointLights();
-                        for (unsigned int i=0;i<addLights.size();i++) {
-                            nLights.push_back(addLights[i]);
-                        }
-					}
 
-					/*if (roomArray[px][py+2]!=nullptr && py+2<20) {
-                        const std::vector<pointLight> &addLights = roomArray[px][py+2]->getPointLights();
-                        for (unsigned int i=0;i<addLights.size();i++) {
-                            nLights.push_back(addLights[i]);
-                        }
-					}
-					if (roomArray[px][py-2]!=nullptr && py-2>0) {
-                        const std::vector<pointLight> &addLights = roomArray[px][py-2]->getPointLights();
-                        for (unsigned int i=0;i<addLights.size();i++) {
-                            nLights.push_back(addLights[i]);
-                        }
-					}
-					if (roomArray[px+2][py]!=nullptr && px+2<20) {
-                        const std::vector<pointLight> &addLights = roomArray[px+2][py]->getPointLights();
-                        for (unsigned int i=0;i<addLights.size();i++) {
-                            nLights.push_back(addLights[i]);
-                        }
-					}
-					if (roomArray[px-2][py]!=nullptr && px-2>0) {
-                        const std::vector<pointLight> &addLights = roomArray[px-2][py]->getPointLights();
-                        for (unsigned int i=0;i<addLights.size();i++) {
-                            nLights.push_back(addLights[i]);
-                        }
-					}*/
-					plainLightCallback->setLights(nLights);
-					normalsCallback->setLights(nLights);
-					ppx = px;
-					ppy = py;
-				}
-			}
-		}
+                        unsigned char keycard = 0;
+                        unsigned char highestCard = 0;
+                        unsigned char itemToSelect = inventory_size;
 
-		irr::core::position2di mousePos = irrReceiver->getMousePos();
-		if (mousePos != irr::core::position2di(mainWidth/2,mainHeight/2)) {
-			mainPlayer->yaw += ((int)mousePos.X-(int)(mainWidth/2))*0.1f;
-			mainPlayer->pitch += ((int)mousePos.Y-(int)(mainHeight/2))*0.1f;
-			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
-		}
+                        if (doorList[i]->getButtonIndex()) {
+                            if (mainPlayer->getSelectedItem()>=inventory_size) {
+                                for (unsigned int j=0;j<inventory_size;j++) {
+                                    if (mainPlayer->takeFromInventory(j,false)!=nullptr) {
+                                        switch (mainPlayer->takeFromInventory(j,false)->getTempID()) {
+                                            case ItemTempIDs::ITEM_KEY1:
+                                                if (highestCard<1) {
+                                                    highestCard = 1;
+                                                    itemToSelect = j;
+                                                }
+                                            break;
+                                            case ItemTempIDs::ITEM_KEY2:
+                                                if (highestCard<2) {
+                                                    highestCard = 2;
+                                                    itemToSelect = j;
+                                                }
+                                            break;
+                                            case ItemTempIDs::ITEM_KEY3:
+                                                if (highestCard<3) {
+                                                    highestCard = 3;
+                                                    itemToSelect = j;
+                                                }
+                                            break;
+                                            case ItemTempIDs::ITEM_KEY4:
+                                                if (highestCard<4) {
+                                                    highestCard = 4;
+                                                    itemToSelect = j;
+                                                }
+                                            break;
+                                            case ItemTempIDs::ITEM_KEY5:
+                                                if (highestCard<5) {
+                                                    highestCard = 5;
+                                                    itemToSelect = j;
+                                                }
+                                            break;
+                                            case ItemTempIDs::ITEM_KEY6:
+                                                if (highestCard<6) {
+                                                    highestCard = 6;
+                                                    itemToSelect = j;
+                                                }
+                                            break;
+                                            default: break;
+                                        }
+                                    }
+                                }
+                                if (itemToSelect<inventory_size) {
+                                    mainPlayer->selectItem(itemToSelect,true);
+                                }
+                            }
 
-		if (irrReceiver->IsKeyDown(irr::KEY_TAB)==false && irrReceiver->IsPrevKeyDown(irr::KEY_TAB)==true) {
-			menusOpen = menus::INVOPEN;
-		}
-		if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) {
-			menusOpen = menus::PAUSEOPEN;
-		}
+                            if (mainPlayer->getSelectedItem()<inventory_size) {
+                                switch (mainPlayer->takeFromInventory(mainPlayer->getSelectedItem(),false)->getTempID()) {
+                                    case ItemTempIDs::ITEM_KEY1:
+                                        keycard = 1;
+                                        mainPlayer->takeFromInventory(mainPlayer->getSelectedItem(),false)->setDrawCoords(coords);
+                                    break;
+                                    case ItemTempIDs::ITEM_KEY2:
+                                        keycard = 2;
+                                        mainPlayer->takeFromInventory(mainPlayer->getSelectedItem(),false)->setDrawCoords(coords);
+                                    break;
+                                    case ItemTempIDs::ITEM_KEY3:
+                                        keycard = 3;
+                                        mainPlayer->takeFromInventory(mainPlayer->getSelectedItem(),false)->setDrawCoords(coords);
+                                    break;
+                                    case ItemTempIDs::ITEM_KEY4:
+                                        keycard = 4;
+                                        mainPlayer->takeFromInventory(mainPlayer->getSelectedItem(),false)->setDrawCoords(coords);
+                                    break;
+                                    case ItemTempIDs::ITEM_KEY5:
+                                        keycard = 5;
+                                        mainPlayer->takeFromInventory(mainPlayer->getSelectedItem(),false)->setDrawCoords(coords);
+                                    break;
+                                    case ItemTempIDs::ITEM_KEY6:
+                                        keycard = 6;
+                                        mainPlayer->takeFromInventory(mainPlayer->getSelectedItem(),false)->setDrawCoords(coords);
+                                    break;
+                                    default:
+                                        drawHandIcon.push_back(coords);
+                                    break;
+                                }
+                            } else {
+                                drawHandIcon.push_back(coords);
+                            }
+                        } else {
+                            drawHandIcon.push_back(coords);
+                        }
+
+                        if (irrReceiver->IsPrevMouseDown(0)==true && irrReceiver->IsMouseDown(0)==false) {
+                            doorList[i]->toggle(keycard,0,0);
+                            mainPlayer->selectItem(inventory_size);
+                        }
+                    }
+                    doorList[i]->update();
+                } else {
+                    doorList[i]->disable();
+                }
+            }
+            /*if (irrReceiver->IsMouseDown(1) != mainPlayer->getLastMouseDown(1) && irrReceiver->IsMouseDown(1)==false) {
+                for (unsigned int i=0;i<inventory_size;i++) {
+                    if (mainPlayer->takeFromInventory(i)) break;
+                }
+            }*/
+
+            mainPlayer->updateHead();
+
+            int px,py;
+            px = coordToRoomGrid(mainPlayer->getPosition().X);
+            py = coordToRoomGrid(mainPlayer->getPosition().Z);
+            if (px>=0 && px<20 && py>=0 && py<20) {
+                if (roomArray[px][py]!=nullptr) {
+                    if (ppx!=px || ppy!=py) {
+                        for (int y=0;y<20;y++) {
+                            for (int x=0;x<20;x++) {
+                                if (roomArray[x][y]!=nullptr) {
+                                    if (std::max(std::abs(x-px),std::abs(y-py))<3) {
+                                        roomArray[x][y]->setActivation(true);
+                                    } else {
+                                        roomArray[x][y]->setActivation(false);
+                                    }
+                                }
+                            }
+                        }
+                        std::vector<pointLight> nLights = roomArray[px][py]->getPointLights();
+                        int prioritize = nLights.size();
+
+                        if (roomArray[px][py+1]!=nullptr && py+1<20) {
+                            const std::vector<pointLight> &addLights = roomArray[px][py+1]->getPointLights();
+                            for (unsigned int i=0;i<addLights.size();i++) {
+                                nLights.push_back(addLights[i]);
+                            }
+                        }
+                        if (roomArray[px][py-1]!=nullptr && py-1>0) {
+                            const std::vector<pointLight> &addLights = roomArray[px][py-1]->getPointLights();
+                            for (unsigned int i=0;i<addLights.size();i++) {
+                                nLights.push_back(addLights[i]);
+                            }
+                        }
+                        if (roomArray[px+1][py]!=nullptr && px+1<20) {
+                            const std::vector<pointLight> &addLights = roomArray[px+1][py]->getPointLights();
+                            for (unsigned int i=0;i<addLights.size();i++) {
+                                nLights.push_back(addLights[i]);
+                            }
+                        }
+                        if (roomArray[px-1][py]!=nullptr && px-1>0) {
+                            const std::vector<pointLight> &addLights = roomArray[px-1][py]->getPointLights();
+                            for (unsigned int i=0;i<addLights.size();i++) {
+                                nLights.push_back(addLights[i]);
+                            }
+                        }
+
+                        /*if (roomArray[px][py+2]!=nullptr && py+2<20) {
+                            const std::vector<pointLight> &addLights = roomArray[px][py+2]->getPointLights();
+                            for (unsigned int i=0;i<addLights.size();i++) {
+                                nLights.push_back(addLights[i]);
+                            }
+                        }
+                        if (roomArray[px][py-2]!=nullptr && py-2>0) {
+                            const std::vector<pointLight> &addLights = roomArray[px][py-2]->getPointLights();
+                            for (unsigned int i=0;i<addLights.size();i++) {
+                                nLights.push_back(addLights[i]);
+                            }
+                        }
+                        if (roomArray[px+2][py]!=nullptr && px+2<20) {
+                            const std::vector<pointLight> &addLights = roomArray[px+2][py]->getPointLights();
+                            for (unsigned int i=0;i<addLights.size();i++) {
+                                nLights.push_back(addLights[i]);
+                            }
+                        }
+                        if (roomArray[px-2][py]!=nullptr && px-2>0) {
+                            const std::vector<pointLight> &addLights = roomArray[px-2][py]->getPointLights();
+                            for (unsigned int i=0;i<addLights.size();i++) {
+                                nLights.push_back(addLights[i]);
+                            }
+                        }*/
+                        plainLightCallback->setLights(nLights,prioritize);
+                        normalsCallback->setLights(nLights,prioritize);
+                        ppx = px;
+                        ppy = py;
+                    }
+                }
+            }
+
+            irr::core::position2di mousePos = irrReceiver->getMousePos();
+            if (mousePos != irr::core::position2di(mainWidth/2,mainHeight/2)) {
+                mainPlayer->yaw += ((int)mousePos.X-(int)(mainWidth/2))*0.1f;
+                mainPlayer->pitch += ((int)mousePos.Y-(int)(mainHeight/2))*0.1f;
+                irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
+            }
+
+            if (irrReceiver->IsKeyDown(irr::KEY_TAB)==false && irrReceiver->IsPrevKeyDown(irr::KEY_TAB)==true) {
+                menusOpen = menus::INVOPEN;
+                break;
+            }
+            if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) {
+                menusOpen = menus::PAUSEOPEN;
+                break;
+            }
+            stepsToMake-=1.f;
+
+            irrReceiver->perLoopUpdate();
+            prevMenusOpen = menusOpen;
+        }
+
+		/*for (unsigned int i=0;i<doorList.size();++i) {
+            doorList[i]->update();
+		}*/
 	} else {
 		//dynamics->resetTimer(time);
 	}
@@ -736,18 +942,31 @@ bool World::run() {
 
 	draw3D();
 
-	mainPlayer->booststamina(10.f,-1.f);
+	//mainPlayer->booststamina(10.f,-1.f);
 
 	drawHUD();
 
+	if (menusOpen!=menus::NONE) {
+        irrReceiver->perLoopUpdate();
+        prevMenusOpen = menusOpen;
+	}
+
     irrDriver->endScene();
 
-    time = irrTimer->getRealTime();
-	if (time-prevTime<17) irrDevice->sleep(17-(time-prevTime));
+    //time = irrTimer->getRealTime();
+	/*while (time-prevTime<1000/60) {
+        irrDevice->sleep((1000/60)-(time-prevTime));
+        time = irrTimer->getRealTime();
+    }*/
+    prevTime = time;
+
+    hudMsg = std::to_string(irrDriver->getFPS());
+    hudMsgTimer = 1000.f;
 
 	Sound::processDrops();
-	irrReceiver->perLoopUpdate();
-	prevMenusOpen = menusOpen;
+
+	//drawHandIcon.clear();
+
     return irrDevice->run();
 }
 
@@ -875,7 +1094,7 @@ void World::draw3D() {
     */
     //renderLights();
     irrDriver->setRenderTarget(0);
-    irrSmgr->drawAll();
+    irrSmgr->drawAll(1.f+stepsToMake);
     irrDriver->runAllOcclusionQueries(true);
     irrDriver->updateAllOcclusionQueries();
 }
@@ -883,6 +1102,228 @@ void World::draw3D() {
 void World::drawHUD() {
 
     itemSelected = mainPlayer->drawSelectedItem();
+
+    if (menusOpen==menus::INVOPEN) {
+        mainPlayer->selectItem(inventory_size);
+		if (prevMenusOpen!=menusOpen) {
+			Sound::freezeCategory(1);
+			irrReceiver->perLoopUpdate();
+			for (unsigned char i=0;i<inventory_size;i++) {
+                if (mainPlayer->takeFromInventory(i,false)!=nullptr) {
+                    std::string imgpath = mainPlayer->takeFromInventory(i,false)->getInvImgPath();
+                    if (imgpath!="") {
+                        invImgs[i]=irrDriver->getTexture(imgpath.c_str());
+                    }
+                }
+			}
+			irrDevice->getCursorControl()->setVisible(true);
+		}
+		for (unsigned char i=0;i<inventory_size;i++) {
+			int x,y,w,h;
+			x = mainWidth/2-(90*scale2Db*inventory_size/4)+(i%5*90*scale2Db);
+			y = mainHeight/2-(90*scale2Db*inventory_size/10)+(i/5*90*scale2Db);
+			w = 64;
+			h = 64;
+			irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,255),irr::core::recti(irr::core::position2di(x-2*scale2Db,y-2*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+2)*scale2Db)));
+			if (invImgs[i]!=nullptr && i!=dragItem) {
+				irrDriver->draw2DImage(invImgs[i],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::rect<irr::s32>(0,0,w,h));
+				if (irrReceiver->getMousePos().X>x && irrReceiver->getMousePos().X<x+w*scale2Db && irrReceiver->getMousePos().Y>y && irrReceiver->getMousePos().Y<y+h*scale2Db) {
+					font1->draw(mainPlayer->takeFromInventory(i,false)->getInvImgPath().c_str(),irr::core::recti(irr::core::position2di(x+2,y+(h+8)*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+24)*scale2Db)),irr::video::SColor(100,0,0,0),true,true);
+					font1->draw(mainPlayer->takeFromInventory(i,false)->getInvImgPath().c_str(),irr::core::recti(irr::core::position2di(x,y+(h+6)*scale2Db),irr::core::position2di(x+w*scale2Db,y+(h+22)*scale2Db)),irr::video::SColor(255,255,255,255),true,true);
+					if (irrReceiver->IsDoubleClick(0)) {
+                        mainPlayer->selectItem(i);
+						menusOpen=menus::NONE;
+					} else if (irrReceiver->IsMouseDown(0) && dragItem>=inventory_size) {
+						dragItem = i;
+					}
+				}
+			} else {
+				irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(irr::core::position2di(x,y),irr::core::position2di(x+w*scale2Db,y+h*scale2Db)));
+			}
+		}
+		if (dragItem<inventory_size) {
+			if (invImgs[dragItem]==nullptr) {
+				dragItem = inventory_size;
+			} else {
+				int x,y,w,h;
+				unsigned int dist = 100*scale2Db;
+				unsigned char targetSlot = inventory_size;
+				for (unsigned char i=0;i<inventory_size;i++) {
+					x = mainWidth/2-(90*scale2Db*inventory_size/4)+(i%5*90*scale2Db);
+					y = mainHeight/2-(90*scale2Db*inventory_size/10)+(i/5*90*scale2Db);
+					w = 64;
+					h = 64;
+
+					int xd,yd;
+					xd = x+w*scale2Db/2-irrReceiver->getMousePos().X;
+					yd = y+h*scale2Db/2-irrReceiver->getMousePos().Y;
+
+					if ((irr::u32)irr::core::squareroot(xd*xd+yd*yd)<dist) {
+						dist = irr::core::squareroot(xd*xd+yd*yd);
+						targetSlot = i;
+					}
+				}
+				if (targetSlot<inventory_size) {
+					x = mainWidth/2-(90*scale2Db*inventory_size/4)+(targetSlot%5*90*scale2Db);
+					y = mainHeight/2-(90*scale2Db*inventory_size/10)+(targetSlot/5*90*scale2Db);
+					w = 64;
+					h = 64;
+
+					irr::video::SColor colors[4];
+					colors[0]=irr::video::SColor(100,255,255,255);
+					colors[1]=colors[0];
+					colors[2]=colors[0];
+					colors[3]=colors[0];
+
+					irrDriver->draw2DImage(invImgs[dragItem],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::recti(0,0,w,h),nullptr,colors);
+				}
+				x = irrReceiver->getMousePos().X-32;
+				y = irrReceiver->getMousePos().Y-32;
+				irrDriver->draw2DImage(invImgs[dragItem],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::rect<irr::s32>(0,0,w,h));
+				if (!irrReceiver->IsMouseDown(0)) {
+					if (targetSlot!=dragItem) {
+						if (targetSlot<inventory_size) {
+							if (mainPlayer->moveToSlot(dragItem,targetSlot)==1) {
+								invImgs[targetSlot] = invImgs[dragItem];
+								invImgs[dragItem] = nullptr;
+							} else {
+								hudMsg = "This item can't be used this way";
+								hudMsgTimer = 70.f*2.f;
+							}
+						} else {
+							mainPlayer->takeFromInventory(dragItem);
+							menusOpen=menus::NONE;
+						}
+					}
+					dragItem = inventory_size;
+				}
+			}
+		}
+		if (irrReceiver->IsKeyDown(irr::KEY_TAB)==false && irrReceiver->IsPrevKeyDown(irr::KEY_TAB)==true) { menusOpen = menus::NONE; }
+		if (menusOpen!=menus::INVOPEN) {
+			Sound::unfreezeCategory(1);
+			for (unsigned char i=0;i<inventory_size;i++) {
+				if (invImgs[i]!=nullptr) {
+					irrDriver->removeTexture(invImgs[i]);
+					for (unsigned char j=0;j<inventory_size;j++) {
+						if (invImgs[j]==invImgs[i] && i!=j) invImgs[j]=nullptr;
+					}
+					invImgs[i]=nullptr;
+				}
+			}
+			irrDevice->getCursorControl()->setVisible(false);
+			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
+			irrReceiver->perLoopUpdate();
+		}
+	} else if (menusOpen==menus::PAUSEOPEN || menusOpen==menus::OPTIONSOPEN) {
+        mainPlayer->selectItem(inventory_size);
+		if (pauseImgs[0]==nullptr) {
+			pauseImgs[0] = irrDriver->getTexture("GFX/menu/pausemenu.jpg");
+			pauseImgs[1] = irrDriver->getTexture("GFX/menu/menublack.jpg");
+			pauseImgs[2] = irrDriver->getTexture("GFX/menu/menuwhite.jpg");
+			irrReceiver->perLoopUpdate();
+			irrDevice->getCursorControl()->setVisible(true);
+			Sound::freezeCategory(1);
+		}
+		irr::video::SColor corners[] {
+			irr::video::SColor(255,255,255,255),
+			irr::video::SColor(255,255,255,255),
+			irr::video::SColor(255,255,255,255),
+			irr::video::SColor(255,255,255,255)
+		};
+
+		irrDriver->draw2DImage(pauseImgs[0],irr::core::recti(mainWidth/2-300*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2+300*scale2D),irr::core::recti(0,0,600,600),nullptr,corners);
+
+		if (menusOpen==menus::PAUSEOPEN) {
+			font2->draw("PAUSED",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
+
+			if (button(std::string("Resume"),mainWidth/2-180*scale2D,mainHeight/2,455*scale2D,70*scale2D)) { menusOpen = menus::NONE; }
+			if (button(std::string("Options"),mainWidth/2-180*scale2D,mainHeight/2+80*scale2D,455*scale2D,70*scale2D)) { menusOpen = menus::OPTIONSOPEN; }
+			if (button(std::string("Quit"),mainWidth/2-180*scale2D,mainHeight/2+160*scale2D,455*scale2D,70*scale2D)) { irrDevice->closeDevice(); }//TODO: add main menu
+
+			if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = menus::NONE;
+		} else {
+			font2->draw("OPTIONS",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
+
+			if (button(std::string("Graphics"),mainWidth/2-175*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=0; }
+			if (button(std::string("Audio"),mainWidth/2-20*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=1; }
+			if (button(std::string("Controls"),mainWidth/2+135*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=2; }
+
+			irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-150*scale2D,mainWidth/2+280*scale2D,mainHeight/2+200*scale2D),irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-150*scale2D,mainWidth/2+280*scale2D,mainHeight/2+200*scale2D));
+			irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-177*scale2D,mainHeight/2-147*scale2D,mainWidth/2+277*scale2D,mainHeight/2+197*scale2D),irr::core::recti(mainWidth/2-177*scale2D,mainHeight/2-147*scale2D,mainWidth/2+277*scale2D,mainHeight/2+197*scale2D));
+
+			irr::core::recti outline;
+			std::stringstream ss;
+			std::string s;
+			unsigned char color;
+			switch (subMenusOpen) {
+				case 0:
+					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-175*scale2D,mainHeight/2-167*scale2D,mainWidth/2-36*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2-175*scale2D,mainHeight/2-167*scale2D,mainWidth/2-36*scale2D,mainHeight/2-150*scale2D));
+					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-173*scale2D,mainHeight/2-170*scale2D,mainWidth/2-39*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2-172*scale2D,mainHeight/2-170*scale2D,mainWidth/2-33*scale2D,mainHeight/2-147*scale2D));
+
+					ss << "Gamma: ";
+					ss << postProcCallback->gammaFactor;
+					s = ss.str();
+
+					font1->draw(s.c_str(),irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-125*scale2D,mainWidth/2+100*scale2D,mainHeight/2-110*scale2D),irr::video::SColor(255,255,255,255),false,false);
+
+					outline = irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-100*scale2D,mainWidth/2+260*scale2D,mainHeight/2-86*scale2D);
+					irrDriver->draw2DRectangleOutline(irr::core::recti(outline.UpperLeftCorner.X-3*scale2D,outline.UpperLeftCorner.Y-3*scale2D,outline.LowerRightCorner.X+3*scale2D,outline.LowerRightCorner.Y+3*scale2D));
+
+					if (irrReceiver->IsMouseDown(0)) {
+						if (irrReceiver->getMousePos().X>outline.UpperLeftCorner.X && irrReceiver->getMousePos().Y>outline.UpperLeftCorner.Y &&
+							irrReceiver->getMousePos().X<outline.LowerRightCorner.X && irrReceiver->getMousePos().Y<outline.LowerRightCorner.Y) {
+							postProcCallback->gammaFactor = ((irrReceiver->getMousePos().X-outline.UpperLeftCorner.X)/(float)(outline.LowerRightCorner.X-outline.UpperLeftCorner.X))*1.5f+0.5f;
+							postProcCallback->gammaFactor = ((int)(postProcCallback->gammaFactor*100.f))*0.01f;
+							postProcCallback->invGammaFactor = 1.f/postProcCallback->gammaFactor;
+						}
+					}
+
+					irrDriver->draw2DImage(blinkMeterIMG,irr::core::recti(
+						mainWidth/2-150*scale2D+(postProcCallback->gammaFactor-0.5f)/1.5f*406*scale2D,
+						mainHeight/2-100*scale2D,
+						mainWidth/2-142*scale2D+(postProcCallback->gammaFactor-0.5f)/1.5f*406*scale2D,mainHeight/2-86*scale2D),
+						irr::core::recti(0,0,8,14));
+
+					irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-65*scale2D,mainWidth/2+250*scale2D,mainHeight/2+100*scale2D));
+
+					color = std::pow(2.5f/255.f,postProcCallback->invGammaFactor)*255;
+					irrDriver->draw2DRectangle(irr::video::SColor(255,color,color,color),irr::core::recti(mainWidth/2-100*scale2D,mainHeight/2-20*scale2D,mainWidth/2-32*scale2D,mainHeight/2+48*scale2D));
+					color = std::pow(1.25f/255.f,postProcCallback->invGammaFactor)*255;
+					irrDriver->draw2DRectangle(irr::video::SColor(255,color,color,color),irr::core::recti(mainWidth/2+132*scale2D,mainHeight/2-20*scale2D,mainWidth/2+200*scale2D,mainHeight/2+48*scale2D));
+					font1->draw("Drag the slider so that the left square",irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2+105*scale2D,mainWidth/2+100*scale2D,mainHeight/2+120*scale2D),irr::video::SColor(255,255,255,255),false,false);
+					font1->draw("is visible but the right square isn't",irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2+120*scale2D,mainWidth/2+100*scale2D,mainHeight/2+135*scale2D),irr::video::SColor(255,255,255,255),false,false);
+				break;
+				case 1:
+					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-20*scale2D,mainHeight/2-167*scale2D,mainWidth/2+119*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2-20*scale2D,mainHeight/2-167*scale2D,mainWidth/2+119*scale2D,mainHeight/2-150*scale2D));
+					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-18*scale2D,mainHeight/2-170*scale2D,mainWidth/2+116*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2-18*scale2D,mainHeight/2-170*scale2D,mainWidth/2+116*scale2D,mainHeight/2-147*scale2D));
+				break;
+				case 2:
+					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2+135*scale2D,mainHeight/2-167*scale2D,mainWidth/2+274*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2+135*scale2D,mainHeight/2-167*scale2D,mainWidth/2+274*scale2D,mainHeight/2-150*scale2D));
+					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2+137*scale2D,mainHeight/2-170*scale2D,mainWidth/2+271*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2+137*scale2D,mainHeight/2-170*scale2D,mainWidth/2+271*scale2D,mainHeight/2-147*scale2D));
+				break;
+			};
+
+			if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = menus::PAUSEOPEN;
+		}
+
+		if (menusOpen!=menus::PAUSEOPEN && menusOpen!=menus::OPTIONSOPEN) {
+			irrDriver->removeTexture(pauseImgs[0]); pauseImgs[0]=nullptr;
+			irrDriver->removeTexture(pauseImgs[1]); pauseImgs[1]=nullptr;
+			irrDriver->removeTexture(pauseImgs[2]); pauseImgs[2]=nullptr;
+			irrDevice->getCursorControl()->setVisible(false);
+			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
+			Sound::unfreezeCategory(1);
+			irrReceiver->perLoopUpdate();
+		}
+	} else {
+        if (drawHandIcon.size()>0) {
+            for (unsigned int i=0;i<drawHandIcon.size();i++) {
+                irrDriver->draw2DImage(irrDriver->getTexture("GFX/handsymbol.png"),drawHandIcon[i]-irr::core::vector2di(16,16));
+                //std::cout<<"handicon_draw\n";
+            }
+        }
+	}
 
 	if (hudMsgTimer>0.f) {
 		hudMsgTimer-=1.f;
@@ -1039,217 +1480,6 @@ void World::drawHUD() {
     irrDriver->draw2DRectangle(irr::video::SColor(255,0,255,0),irr::core::recti((19-endPos.X)*10,endPos.Y*10,(19-endPos.X)*10+8,endPos.Y*10+8));
     //} endPathCode
 #endif
-
-    if (menusOpen==menus::INVOPEN) {
-        mainPlayer->selectItem(inventory_size);
-		if (prevMenusOpen!=menusOpen) {
-			Sound::freezeCategory(1);
-			irrReceiver->perLoopUpdate();
-			for (unsigned char i=0;i<inventory_size;i++) {
-				std::string imgpath = mainPlayer->getItemInvImg(i);
-				if (imgpath!="") {
-					invImgs[i]=irrDriver->getTexture(imgpath.c_str());
-				}
-			}
-			irrDevice->getCursorControl()->setVisible(true);
-		}
-		for (unsigned char i=0;i<inventory_size;i++) {
-			int x,y,w,h;
-			x = mainWidth/2-(90*scale2Db*inventory_size/4)+(i%5*90*scale2Db);
-			y = mainHeight/2-(90*scale2Db*inventory_size/10)+(i/5*90*scale2Db);
-			w = 64;
-			h = 64;
-			irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,255),irr::core::recti(irr::core::position2di(x-2*scale2Db,y-2*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+2)*scale2Db)));
-			if (invImgs[i]!=nullptr && i!=dragItem) {
-				irrDriver->draw2DImage(invImgs[i],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::rect<irr::s32>(0,0,w,h));
-				if (irrReceiver->getMousePos().X>x && irrReceiver->getMousePos().X<x+w*scale2Db && irrReceiver->getMousePos().Y>y && irrReceiver->getMousePos().Y<y+h*scale2Db) {
-					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x+2,y+(h+8)*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+24)*scale2Db)),irr::video::SColor(100,0,0,0),true,true);
-					font1->draw(mainPlayer->getItemName(i).c_str(),irr::core::recti(irr::core::position2di(x,y+(h+6)*scale2Db),irr::core::position2di(x+w*scale2Db,y+(h+22)*scale2Db)),irr::video::SColor(255,255,255,255),true,true);
-					if (irrReceiver->IsDoubleClick(0)) {
-                        mainPlayer->selectItem(i);
-						menusOpen=menus::NONE;
-					} else if (irrReceiver->IsMouseDown(0) && dragItem>=inventory_size) {
-						dragItem = i;
-					}
-				}
-			} else {
-				irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(irr::core::position2di(x,y),irr::core::position2di(x+w*scale2Db,y+h*scale2Db)));
-			}
-		}
-		if (dragItem<inventory_size) {
-			if (invImgs[dragItem]==nullptr) {
-				dragItem = inventory_size;
-			} else {
-				int x,y,w,h;
-				unsigned int dist = 100*scale2Db;
-				unsigned char targetSlot = inventory_size;
-				for (unsigned char i=0;i<inventory_size;i++) {
-					x = mainWidth/2-(90*scale2Db*inventory_size/4)+(i%5*90*scale2Db);
-					y = mainHeight/2-(90*scale2Db*inventory_size/10)+(i/5*90*scale2Db);
-					w = 64;
-					h = 64;
-
-					int xd,yd;
-					xd = x+w*scale2Db/2-irrReceiver->getMousePos().X;
-					yd = y+h*scale2Db/2-irrReceiver->getMousePos().Y;
-
-					if ((irr::u32)irr::core::squareroot(xd*xd+yd*yd)<dist) {
-						dist = irr::core::squareroot(xd*xd+yd*yd);
-						targetSlot = i;
-					}
-				}
-				if (targetSlot<inventory_size) {
-					x = mainWidth/2-(90*scale2Db*inventory_size/4)+(targetSlot%5*90*scale2Db);
-					y = mainHeight/2-(90*scale2Db*inventory_size/10)+(targetSlot/5*90*scale2Db);
-					w = 64;
-					h = 64;
-
-					irr::video::SColor colors[4];
-					colors[0]=irr::video::SColor(100,255,255,255);
-					colors[1]=colors[0];
-					colors[2]=colors[0];
-					colors[3]=colors[0];
-
-					irrDriver->draw2DImage(invImgs[dragItem],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::recti(0,0,w,h),nullptr,colors);
-				}
-				x = irrReceiver->getMousePos().X-32;
-				y = irrReceiver->getMousePos().Y-32;
-				irrDriver->draw2DImage(invImgs[dragItem],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::rect<irr::s32>(0,0,w,h));
-				if (!irrReceiver->IsMouseDown(0)) {
-					if (targetSlot!=dragItem) {
-						if (targetSlot<inventory_size) {
-							if (mainPlayer->moveToSlot(dragItem,targetSlot)==1) {
-								invImgs[targetSlot] = invImgs[dragItem];
-								invImgs[dragItem] = nullptr;
-							} else {
-								hudMsg = "This item can't be used this way";
-								hudMsgTimer = 70.f*2.f;
-							}
-						} else {
-							mainPlayer->takeFromInventory(dragItem);
-							menusOpen=menus::NONE;
-						}
-					}
-					dragItem = inventory_size;
-				}
-			}
-		}
-		if (irrReceiver->IsKeyDown(irr::KEY_TAB)==false && irrReceiver->IsPrevKeyDown(irr::KEY_TAB)==true) menusOpen = menus::NONE;
-		if (menusOpen!=menus::INVOPEN) {
-			Sound::unfreezeCategory(1);
-			for (unsigned char i=0;i<inventory_size;i++) {
-				if (invImgs[i]!=nullptr) {
-					irrDriver->removeTexture(invImgs[i]);
-					for (unsigned char j=0;j<inventory_size;j++) {
-						if (invImgs[j]==invImgs[i] && i!=j) invImgs[j]=nullptr;
-					}
-					invImgs[i]=nullptr;
-				}
-			}
-			irrDevice->getCursorControl()->setVisible(false);
-			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
-		}
-	} else if (menusOpen==menus::PAUSEOPEN || menusOpen==menus::OPTIONSOPEN) {
-        mainPlayer->selectItem(inventory_size);
-		if (pauseImgs[0]==nullptr) {
-			pauseImgs[0] = irrDriver->getTexture("GFX/menu/pausemenu.jpg");
-			pauseImgs[1] = irrDriver->getTexture("GFX/menu/menublack.jpg");
-			pauseImgs[2] = irrDriver->getTexture("GFX/menu/menuwhite.jpg");
-			irrReceiver->perLoopUpdate();
-			irrDevice->getCursorControl()->setVisible(true);
-			Sound::freezeCategory(1);
-		}
-		irr::video::SColor corners[] {
-			irr::video::SColor(255,255,255,255),
-			irr::video::SColor(255,255,255,255),
-			irr::video::SColor(255,255,255,255),
-			irr::video::SColor(255,255,255,255)
-		};
-
-		irrDriver->draw2DImage(pauseImgs[0],irr::core::recti(mainWidth/2-300*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2+300*scale2D),irr::core::recti(0,0,600,600),nullptr,corners);
-
-		if (menusOpen==menus::PAUSEOPEN) {
-			font2->draw("PAUSED",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
-
-			if (button(std::string("Resume"),mainWidth/2-180*scale2D,mainHeight/2,455*scale2D,70*scale2D)) { menusOpen = menus::NONE; }
-			if (button(std::string("Options"),mainWidth/2-180*scale2D,mainHeight/2+80*scale2D,455*scale2D,70*scale2D)) { menusOpen = menus::OPTIONSOPEN; }
-			if (button(std::string("Quit"),mainWidth/2-180*scale2D,mainHeight/2+160*scale2D,455*scale2D,70*scale2D)) { irrDevice->closeDevice(); }//TODO: add main menu
-
-			if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = menus::NONE;
-		} else {
-			font2->draw("OPTIONS",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
-
-			if (button(std::string("Graphics"),mainWidth/2-175*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=0; }
-			if (button(std::string("Audio"),mainWidth/2-20*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=1; }
-			if (button(std::string("Controls"),mainWidth/2+135*scale2D,mainHeight/2-190*scale2D,140*scale2D,24*scale2D)) { subMenusOpen=2; }
-
-			irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-150*scale2D,mainWidth/2+280*scale2D,mainHeight/2+200*scale2D),irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-150*scale2D,mainWidth/2+280*scale2D,mainHeight/2+200*scale2D));
-			irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-177*scale2D,mainHeight/2-147*scale2D,mainWidth/2+277*scale2D,mainHeight/2+197*scale2D),irr::core::recti(mainWidth/2-177*scale2D,mainHeight/2-147*scale2D,mainWidth/2+277*scale2D,mainHeight/2+197*scale2D));
-
-			irr::core::recti outline;
-			std::stringstream ss;
-			std::string s;
-			unsigned char color;
-			switch (subMenusOpen) {
-				case 0:
-					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-175*scale2D,mainHeight/2-167*scale2D,mainWidth/2-36*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2-175*scale2D,mainHeight/2-167*scale2D,mainWidth/2-36*scale2D,mainHeight/2-150*scale2D));
-					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-173*scale2D,mainHeight/2-170*scale2D,mainWidth/2-39*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2-172*scale2D,mainHeight/2-170*scale2D,mainWidth/2-33*scale2D,mainHeight/2-147*scale2D));
-
-					ss << "Gamma: ";
-					ss << postProcCallback->gammaFactor;
-					s = ss.str();
-
-					font1->draw(s.c_str(),irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-125*scale2D,mainWidth/2+100*scale2D,mainHeight/2-110*scale2D),irr::video::SColor(255,255,255,255),false,false);
-
-					outline = irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-100*scale2D,mainWidth/2+260*scale2D,mainHeight/2-86*scale2D);
-					irrDriver->draw2DRectangleOutline(irr::core::recti(outline.UpperLeftCorner.X-3*scale2D,outline.UpperLeftCorner.Y-3*scale2D,outline.LowerRightCorner.X+3*scale2D,outline.LowerRightCorner.Y+3*scale2D));
-
-					if (irrReceiver->IsMouseDown(0)) {
-						if (irrReceiver->getMousePos().X>outline.UpperLeftCorner.X && irrReceiver->getMousePos().Y>outline.UpperLeftCorner.Y &&
-							irrReceiver->getMousePos().X<outline.LowerRightCorner.X && irrReceiver->getMousePos().Y<outline.LowerRightCorner.Y) {
-							postProcCallback->gammaFactor = ((irrReceiver->getMousePos().X-outline.UpperLeftCorner.X)/(float)(outline.LowerRightCorner.X-outline.UpperLeftCorner.X))*1.5f+0.5f;
-							postProcCallback->gammaFactor = ((int)(postProcCallback->gammaFactor*100.f))*0.01f;
-							postProcCallback->invGammaFactor = 1.f/postProcCallback->gammaFactor;
-						}
-					}
-
-					irrDriver->draw2DImage(blinkMeterIMG,irr::core::recti(
-						mainWidth/2-150*scale2D+(postProcCallback->gammaFactor-0.5f)/1.5f*406*scale2D,
-						mainHeight/2-100*scale2D,
-						mainWidth/2-142*scale2D+(postProcCallback->gammaFactor-0.5f)/1.5f*406*scale2D,mainHeight/2-86*scale2D),
-						irr::core::recti(0,0,8,14));
-
-					irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-65*scale2D,mainWidth/2+250*scale2D,mainHeight/2+100*scale2D));
-
-					color = std::pow(2.5f/255.f,postProcCallback->invGammaFactor)*255;
-					irrDriver->draw2DRectangle(irr::video::SColor(255,color,color,color),irr::core::recti(mainWidth/2-100*scale2D,mainHeight/2-20*scale2D,mainWidth/2-32*scale2D,mainHeight/2+48*scale2D));
-					color = std::pow(1.25f/255.f,postProcCallback->invGammaFactor)*255;
-					irrDriver->draw2DRectangle(irr::video::SColor(255,color,color,color),irr::core::recti(mainWidth/2+132*scale2D,mainHeight/2-20*scale2D,mainWidth/2+200*scale2D,mainHeight/2+48*scale2D));
-					font1->draw("Drag the slider so that the left square",irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2+105*scale2D,mainWidth/2+100*scale2D,mainHeight/2+120*scale2D),irr::video::SColor(255,255,255,255),false,false);
-					font1->draw("is visible but the right square isn't",irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2+120*scale2D,mainWidth/2+100*scale2D,mainHeight/2+135*scale2D),irr::video::SColor(255,255,255,255),false,false);
-				break;
-				case 1:
-					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2-20*scale2D,mainHeight/2-167*scale2D,mainWidth/2+119*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2-20*scale2D,mainHeight/2-167*scale2D,mainWidth/2+119*scale2D,mainHeight/2-150*scale2D));
-					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-18*scale2D,mainHeight/2-170*scale2D,mainWidth/2+116*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2-18*scale2D,mainHeight/2-170*scale2D,mainWidth/2+116*scale2D,mainHeight/2-147*scale2D));
-				break;
-				case 2:
-					irrDriver->draw2DImage(pauseImgs[2],irr::core::recti(mainWidth/2+135*scale2D,mainHeight/2-167*scale2D,mainWidth/2+274*scale2D,mainHeight/2-150*scale2D),irr::core::recti(mainWidth/2+135*scale2D,mainHeight/2-167*scale2D,mainWidth/2+274*scale2D,mainHeight/2-150*scale2D));
-					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2+137*scale2D,mainHeight/2-170*scale2D,mainWidth/2+271*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2+137*scale2D,mainHeight/2-170*scale2D,mainWidth/2+271*scale2D,mainHeight/2-147*scale2D));
-				break;
-			};
-
-			if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = menus::PAUSEOPEN;
-		}
-
-		if (menusOpen!=menus::PAUSEOPEN && menusOpen!=menus::OPTIONSOPEN) {
-			irrDriver->removeTexture(pauseImgs[0]); pauseImgs[0]=nullptr;
-			irrDriver->removeTexture(pauseImgs[1]); pauseImgs[1]=nullptr;
-			irrDriver->removeTexture(pauseImgs[2]); pauseImgs[2]=nullptr;
-			irrDevice->getCursorControl()->setVisible(false);
-			irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
-			Sound::unfreezeCategory(1);
-		}
-	}
 }
 
 void World::drawFog() {
