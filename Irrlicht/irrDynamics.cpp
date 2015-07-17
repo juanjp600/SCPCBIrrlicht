@@ -56,20 +56,20 @@ btDiscreteDynamicsWorld* irrDynamics::getCollisionWorld() {
 	return world;
 }
 
-void irrDynamics::simStep(u32 curTimeStamp,float prec) {
-    if (lastStep == 0)
-        lastStep = curTimeStamp;
+void irrDynamics::simStep(f32 elapsedTime,f32 prec) {
+    //if (lastStep == 0)
+    //    lastStep = curTimeStamp;
 
-    if ((curTimeStamp - lastStep)<=0) return;
-    world->stepSimulation((curTimeStamp - lastStep) * 0.001f, 14.f*prec/60.f, 1.0/prec);
+    //if ((curTimeStamp - lastStep)<=0) return;
+    world->stepSimulation(elapsedTime, 14.f*prec/60.f, 1.0/prec);
 
     updateObjects();
-    lastStep = curTimeStamp;
+    //lastStep = curTimeStamp;
 }
 
-void irrDynamics::resetTimer(u32 curTimeStamp) {
+/*void irrDynamics::resetTimer(u32 curTimeStamp) {
 	lastStep = curTimeStamp;
-}
+}*/
 
 void irrDynamics::shutdown() {
     clearObjects();
@@ -80,7 +80,7 @@ void irrDynamics::shutdown() {
     delete collisionConfiguration;
 }
 
-btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,float mass,unsigned int precisionLoss,short group,short mask) { //any concave stuff will become convex
+btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,f32 mass,unsigned int precisionLoss,short group,short mask) { //any concave stuff will become convex
 	node->updateAbsolutePosition();
 	core::vector3df irrPos = node->getPosition();
 	btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
@@ -98,7 +98,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 	u32 i,k,numVertices;
 	btConvexHullShape *mShape = new btConvexHullShape();
 
-	float mx,Mx,my,My,mz,Mz;
+	f32 mx,Mx,my,My,mz,Mz;
 	Mx = My = Mz = -INFINITY;
 	mx = my = mz = INFINITY;
 
@@ -155,7 +155,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 	mOffset->Y = (my+My)/2.f;
 	mOffset->Z = (mz+Mz)/2.f;
 
-	float ccdThreshold = std::min(Mx-mx,std::min(My-my,Mz-mz));
+	f32 ccdThreshold = std::min(Mx-mx,std::min(My-my,Mz-mz));
 
 	for (i=0; i<bufferCount; i++) { //set offset to vertices
 		scene::IMeshBuffer* mb=pMesh->getMeshBuffer(i);
@@ -204,7 +204,7 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 	rbody->setFriction(mass*0.001);
 	rbody->setRollingFriction(mass);
 	rbody->setCcdMotionThreshold(ccdThreshold);
-	rbody->setCcdSweptSphereRadius(ccdThreshold/2.0);
+	rbody->setCcdSweptSphereRadius(ccdThreshold*0.5f);
 
 	objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rbody));
 	offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));
@@ -212,10 +212,10 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,flo
 	return rbody;
 }
 
-void irrDynamics::registerNewRBody(irr::scene::ISceneNode* node,btRigidBody* rbody,float mass,short group,short mask,irr::core::vector3df nOffset) {
+void irrDynamics::registerNewRBody(irr::scene::ISceneNode* node,btRigidBody* rbody,f32 mass,short group,short mask,irr::core::vector3df nOffset) {
     world->addRigidBody(rbody,group,mask);
 
-	if (mass>=0.f) {
+	if (mass>0.f) {
 		rbody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
 		rbody->setFriction(mass*0.001);
 		rbody->setRollingFriction(mass);
@@ -524,16 +524,16 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
     // Create the shape
     btConvexHullShape *mShape = new btConvexHullShape();
 
-	float oRadius = radius;
+	f32 oRadius = radius;
 	height-=oRadius*0.1f;
 	radius-=oRadius*0.1f;
 	for (int i=0;i<90;i++) {
-		float fi = (float)i*4.f*irr::core::DEGTORAD;
-		mShape->addPoint(btVector3(std::cos(fi)*0.2f*radius,-height*0.5f,std::sin(fi)*0.2f*radius));
-		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*0.9f,std::sin(fi)*radius));
+		f32 fi = (f32)i*4.f*irr::core::DEGTORAD;
+		mShape->addPoint(btVector3(std::cos(fi)*0.1f*radius,-height*0.5f,std::sin(fi)*0.1f*radius));
+		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*1.1f,std::sin(fi)*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));
 	}
-	mShape->setMargin(oRadius*0.1f);
+	mShape->setMargin(oRadius*0.02f);
 	//mShape->initializePolyhedralFeatures();
 
     // Add mass
@@ -583,6 +583,7 @@ btRigidBody* irrDynamics::addCapsuleObject(scene::ISceneNode* node, f32 height, 
     // Add mass
     btVector3 localInertia;
     shape->calculateLocalInertia(mass, localInertia);
+    shape->setMargin(0.1f);
 
     // Create the rigid body object
     btRigidBody *rigidBody = new btRigidBody(mass, motionState, shape, localInertia);
@@ -644,9 +645,11 @@ btRigidBody* irrDynamics::addBoxObject(scene::ISceneNode* node, f32 mass,short g
     // Add it to the world
     world->addRigidBody(rigidBody,group,mask);
 
-    rigidBody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
-    rigidBody->setFriction(mass*0.001);
-    rigidBody->setRollingFriction(mass);
+    if (mass>0.f) {
+        rigidBody->setDamping((1.0/mass)*1.0,(1.0/mass)*1.0);
+        rigidBody->setFriction(mass*0.001);
+        rigidBody->setRollingFriction(mass);
+    }
 
     objects.insert(std::pair<scene::ISceneNode*, btRigidBody*>(node, rigidBody));
     offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(node, mOffset));

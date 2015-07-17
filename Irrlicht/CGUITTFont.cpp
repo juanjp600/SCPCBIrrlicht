@@ -31,6 +31,8 @@
 #include <irrlicht.h>
 #include "CGUITTFont.h"
 
+#include <iostream>
+
 namespace irr
 {
 namespace gui
@@ -121,7 +123,7 @@ video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVide
 				u8* row = glyph_data;
 				for (s32 x = 0; x < bits.width; ++x)
 				{
-					image_data[y * image_pitch + x] |= static_cast<u32>(255.0f * (static_cast<float>(*row++) / gray_count)) << 24;
+					image_data[y * image_pitch + x] |= static_cast<u32>(255.0f * core::min_((static_cast<float>(*row++) / gray_count),1.f)) << 24;
 					//data[y * image_pitch + x] |= ((u32)(*bitsdata++) << 24);
 				}
 				glyph_data += bits.pitch;
@@ -1002,10 +1004,10 @@ core::array<scene::ISceneNode*> CGUITTFont::addTextSceneNode(const wchar_t* text
 	vector3df start_point(0, 0, 0), offset;
 
 	/** NOTICE:
-		Because we are considering adding texts into 3D world, all Y axis vectors are inverted.
+		Because we are considering adding texts into 3D World, all Y axis vectors are inverted.
 	**/
 
-	// There's currently no "vertical center" concept when you apply text scene node to the 3D world.
+	// There's currently no "vertical center" concept when you apply text scene node to the 3D World.
 	if (center)
 	{
 		offset.X = start_point.X = -text_size.Width / 2.f;
