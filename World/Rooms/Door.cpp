@@ -1,4 +1,4 @@
-#include "../../Sound/soundWrapper.h"
+#include "../../Sound/SoundWrapper.h"
 #include "Door.h"
 #include "../World.h"
 

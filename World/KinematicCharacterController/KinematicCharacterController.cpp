@@ -155,6 +155,7 @@ CharacterController::CharacterController (btPairCachingGhostObject* ghostObject,
    m_currentPosition.setValue(0,0,0);
    m_targetPosition.setValue(0,0,0);
    m_ghostObject->getWorldTransform().setOrigin(m_currentPosition);
+   stuck = false;
 }
 //---------------------------------------------------------------------------------------
 CharacterController::~CharacterController ()
@@ -263,9 +264,9 @@ void CharacterController::stepUp ( btCollisionWorld* world)
    }
 }
 //---------------------------------------------------------------------------------------
-void CharacterController::updateTargetPositionBasedOnCollision (const btVector3& hitNormal, btScalar tangentMag, btScalar normalMag)
+void CharacterController::updateTargetPositionBasedOnCollision (const btVector3& m_tempPos,const btVector3& hitNormal, btScalar tangentMag, btScalar normalMag)
 {
-   btVector3 movementDirection = m_targetPosition - m_currentPosition;
+   btVector3 movementDirection = m_targetPosition - m_tempPos;
    btScalar movementLength = movementDirection.length();
    if (movementLength>SIMD_EPSILON)
    {
@@ -279,7 +280,7 @@ void CharacterController::updateTargetPositionBasedOnCollision (const btVector3&
       parallelDir = parallelComponent (reflectDir, hitNormal);
       perpindicularDir = perpindicularComponent (reflectDir, hitNormal);
 
-      m_targetPosition = m_currentPosition;
+      m_targetPosition = m_tempPos;
       if (0)//tangentMag != 0.0)
       {
          btVector3 parComponent = parallelDir * btScalar (tangentMag*movementLength);
@@ -310,63 +311,104 @@ void CharacterController::stepForwardAndStrafe ( btCollisionWorld* collisionWorl
    start.setIdentity ();
    end.setIdentity ();
 
-   btScalar fraction = 1.0;
    btScalar distance2 = (m_currentPosition-m_targetPosition).length2();
+   btScalar fraction = distance2;
 //   printf("distance2=%f\n",distance2);
 
-   if (m_touchingContact)
+   /*if (m_touchingContact)
    {
       if (m_normalizedDirection.dot(m_touchingNormal) > btScalar(0.0))
       {
-         updateTargetPositionBasedOnCollision (m_touchingNormal);
+         updateTargetPositionBasedOnCollision (m_currentPosition,m_touchingNormal);
       }
-   }
+   }*/
 
-   int maxIter = 10;
+   int maxIter = 2;
+    btVector3 oldPos = m_currentPosition;
+    btVector3 firstSweepPoint;
+    bool reDirred = false;
+    btVector3 m_tempPos = m_currentPosition;
 
-   while (fraction > btScalar(0.01) && maxIter-- > 0)
+    btVector3 sweepOffset;
+
+    btScalar margin = m_convexShape->getMargin();
+      m_convexShape->setMargin(margin + m_addedMargin);
+
+    if (!stuck) {
+
+   while (maxIter > 0)
    {
-      start.setOrigin (m_currentPosition);
-      end.setOrigin (m_targetPosition);
-      btVector3 sweepDirNegative(m_currentPosition - m_targetPosition);
+      start.setOrigin (m_tempPos+sweepOffset);
+      end.setOrigin (m_targetPosition+sweepOffset);
+      btVector3 sweepDirNegative(m_tempPos - m_targetPosition);
 
       btKinematicClosestNotMeConvexResultCallback callback (m_ghostObject, sweepDirNegative, btScalar(0.0));
       callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
       callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
 
 
-      btScalar margin = m_convexShape->getMargin();
-      m_convexShape->setMargin(margin + m_addedMargin);
 
-
-      if (m_useGhostObjectSweepTest)
-      {
-         m_ghostObject->convexSweepTest (m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
-      } else
-      {
-         collisionWorld->convexSweepTest (m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+      //if (shouldSweep) {
+      if (maxIter<2) {
+          if (m_useGhostObjectSweepTest)
+          {
+             m_ghostObject->convexSweepTest (m_convexShape, start, end, callback, 0.0);
+          } else
+          {
+             collisionWorld->convexSweepTest (m_convexShape, start, end, callback, 0.0);
+          }
       }
 
-      m_convexShape->setMargin(margin);
+      if (callback.hasHit() || maxIter>=2) {
+          start.setOrigin (m_tempPos);
+          end.setOrigin (m_targetPosition);
+          if (m_useGhostObjectSweepTest)
+          {
+             m_ghostObject->convexSweepTest (m_convexShape, start, end, callback, 0.0);
+          } else
+          {
+             collisionWorld->convexSweepTest (m_convexShape, start, end, callback, 0.0);
+          }
+      }
 
-
-      fraction -= callback.m_closestHitFraction;
+      //fraction -= callback.m_closestHitFraction;
 
       if (callback.hasHit())
       {
+        //std::cout<<"HIT"<<callback.m_closestHitFraction<<"\n";
+        /*reDirred = true;
          // we moved only a fraction
          btScalar hitDistance;
-         hitDistance = (callback.m_hitPointWorld - m_currentPosition).length();
+         hitDistance = (callback.m_hitPointWorld - m_tempPos).length();*/
+         //m_tempPos.setInterpolate3 (m_tempPos, m_targetPosition, callback.m_closestHitFraction);
+         //m_tempPos = callback.m_hitPointWorld;
+        m_tempPos.setInterpolate3 (m_tempPos, m_targetPosition, callback.m_closestHitFraction);
+        btVector3 currentDir = m_targetPosition - m_tempPos;
+        btVector3 reflectDir = computeReflectionDirection (currentDir, callback.m_hitNormalWorld);
+      reflectDir.normalize();
+        reflectDir *= currentDir.length();
+        m_targetPosition = m_tempPos+perpindicularComponent (reflectDir, callback.m_hitNormalWorld);
 
-//         m_currentPosition.setInterpolate3 (m_currentPosition, m_targetPosition, callback.m_closestHitFraction);
+        if (maxIter<=1) {
+            m_tempPos = firstSweepPoint;
+            m_targetPosition = m_tempPos;
+            stuck = true;
+            break;
+        } else {
+            firstSweepPoint = m_tempPos;
+        }
+        callback.m_hitNormalWorld[1] = 0.f;
+        callback.m_hitNormalWorld.normalize();
+        sweepOffset = callback.m_hitNormalWorld*0.03;
 
-         updateTargetPositionBasedOnCollision (callback.m_hitNormalWorld);
-         btVector3 currentDir = m_targetPosition - m_currentPosition;
+        /* updateTargetPositionBasedOnCollision (m_tempPos,callback.m_hitNormalWorld);
+         btVector3 currentDir = m_targetPosition - m_tempPos;
          distance2 = currentDir.length2();
+         fraction = distance2;
          if (distance2 > SIMD_EPSILON)
          {
             currentDir.normalize();
-            /* See Quake2: "If velocity is against original velocity, stop ead to avoid tiny oscilations in sloping corners." */
+            /* See Quake2: "If velocity is against original velocity, stop ead to avoid tiny oscilations in sloping corners." *\/
             if (currentDir.dot(m_normalizedDirection) <= btScalar(0.0))
             {
                break;
@@ -375,17 +417,29 @@ void CharacterController::stepForwardAndStrafe ( btCollisionWorld* collisionWorl
          {
 //            printf("currentDir: don't normalize a zero vector\n");
             break;
-         }
+         }*/
 
       } else {
          // we moved whole way
-         m_currentPosition = m_targetPosition;
+         maxIter = 0;
+         m_tempPos = m_targetPosition;
+         break;
       }
+        //}
+
+      maxIter--;
 
    //   if (callback.m_closestHitFraction == 0.f)
    //      break;
-
    }
+
+    } else {
+        m_targetPosition = m_currentPosition;
+    }
+
+   m_convexShape->setMargin(margin);
+
+   m_currentPosition = m_tempPos;
 }
 //---------------------------------------------------------------------------------------
 void CharacterController::stepDown ( btCollisionWorld* collisionWorld, btScalar dt)
@@ -450,9 +504,12 @@ void CharacterController::stepDown ( btCollisionWorld* collisionWorld, btScalar 
 //---------------------------------------------------------------------------------------
 void CharacterController::setWalkDirection(const btVector3& walkDirection)
 {
-   m_useWalkDirection = true;
-   m_walkDirection = walkDirection;
-   m_normalizedDirection = getNormalizedVector(m_walkDirection);
+    if (m_walkDirection!=walkDirection) {
+       m_useWalkDirection = true;
+       m_walkDirection = walkDirection;
+       m_normalizedDirection = getNormalizedVector(m_walkDirection);
+       stuck = false;
+    }
 }
 //---------------------------------------------------------------------------------------
 void CharacterController::setVelocityForTimeInterval(const btVector3& velocity, btScalar timeInterval)
@@ -489,7 +546,7 @@ void CharacterController::preStep (  btCollisionWorld* collisionWorld)
    {
       numPenetrationLoops++;
       m_touchingContact = true;
-      if (numPenetrationLoops > 4)
+      if (numPenetrationLoops > 2)
       {
          //printf("character could not recover from penetration = %d\n", numPenetrationLoops);
          break;

@@ -151,7 +151,7 @@ class World {
         irrDynamics* dynamics;
 
         class Player* mainPlayer;
-        class NPC* testNPC;
+        class NPC* testNPC[15];
 
         irr::core::vector2di marked;
 

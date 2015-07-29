@@ -3,6 +3,7 @@
 
 #include "NPCs/NPC096.h"
 #include "NPCs/NPC173.h"
+#include "NPCs/NPC178.h"
 
 #include "Rooms/Room.h"
 #include "Rooms/RMesh.h"
@@ -446,9 +447,17 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC096::baseNode->getMaterial(1).setTexture(1,irrDriver->getTexture("GFX/NPCs/normal_flat.png"));
     NPC096::baseNode->getMaterial(1).setTexture(2,irrDriver->getTexture("GFX/NPCs/SCP096_specular.png"));
     NPC096::baseNode->getMaterial(2).MaterialType = plainLightShader;
-    NPC096::baseNode->setScale(irr::core::vector3df(4.f,4.f,4.f));
+    NPC096::baseNode->setScale(irr::core::vector3df(4.f*RoomScale,4.f*RoomScale,4.f*RoomScale));
     NPC096::baseNode->setFrameLoop(1059,1074);
     NPC096::baseNode->setAnimationSpeed(64.0f);
+
+    NPC::owner = this;
+    NPC::dynamics = dynamics;
+    NPC178::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/npc178.b3d"));
+    NPC178::baseNode->getMaterial(0).MaterialType = plainLightShader;
+    NPC178::baseNode->setScale(irr::core::vector3df(0.5f*RoomScale,0.5f*RoomScale,0.5f*RoomScale));
+    NPC178::baseNode->setFrameLoop(64,92);
+    NPC178::baseNode->setAnimationSpeed(64.0f);
 
     NPC173::baseNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/173_2.b3d"));
 
@@ -470,7 +479,9 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC173::baseNode->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/NPCs/173_norm.jpg"));
     NPC173::baseNode->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/173_Spec.jpg"));
 
-    //testNPC = NPC173::createNPC173();
+    for (int i=0;i<15;i++) {
+        testNPC[i] = NPC178::createNPC178();
+    }
     //static_cast<NPC173*>(testNPC)->boxNode = irrSmgr->addCubeSceneNode();
 
 	mainPlayer = new Player(this,irrSmgr,dynamics,irrReceiver);
@@ -648,10 +659,12 @@ bool World::run() {
 
             //std::cout<<mainPlayer->getPosition().X<<"\n";
             mainPlayer->update();
-            dynamics->simStep(1.f/60.f,60.f * prec);
+            dynamics->simStep(1.f/60.f,1.f/60.f);
             mainPlayer->resetSpeeds();
-            //testNPC->update();
-            //testNPC->updateModel();
+            for (int i=0;i<15;i++) {
+                testNPC[i]->update();
+                testNPC[i]->updateModel();
+            }
             irr::core::matrix4 tMat = irrDriver->getTransform(irr::video::ETS_PROJECTION)*irrDriver->getTransform(irr::video::ETS_VIEW);
             for (unsigned int i=0;i<itemList.size();i++) {
                 if ((mainPlayer->getPosition()-itemList[i]->getPosition()).getLengthSQ()<500.f*RoomScale*RoomScale) {
@@ -1128,8 +1141,8 @@ void World::drawHUD() {
 			if (invImgs[i]!=nullptr && i!=dragItem) {
 				irrDriver->draw2DImage(invImgs[i],irr::core::recti(x,y,x+w*scale2Db,y+h*scale2Db),irr::core::rect<irr::s32>(0,0,w,h));
 				if (irrReceiver->getMousePos().X>x && irrReceiver->getMousePos().X<x+w*scale2Db && irrReceiver->getMousePos().Y>y && irrReceiver->getMousePos().Y<y+h*scale2Db) {
-					font1->draw(mainPlayer->takeFromInventory(i,false)->getInvImgPath().c_str(),irr::core::recti(irr::core::position2di(x+2,y+(h+8)*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+24)*scale2Db)),irr::video::SColor(100,0,0,0),true,true);
-					font1->draw(mainPlayer->takeFromInventory(i,false)->getInvImgPath().c_str(),irr::core::recti(irr::core::position2di(x,y+(h+6)*scale2Db),irr::core::position2di(x+w*scale2Db,y+(h+22)*scale2Db)),irr::video::SColor(255,255,255,255),true,true);
+					font1->draw(mainPlayer->takeFromInventory(i,false)->getInvName().c_str(),irr::core::recti(irr::core::position2di(x+2,y+(h+8)*scale2Db),irr::core::position2di(x+(w+2)*scale2Db,y+(h+24)*scale2Db)),irr::video::SColor(100,0,0,0),true,true);
+					font1->draw(mainPlayer->takeFromInventory(i,false)->getInvName().c_str(),irr::core::recti(irr::core::position2di(x,y+(h+6)*scale2Db),irr::core::position2di(x+w*scale2Db,y+(h+22)*scale2Db)),irr::video::SColor(255,255,255,255),true,true);
 					if (irrReceiver->IsDoubleClick(0)) {
                         mainPlayer->selectItem(i);
 						menusOpen=menus::NONE;

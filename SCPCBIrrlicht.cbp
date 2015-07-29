@@ -170,6 +170,8 @@
 		<Unit filename="World/NPCs/NPC096.h" />
 		<Unit filename="World/NPCs/NPC173.cpp" />
 		<Unit filename="World/NPCs/NPC173.h" />
+		<Unit filename="World/NPCs/NPC178.cpp" />
+		<Unit filename="World/NPCs/NPC178.h" />
 		<Unit filename="World/Player.cpp" />
 		<Unit filename="World/Player.h" />
 		<Unit filename="World/Rooms/Door.cpp" />

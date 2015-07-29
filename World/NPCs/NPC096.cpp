@@ -9,7 +9,7 @@ irr::scene::IAnimatedMeshSceneNode* NPC096::baseNode = nullptr;
 
 NPC096::NPC096() {
     node = NPC096::baseNode->clone();
-    collider = NPC::dynamics->addCapsuleObject(node,12.f,3.f,16000.f);
+    collider = NPC::dynamics->addCapsuleObject(node,12.f*RoomScale/0.75f,3.f*RoomScale/0.75f,16000.f);
     NPC::dynamics->unregisterRBody(collider);
     NPC::dynamics->registerNewRBody(node,collider,-1,-1,~0,irr::core::vector3df(0.f,1.f,0.f));
     //collider->setLinearFactor(btVector3(0.f,0.f,0.f));

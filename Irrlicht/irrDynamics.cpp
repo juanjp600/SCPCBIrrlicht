@@ -48,7 +48,7 @@ irrDynamics::irrDynamics() : lastStep(0) {
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
     solver = new btSequentialImpulseConstraintSolver();
     world = new btDiscreteDynamicsWorld(dispatcher, broadPhase, solver, collisionConfiguration);
-    world->getDispatchInfo().m_allowedCcdPenetration=0.0001f;
+    world->getDispatchInfo().m_allowedCcdPenetration=0.0;
 }
 
 
@@ -61,7 +61,7 @@ void irrDynamics::simStep(f32 elapsedTime,f32 prec) {
     //    lastStep = curTimeStamp;
 
     //if ((curTimeStamp - lastStep)<=0) return;
-    world->stepSimulation(elapsedTime, 14.f*prec/60.f, 1.0/prec);
+    world->stepSimulation(elapsedTime, 1, prec);
 
     updateObjects();
     //lastStep = curTimeStamp;
@@ -507,6 +507,15 @@ irr::core::vector3df irrDynamics::rayTestPoint(class btVector3 Start,class btVec
     }
 }
 
+irr::core::vector3df irrDynamics::rayTestNormal(btVector3 Start,btVector3 End) {
+    btCollisionWorld::ClosestRayResultCallback RayCallback(Start,End);
+    world->rayTest(Start,End,RayCallback);
+    if (RayCallback.hasHit()) {
+        return irr::core::vector3df(RayCallback.m_hitNormalWorld[0],RayCallback.m_hitNormalWorld[1],RayCallback.m_hitNormalWorld[2]);
+    }
+    return irr::core::vector3df(0,0,0);
+}
+
 btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 height, f32 radius, f32 mass,short group,short mask)
 {
 
@@ -527,8 +536,8 @@ btRigidBody* irrDynamics::addPlayerColliderObject(scene::ISceneNode* node, f32 h
 	f32 oRadius = radius;
 	height-=oRadius*0.1f;
 	radius-=oRadius*0.1f;
-	for (int i=0;i<90;i++) {
-		f32 fi = (f32)i*4.f*irr::core::DEGTORAD;
+	for (int i=0;i<50;i++) {
+		f32 fi = (f32)i*7.2f*irr::core::DEGTORAD;
 		mShape->addPoint(btVector3(std::cos(fi)*0.1f*radius,-height*0.5f,std::sin(fi)*0.1f*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,-height*0.5f+radius*1.1f,std::sin(fi)*radius));
 		mShape->addPoint(btVector3(std::cos(fi)*radius,height*0.5f,std::sin(fi)*radius));

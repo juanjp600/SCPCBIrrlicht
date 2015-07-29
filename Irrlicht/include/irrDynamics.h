@@ -63,6 +63,7 @@ class irrDynamics
 
 		bool rayTest(class btVector3 Start,class btVector3 End);
 		irr::core::vector3df rayTestPoint(class btVector3 Start,class btVector3 End);
+		irr::core::vector3df rayTestNormal(class btVector3 Start,class btVector3 End);
 
 		class btRigidBody* addCapsuleObject(irr::scene::ISceneNode* node,irr::f32 height, irr::f32 radius, irr::f32 mass,short group=~0,short mask=~0);
 		//! Add a scene node that is represented as a sturdy box
