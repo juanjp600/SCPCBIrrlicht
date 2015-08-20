@@ -945,7 +945,7 @@ video::ITexture* CGUITTFont::getPageTextureByIndex(const u32& page_index) const
 		return 0;
 }
 
-void CGUITTFont::createSharedPlane()
+void CGUITTFont::createSharedPlane(scene::ISceneManager* smgr)
 {
 	/*
 		2___3
@@ -959,14 +959,26 @@ void CGUITTFont::createSharedPlane()
 	using namespace video;
 	using namespace scene;
 	S3DVertex vertices[4];
-	u16 indices[6] = {0,2,3,3,1,0};
+	//u16 indices[6] = {0,2,3,3,1,0};
 	vertices[0] = S3DVertex(vector3df(0,-1,0), vector3df(0,0,-1), SColor(255,255,255,255), vector2df(0,1));
 	vertices[1] = S3DVertex(vector3df(1,-1,0), vector3df(0,0,-1), SColor(255,255,255,255), vector2df(1,1));
 	vertices[2] = S3DVertex(vector3df(0, 0,0), vector3df(0,0,-1), SColor(255,255,255,255), vector2df(0,0));
 	vertices[3] = S3DVertex(vector3df(1, 0,0), vector3df(0,0,-1), SColor(255,255,255,255), vector2df(1,0));
 
-	SMeshBuffer* buf = new SMeshBuffer();
-	buf->append(vertices, 4, indices, 6);
+    scene::CVertexBuffer<video::S3DVertex>* VertexBuffer = new scene::CVertexBuffer<video::S3DVertex>();
+    scene::CIndexBuffer* IndexBuffer = new scene::CIndexBuffer(video::EIT_16BIT);
+    CMeshBuffer<video::S3DVertex>* buf = new CMeshBuffer<video::S3DVertex>(smgr->getVideoDriver()->getVertexDescriptor(0));
+	//buf->append(vertices, 4, indices, 6);
+	for (u32 i=0;i<4;++i)
+	{
+        VertexBuffer->addVertex(vertices[i]);
+	}
+	IndexBuffer->addIndex(0);
+	IndexBuffer->addIndex(2);
+	IndexBuffer->addIndex(3);
+	IndexBuffer->addIndex(3);
+	IndexBuffer->addIndex(1);
+	IndexBuffer->addIndex(0);
 
 	shared_plane_.addMeshBuffer( buf );
 
@@ -998,7 +1010,7 @@ core::array<scene::ISceneNode*> CGUITTFont::addTextSceneNode(const wchar_t* text
 	// this is generally undesirable.
 
 	if (!shared_plane_ptr_) //this points to a static mesh that contains the plane
-		createSharedPlane(); //if it's not initialized, we create one.
+		createSharedPlane(smgr); //if it's not initialized, we create one.
 
 	dimension2d<s32> text_size(getDimension(text)); //convert from unsigned to signed.
 	vector3df start_point(0, 0, 0), offset;
@@ -1078,7 +1090,7 @@ core::array<scene::ISceneNode*> CGUITTFont::addTextSceneNode(const wchar_t* text
 
 				// Now we copy planes corresponding to the letter size.
 				IMeshManipulator* mani = smgr->getMeshManipulator();
-				IMesh* meshcopy = mani->createMeshCopy(shared_plane_ptr_);
+				IMesh* meshcopy = mani->createMeshCopy<video::S3DVertex>(shared_plane_ptr_,smgr->getVideoDriver()->getVertexDescriptor(0));
 				mani->scale(meshcopy, vector3df((f32)letter_size.Width, (f32)letter_size.Height, 1));
 
 				ISceneNode* current_node = smgr->addMeshSceneNode(meshcopy, parent, -1, current_pos);
@@ -1122,7 +1134,7 @@ core::array<scene::ISceneNode*> CGUITTFont::addTextSceneNode(const wchar_t* text
 		//we can be quite sure that this is IMeshSceneNode, because we just added them in the above loop.
 		IMeshSceneNode* node = static_cast<IMeshSceneNode*>(container[i]);
 
-		S3DVertex* pv = static_cast<S3DVertex*>(node->getMesh()->getMeshBuffer(0)->getVertices());
+		S3DVertex* pv = static_cast<S3DVertex*>(node->getMesh()->getMeshBuffer(0)->getVertexBuffer()->getVertices());
 		//pv[0].TCoords.Y = pv[1].TCoords.Y = (letter_size.Height - 1) / static_cast<f32>(letter_size.Height);
 		//pv[1].TCoords.X = pv[3].TCoords.X = (letter_size.Width - 1)  / static_cast<f32>(letter_size.Width);
 		pv[0].TCoords = vector2df(u1, v2);

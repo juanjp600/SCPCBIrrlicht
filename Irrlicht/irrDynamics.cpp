@@ -105,10 +105,10 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,f32
 	u32 bufferCount = pMesh->getMeshBufferCount();
 	for (i=0; i<bufferCount; i++) { //get mesh boundaries
 		scene::IMeshBuffer* mb=pMesh->getMeshBuffer(i);
-		if (mb->getVertexType()==video::EVT_STANDARD) {
-			video::S3DVertex* mb_vertices=(video::S3DVertex*)mb->getVertices();
-			//mb_indices = mb->getIndices();
-			numVertices = mb->getVertexCount()-precisionLoss+1;
+		if (static_cast<irr::video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==video::EVT_STANDARD) {
+			video::S3DVertex* mb_vertices=(video::S3DVertex*)mb->getVertexBuffer()->getVertices();
+			//mb_indices = mb->getIndexBuffer()->getIndices();
+			numVertices = mb->getVertexBuffer()->getVertexCount()-precisionLoss+1;
 
 			for (k=0;k<numVertices;k+=precisionLoss) {
 				core::vector3df irrPos2 = mb_vertices[k].Pos;
@@ -120,9 +120,9 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,f32
 				mz = std::min(mz,irrPos2.Z * scaling.Z);
 				Mz = std::max(Mz,irrPos2.Z * scaling.Z);
 			}
-		} else if(mb->getVertexType()==video::EVT_2TCOORDS) {
-			video::S3DVertex2TCoords* mb_vertices=(video::S3DVertex2TCoords*)mb->getVertices();
-			numVertices = mb->getVertexCount()-precisionLoss+1;
+		} else if(static_cast<irr::video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==video::EVT_2TCOORDS) {
+			video::S3DVertex2TCoords* mb_vertices=(video::S3DVertex2TCoords*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount()-precisionLoss+1;
 
 			for (k=0;k<numVertices;k+=precisionLoss) {
 				core::vector3df irrPos2 = mb_vertices[k].Pos;
@@ -134,9 +134,9 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,f32
 				mz = std::min(mz,irrPos2.Z * scaling.Z);
 				Mz = std::max(Mz,irrPos2.Z * scaling.Z);
 			}
-		} else if(mb->getVertexType()==video::EVT_TANGENTS) {
-			video::S3DVertexTangents* mb_vertices=(video::S3DVertexTangents*)mb->getVertices();
-			numVertices = mb->getVertexCount()-precisionLoss+1;
+		} else if(static_cast<video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==video::EVT_TANGENTS) {
+			video::S3DVertexTangents* mb_vertices=(video::S3DVertexTangents*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount()-precisionLoss+1;
 
 			for (k=0;k<numVertices;k+=precisionLoss) {
 				core::vector3df irrPos2 = mb_vertices[k].Pos;
@@ -159,9 +159,9 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,f32
 
 	for (i=0; i<bufferCount; i++) { //set offset to vertices
 		scene::IMeshBuffer* mb=pMesh->getMeshBuffer(i);
-		if (mb->getVertexType()==video::EVT_STANDARD) {
-			video::S3DVertex* mb_vertices=(video::S3DVertex*)mb->getVertices();
-			numVertices = mb->getVertexCount()-precisionLoss+1;
+		if (static_cast<video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==video::EVT_STANDARD) {
+			video::S3DVertex* mb_vertices=(video::S3DVertex*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount()-precisionLoss+1;
 
 			for (k=0;k<numVertices;k+=precisionLoss) {
 				core::vector3df irrPos2 = mb_vertices[k].Pos;
@@ -169,9 +169,9 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,f32
 				btVector3 btPos2((irrPos2.X * scaling.X)-mOffset->X, (irrPos2.Y * scaling.Y)-mOffset->Y, (irrPos2.Z * scaling.Z)-mOffset->Z);
 				mShape->addPoint(btPos2);
 			}
-		} else if(mb->getVertexType()==video::EVT_2TCOORDS) {
-			video::S3DVertex2TCoords* mb_vertices=(video::S3DVertex2TCoords*)mb->getVertices();
-			numVertices = mb->getVertexCount()-precisionLoss+1;
+		} else if(static_cast<video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==video::EVT_2TCOORDS) {
+			video::S3DVertex2TCoords* mb_vertices=(video::S3DVertex2TCoords*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount()-precisionLoss+1;
 
 			for (k=0;k<numVertices;k+=precisionLoss) {
 				core::vector3df irrPos2 = mb_vertices[k].Pos;
@@ -179,9 +179,9 @@ btRigidBody* irrDynamics::addTriMesh_moving(irr::scene::IMeshSceneNode* node,f32
 				btVector3 btPos2((irrPos2.X * scaling.X)-mOffset->X, (irrPos2.Y * scaling.Y)-mOffset->Y, (irrPos2.Z * scaling.Z)-mOffset->Z);
 				mShape->addPoint(btPos2);
 			}
-		} else if(mb->getVertexType()==video::EVT_TANGENTS) {
-			video::S3DVertexTangents* mb_vertices=(video::S3DVertexTangents*)mb->getVertices();
-			numVertices = mb->getVertexCount()-precisionLoss+1;
+		} else if(static_cast<video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==video::EVT_TANGENTS) {
+			video::S3DVertexTangents* mb_vertices=(video::S3DVertexTangents*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount()-precisionLoss+1;
 
 			for (k=0;k<numVertices;k+=precisionLoss) {
 				core::vector3df irrPos2 = mb_vertices[k].Pos;
@@ -249,12 +249,17 @@ void irrDynamics::addTriMesh_static(irr::scene::IMeshSceneNode* node,short group
 	for (i=0; i<pMesh->getMeshBufferCount(); i++)
 	{
 		scene::IMeshBuffer* mb=pMesh->getMeshBuffer(i);
-		if(mb->getVertexType()==video::EVT_STANDARD)
+		if(static_cast<video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==video::EVT_STANDARD)
 		{
-			video::S3DVertex* mb_vertices=(video::S3DVertex*)mb->getVertices();
-			mb_indices = mb->getIndices();
-			//numVertices = mb->getVertexCount();
-			numIndices = mb->getIndexCount();
+			video::S3DVertex* mb_vertices=(video::S3DVertex*)mb->getVertexBuffer()->getVertices();
+			//CIndexList<u16> indexList = static_cast<CIndexList<u16>>(mb->getIndexBuffer()->getIndices())
+			//numVertices = mb->getVertexBuffer()->getVertexCount();
+			numIndices = mb->getIndexBuffer()->getIndexCount();
+			mb_indices = new u16[numIndices];
+			for(j=0;j<numIndices;++j)
+			{
+                mb_indices[j] = mb->getIndexBuffer()->getIndex(j);
+			}
 			for(j=0;j<numIndices;j+=3)
 			{
 				for (k=0;k<3;k++)
@@ -266,13 +271,17 @@ void irrDynamics::addTriMesh_static(irr::scene::IMeshSceneNode* node,short group
 				}
 				pTriMesh->addTriangle(vertices[0], vertices[1], vertices[2]);
 			}
+			delete[] mb_indices;
 		}
-		else if(mb->getVertexType()==video::EVT_2TCOORDS)
+		else if(static_cast<video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==video::EVT_2TCOORDS)
 		{
-			video::S3DVertex2TCoords* mb_vertices=(video::S3DVertex2TCoords*)mb->getVertices();
-			mb_indices = mb->getIndices();
-			//numVertices = mb->getVertexCount();
-			numIndices = mb->getIndexCount();
+			video::S3DVertex2TCoords* mb_vertices=(video::S3DVertex2TCoords*)mb->getVertexBuffer()->getVertices();
+			numIndices = mb->getIndexBuffer()->getIndexCount();
+			mb_indices = new u16[numIndices];
+			for(j=0;j<numIndices;++j)
+			{
+                mb_indices[j] = mb->getIndexBuffer()->getIndex(j);
+			}
 			for(j=0;j<numIndices;j+=3)
 			{
 				for (k=0;k<3;k++)
@@ -297,7 +306,7 @@ void irrDynamics::addTriMesh_static(irr::scene::IMeshSceneNode* node,short group
 
 void irrDynamics::addTerrain(scene::ITerrainSceneNode* terrain, u32 lodLevel)
 {
-
+    /*
     terrain->updateAbsolutePosition();
     core::vector3df irrPos = terrain->getPosition();
     btVector3 btPos(irrPos.X, irrPos.Y, irrPos.Z);
@@ -342,6 +351,7 @@ void irrDynamics::addTerrain(scene::ITerrainSceneNode* terrain, u32 lodLevel)
     offset.insert (std::pair<scene::ISceneNode*, core::vector3df*>(terrain, mOffset));
 
     terrain->grab();
+    */
 }
 
 void irrDynamics::setGravity(f32 newGravity)

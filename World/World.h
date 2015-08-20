@@ -181,6 +181,9 @@ class World {
                                     fogBillboardShader, normalsShader, plainLightShader, postProcShader,
                                     zBufferShader;
 
+        void shadersSetup();
+        void setupForHWSkinning(irr::scene::IAnimatedMesh* mesh);
+
         RoomShaderCallBack* roomCallback;
         RoomShaderCallBack_noNormals* roomCallback_noNormals;
         VertLightShaderCallBack* vertLightCallback;
@@ -260,6 +263,54 @@ class World {
         void getRoomListToPlayer(const irr::core::vector2di &startPos,std::vector<irr::core::vector2di> &roomPath);
         void npcPathFind(const irr::core::vector3df &startPos,const irr::core::vector3df &endPos,const irr::core::vector2di &RoomPos,std::vector<irr::core::vector3df> &posList);
         void npcPathFindToPlayer(const irr::core::vector3df &startPos,const irr::core::vector2di &RoomPos,std::vector<irr::core::vector3df> &posList);
+};
+
+struct SSkinningVertex
+{
+	SSkinningVertex()
+	{
+		for (irr::u32 i = 0; i < 4; ++i)
+		{
+			BlendWeight[i] = 0.f;
+			BlendIndex[i] = 0.f;
+		}
+	}
+
+	SSkinningVertex(const SSkinningVertex& other)
+	{
+		Pos = other.Pos;
+		Normal = other.Normal;
+		TCoords = other.TCoords;
+
+		memcpy(BlendWeight, other.BlendWeight, sizeof(irr::f32) * 4);
+		memcpy(BlendIndex, other.BlendIndex, sizeof(irr::f32) * 4);
+	}
+
+	SSkinningVertex& operator=(const SSkinningVertex& other)
+	{
+		Pos = other.Pos;
+		Normal = other.Normal;
+		TCoords = other.TCoords;
+
+		memcpy(BlendWeight, other.BlendWeight, sizeof(irr::f32) * 4);
+		memcpy(BlendIndex, other.BlendIndex, sizeof(irr::f32) * 4);
+
+		return *this;
+	}
+
+	bool operator==(const SSkinningVertex& other) const
+	{
+
+		return ((Pos == other.Pos) && (Normal == other.Normal) && (TCoords == other.TCoords) &&
+				memcmp(&BlendWeight, other.BlendWeight, sizeof(irr::f32) * 4) == 0 &&
+				memcmp(&BlendIndex, other.BlendIndex, sizeof(irr::f32) * 4) == 0);
+	}
+
+	irr::core::vector3df Pos;
+	irr::core::vector3df Normal;
+	irr::core::vector2d<irr::f32> TCoords;
+	irr::f32 BlendWeight[4];
+	irr::f32 BlendIndex[4];
 };
 
 //#include "Player.h"

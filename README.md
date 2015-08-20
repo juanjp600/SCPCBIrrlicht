@@ -20,7 +20,7 @@ Libraries used:
   
 ### How to compile
 
-1. Download source code for Irrlicht 1.8.1.
+1. Download source code for Irrlicht SVN revision 5113, shader-pipeline branch ( http://sourceforge.net/p/irrlicht/code/5113/tree/branches/shader-pipeline/ )
 2. Apply the patches in the "Irrlicht/source" and "Irrlicht/include" folders in this repository, and add the new files.
 3. Compile Irrlicht in Debug mode.
 4. Download (and compile if necessary) all the other libraries listed above.

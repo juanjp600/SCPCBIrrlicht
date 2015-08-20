@@ -146,42 +146,9 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
     srand(seed);
 
-    irr::video::IGPUProgrammingServices* irrGpu = irrDriver->getGPUProgrammingServices();
-    roomShader = irr::video::EMT_LIGHTMAP; // Fallback material type
-    roomCallback = new RoomShaderCallBack;
-    roomShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/RoomVertShader.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/RoomFragShader.frag", "main", irr::video::EPST_PS_1_1,roomCallback, irr::video::EMT_LIGHTMAP);
+    shadersSetup();
 
-    roomShader_noNormals = irr::video::EMT_LIGHTMAP;
-    roomCallback_noNormals = new RoomShaderCallBack_noNormals;
-    roomShader_noNormals = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/RoomVertShader.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/RoomFragShader_noNormal.frag", "main", irr::video::EPST_PS_1_1,roomCallback_noNormals, irr::video::EMT_LIGHTMAP);
-
-    vertLightShader = irr::video::EMT_SOLID;
-    vertLightCallback = new VertLightShaderCallBack;
-    vertLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/VertLightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/VertLightingFrag.frag", "main", irr::video::EPST_PS_1_1,vertLightCallback, irr::video::EMT_SOLID);
-
-    vertLightShader_alpha = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-    vertLightShader_alpha = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/VertLightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/VertLightingFrag.frag", "main", irr::video::EPST_PS_1_1,vertLightCallback,irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL);
-
-    fogBillboardShader = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-    fogBillboardShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/FogBillboardVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/FogBillboardFrag.frag", "main", irr::video::EPST_PS_1_1,vertLightCallback,irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL);
-
-    normalsShader = irr::video::EMT_SOLID; // Fallback material type
-    normalsCallback= new NormalsShaderCallBack;
-    normalsShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/NewNormalVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/NewNormalFrag.frag", "main", irr::video::EPST_PS_1_1,normalsCallback, irr::video::EMT_SOLID);
-    normalsCallback->ambient = irr::video::SColor(255,20,20,20);
-
-	plainLightShader = irr::video::EMT_SOLID; // Fallback material type
-    plainLightCallback= new PlainLightShaderCallBack;
-    plainLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/LightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/LightingFrag.frag", "main", irr::video::EPST_PS_1_1,plainLightCallback, irr::video::EMT_SOLID);
-    plainLightCallback->ambient = irr::video::SColor(255,20,20,20);
-
-	postProcShader = irr::video::EMT_SOLID; // Fallback material type
-    postProcCallback= new PostProcShaderCallBack;
-    postProcShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/PostProcessVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/PostProcessFrag.frag", "main", irr::video::EPST_PS_1_1,postProcCallback, irr::video::EMT_SOLID);
-
-	zBufferShader = irr::video::EMT_SOLID; // Fallback material type
-    zBufferCallback= new ZBufferShaderCallBack;
-    zBufferShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/ZBufferVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/ZBufferFrag.frag", "main", irr::video::EPST_PS_1_1,zBufferCallback, irr::video::EMT_SOLID);
+    //std::terminate();
 
     blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"blurImage",irr::video::ECF_R8G8B8);
     blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"blurImage2",irr::video::ECF_R8G8B8);
@@ -199,7 +166,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     irr::video::ITexture* fogBillTex = irrDriver->getTexture("GFX/fogBillboard.png");
 
     irr::scene::SMesh* quadMesh = new irr::scene::SMesh();
-	irr::scene::SMeshBuffer* buf = new irr::scene::SMeshBuffer();
+	irr::scene::CMeshBuffer<irr::video::S3DVertex>* buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(irrDriver->getVertexDescriptor(0));
 
 	quadMesh->addMeshBuffer(buf);
 
@@ -208,7 +175,25 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	verts[1]=irr::video::S3DVertex(irr::core::vector3df(1.f,0.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,0,0,255),irr::core::vector2df(1.f,0.f));
 	verts[2]=irr::video::S3DVertex(irr::core::vector3df(0.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,0),irr::core::vector2df(0.f,1.f));
 	verts[3]=irr::video::S3DVertex(irr::core::vector3df(1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,0,255,0),irr::core::vector2df(1.f,1.f));
-	irr::u16 inds[] {
+
+	irr::scene::CVertexBuffer<irr::video::S3DVertex>* vertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
+    irr::scene::CIndexBuffer* indexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
+
+    for (unsigned int j = 0; j<4; ++j) {
+        vertexBuffer->addVertex(verts[j]);
+    }
+
+    indexBuffer->addIndex(1);
+    indexBuffer->addIndex(0);
+    indexBuffer->addIndex(2);
+    indexBuffer->addIndex(2);
+    indexBuffer->addIndex(3);
+    indexBuffer->addIndex(1);
+
+    buf->setVertexBuffer(vertexBuffer, 0);
+    buf->setIndexBuffer(indexBuffer);
+
+	/*irr::u16 inds[] {
 		1,0,2,
 		2,3,1
 	};
@@ -221,7 +206,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	buf->Indices.set_used(6);
 	for (unsigned int j=0;j<6;j++) {
 		buf->Indices[j]=inds[j];
-	}
+	}*/
 	buf->getMaterial().setTexture(0,blurImage);
 	buf->getMaterial().setTexture(1,zBuffer);
 	buf->getMaterial().setTexture(2,fogTexture);
@@ -440,6 +425,8 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC::owner = this;
     NPC::dynamics = dynamics;
     NPC096::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/scp096.b3d"));
+    setupForHWSkinning(NPC096::baseNode->getMesh());
+
     NPC096::baseNode->getMaterial(0).MaterialType = normalsShader;
     NPC096::baseNode->getMaterial(0).setTexture(1,irrDriver->getTexture("GFX/NPCs/normal_flat.png"));
     NPC096::baseNode->getMaterial(0).setTexture(2,irrDriver->getTexture("GFX/NPCs/SCP096_specular.png"));
@@ -454,10 +441,11 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC::owner = this;
     NPC::dynamics = dynamics;
     NPC178::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/npc178.b3d"));
-    NPC178::baseNode->getMaterial(0).MaterialType = plainLightShader;
-    NPC178::baseNode->setScale(irr::core::vector3df(0.5f*RoomScale,0.5f*RoomScale,0.5f*RoomScale));
+    setupForHWSkinning(NPC178::baseNode->getMesh());
+    NPC178::baseNode->setMaterialType(plainLightShader);
+    NPC178::baseNode->setScale(irr::core::vector3df(0.45f*RoomScale,0.45f*RoomScale,0.45f*RoomScale));
     NPC178::baseNode->setFrameLoop(64,92);
-    NPC178::baseNode->setAnimationSpeed(64.0f);
+    NPC178::baseNode->setAnimationSpeed(32.0f);
 
     NPC173::baseNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/173_2.b3d"));
 
@@ -595,7 +583,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
 World::~World() {
 
-
     if (mainPlayer!=nullptr) { delete mainPlayer; mainPlayer=nullptr; }
     for (unsigned char i=0;i<inventory_size;i++) {
 		if (invImgs[i]!=nullptr) { irrDriver->removeTexture(invImgs[i]); invImgs[i]=nullptr; }
@@ -608,7 +595,7 @@ World::~World() {
 
     delete irrReceiver;
 
-	auto a = irr::LeakHunter::getReferenceCountedObjects();
+	/*auto a = irr::LeakHunter::getReferenceCountedObjects();
 	std::cout<<"Leaked IReferenceCount: "<<a.size()<<"\n";
 
 	for (unsigned int i=0;i<a.size();i++) {
@@ -621,7 +608,7 @@ World::~World() {
 		}
 	}
 
-	gContactAddedCallback = CustomMaterialCombinerCallback;
+	gContactAddedCallback = CustomMaterialCombinerCallback;*/
 }
 
 bool World::run() {
@@ -973,8 +960,8 @@ bool World::run() {
     }*/
     prevTime = time;
 
-    hudMsg = std::to_string(irrDriver->getFPS());
-    hudMsgTimer = 1000.f;
+    //hudMsg = std::to_string(irrDriver->getFPS());
+    //hudMsgTimer = 1000.f;
 
 	Sound::processDrops();
 
@@ -1499,6 +1486,90 @@ void World::drawFog() {
 
 }
 
+void World::shadersSetup() {
+
+    irr::video::IGPUProgrammingServices* irrGpu = irrDriver->getGPUProgrammingServices();
+    roomShader = irr::video::EMT_LIGHTMAP; // Fallback material type
+    roomCallback = new RoomShaderCallBack;
+    roomShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/RoomVertShader.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/RoomFragShader.frag", "main", irr::video::EPST_PS_1_1,roomCallback, irr::video::EMT_LIGHTMAP);
+
+    roomShader_noNormals = irr::video::EMT_LIGHTMAP;
+    roomCallback_noNormals = new RoomShaderCallBack_noNormals;
+    roomShader_noNormals = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/RoomVertShader.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/RoomFragShader_noNormal.frag", "main", irr::video::EPST_PS_1_1,roomCallback_noNormals, irr::video::EMT_LIGHTMAP);
+
+    vertLightShader = irr::video::EMT_SOLID;
+    vertLightCallback = new VertLightShaderCallBack;
+    vertLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/VertLightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/VertLightingFrag.frag", "main", irr::video::EPST_PS_1_1,vertLightCallback, irr::video::EMT_SOLID);
+
+    vertLightShader_alpha = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+    vertLightShader_alpha = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/VertLightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/VertLightingFrag.frag", "main", irr::video::EPST_PS_1_1,vertLightCallback,irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+
+    fogBillboardShader = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+    fogBillboardShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/FogBillboardVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/FogBillboardFrag.frag", "main", irr::video::EPST_PS_1_1,vertLightCallback,irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+
+    normalsShader = irr::video::EMT_SOLID; // Fallback material type
+    normalsCallback= new NormalsShaderCallBack;
+    normalsShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/NewNormalVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/NewNormalFrag.frag", "main", irr::video::EPST_PS_1_1,normalsCallback, irr::video::EMT_SOLID);
+    normalsCallback->ambient = irr::video::SColor(255,0,0,0);
+
+	plainLightShader = irr::video::EMT_SOLID; // Fallback material type
+    plainLightCallback= new PlainLightShaderCallBack;
+    plainLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/LightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/LightingFrag.frag", "main", irr::video::EPST_PS_1_1,plainLightCallback, irr::video::EMT_SOLID);
+    plainLightCallback->ambient = irr::video::SColor(255,0,0,0);
+
+	postProcShader = irr::video::EMT_SOLID; // Fallback material type
+    postProcCallback= new PostProcShaderCallBack;
+    postProcShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/PostProcessVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/PostProcessFrag.frag", "main", irr::video::EPST_PS_1_1,postProcCallback, irr::video::EMT_SOLID);
+
+	zBufferShader = irr::video::EMT_SOLID; // Fallback material type
+    zBufferCallback= new ZBufferShaderCallBack;
+    zBufferShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/ZBufferVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/ZBufferFrag.frag", "main", irr::video::EPST_PS_1_1,zBufferCallback, irr::video::EMT_SOLID);
+
+    // create new vertex format.
+
+    irr::video::IVertexDescriptor* vertexDescriptor = irrDriver->addVertexDescriptor("Skinning");
+
+    vertexDescriptor->addAttribute("inPosition", 3, irr::video::EVAS_POSITION, irr::video::EVAT_FLOAT, 0);
+    vertexDescriptor->addAttribute("inNormal", 3, irr::video::EVAS_NORMAL, irr::video::EVAT_FLOAT, 0);
+    vertexDescriptor->addAttribute("inTexCoord0", 2, irr::video::EVAS_TEXCOORD0, irr::video::EVAT_FLOAT, 0);
+    vertexDescriptor->addAttribute("inBlendWeight", 4, irr::video::EVAS_BLEND_WEIGHTS, irr::video::EVAT_FLOAT, 0);
+    vertexDescriptor->addAttribute("inBlendIndex", 4, irr::video::EVAS_BLEND_INDICES, irr::video::EVAT_FLOAT, 0);
+
+}
+
+void World::setupForHWSkinning(irr::scene::IAnimatedMesh* mesh) {
+    irr::scene::ISkinnedMesh* skinMesh = static_cast<irr::scene::ISkinnedMesh*>(mesh);
+    // convert vertices.
+
+    for (irr::u32 i = 0; i < skinMesh->getMeshBufferCount(); ++i) {
+        irrSmgr->getMeshManipulator()->convertVertices<SSkinningVertex>(skinMesh->getMeshBuffer(i), irrDriver->getVertexDescriptor("Skinning"), false);
+    }
+
+    skinMesh->setHardwareSkinning(true);
+
+    // fill blending data.
+
+    for (irr::u32 i = 0; i < skinMesh->getJointCount(); ++i) {
+        for (irr::u32 j = 0; j < skinMesh->getAllJoints()[i]->Weights.size(); ++j) {
+            SSkinningVertex* Vertices = static_cast<SSkinningVertex*>(mesh->getMeshBuffer(skinMesh->getAllJoints()[i]->Weights[j].buffer_id)->getVertexBuffer(0)->getVertices());
+
+            irr::s32 id = -1;
+
+            for (irr::s32 k = 0; k < 4; ++k) {
+                if (Vertices[skinMesh->getAllJoints()[i]->Weights[j].vertex_id].BlendWeight[k] == 0.f) {
+                    id = k;
+                    break;
+                }
+            }
+
+            if (id >= 0) {
+                Vertices[skinMesh->getAllJoints()[i]->Weights[j].vertex_id].BlendWeight[id] = skinMesh->getAllJoints()[i]->Weights[j].strength;
+                Vertices[skinMesh->getAllJoints()[i]->Weights[j].vertex_id].BlendIndex[id] = float(i);
+            }
+        }
+    }
+}
+
 bool World::button(const std::string &text,int x,int y,int w,int h) {
 	irr::gui::CGUITTFont* buttonFont = font1;
 	if (h>68*scale2D) {
@@ -1551,7 +1622,7 @@ bool getNodeTriangleTextureName(irr::scene::ISceneNode* node,const irr::core::tr
 	if (!mesh)
 		return false;
 
-	irr::scene::IMeshBuffer* buf = mesh->getMeshBuffer(tri.index);
+	irr::scene::IMeshBuffer* buf = mesh->getMeshBuffer(tri.meshBufferIndex);
 	irr::video::ITexture* tex = buf->getMaterial().getTexture(0);
 	if (!tex)
 		return false;

@@ -1,12 +1,12 @@
 - Changes made to CGUITTFont Class ( http://irrlicht.sourceforge.net/forum/viewtopic.php?t=37296 )
 	- Replaced deprecated functions
+	- Fixed for Irrlicht shader-pipeline branch
 - Changes made to Bullet Physics wrapper ( http://irrlicht.sourceforge.net/forum/viewtopic.php?f=6&t=49846 )
 	- Replaced static members, several irrDynamics objects can be created now
 	- Added support for trimeshes
 	- Added raytest
 - Changes made to Irrlicht
-	- Added "index" member to triangle3d
-	- CTriangleSelector uses the index member to store the mesh buffer index number ( mesh->getMeshBuffer(triangle.index) )
+	- Added "meshBufferIndex" member to triangle3d
+	- CTriangleSelector uses the meshBufferIndex member to store the mesh buffer index number ( mesh->getMeshBuffer(triangle.meshBufferIndex) )
 	- Added EMF_MATERIAL_TYPE as material flag ( http://sourceforge.net/p/irrlicht/patches/221/ )
-	- Added LeakHunter class, taken from the official Irrlicht repository ( http://sourceforge.net/p/irrlicht/code/4425 )
 	- Added scene capturing and interpolation

@@ -106,8 +106,8 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
             }
         }
         irr::scene::SMesh* mesh = new irr::scene::SMesh();
-        irr::scene::SMeshBufferLightMap* bufLM = nullptr;
-        irr::scene::SMeshBuffer* buf = nullptr;
+        irr::scene::CMeshBuffer<irr::video::S3DVertex2TCoords>* bufLM = nullptr;
+        irr::scene::CMeshBuffer<irr::video::S3DVertex>* buf = nullptr;
 
         btTriangleMesh *pTriMesh = new btTriangleMesh();
 		//pTriMesh->m_weldingThreshold = 3.f;
@@ -334,26 +334,39 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 							switch (blendType) {
 								case 2: //opaque
 									if (textures[0]!=0 && textures[1]!=0) { //lightmapped
-										bufLM = new irr::scene::SMeshBufferLightMap();
+										bufLM = new irr::scene::CMeshBuffer<irr::video::S3DVertex2TCoords>(driver->getVertexDescriptor(1));
+										irr::scene::CVertexBuffer<irr::video::S3DVertex2TCoords>* VertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex2TCoords>();
+                                        irr::scene::CIndexBuffer* IndexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
 
 										mesh->addMeshBuffer(bufLM);
 
 										bufLM->drop();
 
-										bufLM->Vertices.reallocate(vertices.size());
+                                        for (unsigned int j = 0; j<vertices.size(); ++j) {
+                                            VertexBuffer->addVertex(vertices[j]);
+                                        }
+										/*bufLM->Vertices.reallocate(vertices.size());
 										bufLM->Vertices.set_used(vertices.size());
 
 										for (unsigned int j=0;j<vertices.size();j++) {
 											bufLM->Vertices[j]=vertices[j];
-										}
+										}*/
 
-										bufLM->Indices.reallocate(indices.size()*3);
+                                        for (unsigned int j = 0; j<indices.size(); ++j) {
+                                            IndexBuffer->addIndex(indices[j].X);
+                                            IndexBuffer->addIndex(indices[j].Y);
+                                            IndexBuffer->addIndex(indices[j].Z);
+                                        }
+										/*bufLM->Indices.reallocate(indices.size()*3);
 										bufLM->Indices.set_used(indices.size()*3);
 										for (unsigned int j=0;j<indices.size();j++) {
 											bufLM->Indices[j*3]=indices[j].X;
 											bufLM->Indices[(j*3)+1]=indices[j].Y;
 											bufLM->Indices[(j*3)+2]=indices[j].Z;
-										}
+										}*/
+
+										bufLM->setVertexBuffer(VertexBuffer, 0);
+                                        bufLM->setIndexBuffer(IndexBuffer);
 
 										bufLM->getMaterial().setTexture(0,loadedTextures[textures[1]-1].tex);
 										bufLM->getMaterial().setTexture(1,loadedTextures[textures[0]-1].tex);
@@ -379,27 +392,25 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 										//bufLM->getMaterial().setTexture(1,reflection[1]);
 										//bufLM->getMaterial().setTexture(0,reflection[0]);
 									} else { //only one texture
-										buf = new irr::scene::SMeshBuffer();
-										buf->getMaterial().MaterialType = roomShaders[2];
+										buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(driver->getVertexDescriptor(0));
+										irr::scene::CVertexBuffer<irr::video::S3DVertex>* VertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
+                                        irr::scene::CIndexBuffer* IndexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
 
 										mesh->addMeshBuffer(buf);
 
 										buf->drop();
 
-										buf->Vertices.reallocate(vertices.size());
-										buf->Vertices.set_used(vertices.size());
+                                        for (unsigned int j = 0; j<vertices.size(); ++j) {
+                                            VertexBuffer->addVertex(vertices[j]);
+                                        }
+                                        for (unsigned int j = 0; j<indices.size(); ++j) {
+                                            IndexBuffer->addIndex(indices[j].X);
+                                            IndexBuffer->addIndex(indices[j].Y);
+                                            IndexBuffer->addIndex(indices[j].Z);
+                                        }
 
-										for (unsigned int j=0;j<vertices.size();j++) {
-											buf->Vertices[j]=vertices[j];
-										}
-
-										buf->Indices.reallocate(indices.size()*3);
-										buf->Indices.set_used(indices.size()*3);
-										for (unsigned int j=0;j<indices.size();j++) {
-											buf->Indices[j*3]=indices[j].X;
-											buf->Indices[(j*3)+1]=indices[j].Y;
-											buf->Indices[(j*3)+2]=indices[j].Z;
-										}
+										buf->setVertexBuffer(VertexBuffer, 0);
+                                        buf->setIndexBuffer(IndexBuffer);
 
 										if (textures[1]!=0) {
 											buf->getMaterial().setTexture(0,loadedTextures[textures[1]-1].tex);
@@ -625,11 +636,15 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 			}
 		}
 
-		buf = new irr::scene::SMeshBuffer();
+        buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(driver->getVertexDescriptor(0));
+        irr::scene::CVertexBuffer<irr::video::S3DVertex>* vertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
+        irr::scene::CIndexBuffer* indexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
+
         mesh->addMeshBuffer(buf);
+
         buf->drop();
 
-		std::vector<irr::video::S3DVertex> vertices;
+		/*std::vector<irr::video::S3DVertex> vertices;
 		std::vector<unsigned short> indices;
 
 		for (unsigned char i=0;i<retRMesh->waypoints.size();i++) {
@@ -646,24 +661,22 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
             }
 		}
 
-		buf->Vertices.reallocate(vertices.size());
-        buf->Vertices.set_used(vertices.size());
-
-        for (unsigned int j=0;j<vertices.size();j++) {
-            buf->Vertices[j]=vertices[j];
+		for (unsigned int j = 0; j<vertices.size(); ++j) {
+            vertexBuffer->addVertex(vertices[j]);
         }
+
+        for (unsigned int j = 0; j<indices.size(); ++j) {
+            indexBuffer->addIndex(indices[j]);
+        }
+
+        buf->setVertexBuffer(vertexBuffer, 0);
+        buf->setIndexBuffer(indexBuffer);
 
         buf->getMaterial().Wireframe = true;
         buf->getMaterial().Lighting = false;
         buf->getMaterial().setTexture(0, 0);
 
-        buf->Indices.reallocate(indices.size());
-        buf->Indices.set_used(indices.size());
-        for (unsigned int j=0;j<indices.size();j++) {
-            buf->Indices[j]=indices[j];
-        }
-
-        mesh->addMeshBuffer(buf);
+        mesh->addMeshBuffer(buf);*/
 
         mesh->recalculateBoundingBox();
         mesh->setHardwareMappingHint(irr::scene::EHM_STATIC);

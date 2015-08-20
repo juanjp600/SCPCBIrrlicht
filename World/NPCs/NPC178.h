@@ -24,7 +24,9 @@ class NPC178 : public NPC {
         irr::core::vector3df memDir;
         char skipStuckCheck = 0;
         irr::core::vector3df prevPos;
-        float walkTimer = 300.f;
+        int walkTimer = 300.f;
+        int minWalkTimer = -700;
+        int spinTimer = -100;
     public:
         static class btCollisionShape* shape;
         irr::scene::ISceneNode* boxNode;

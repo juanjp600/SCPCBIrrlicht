@@ -1,5 +1,5 @@
---- CAnimatedMeshSceneNode.cpp	Mon Jun 17 11:09:20 2013
-+++ CAnimatedMeshSceneNode.cpp	Tue May 12 16:00:55 2015
+--- CAnimatedMeshSceneNode.cpp	Sun Jan 04 14:23:44 2015
++++ CAnimatedMeshSceneNode.cpp	Fri Aug 07 20:14:36 2015
 @@ -262,7 +262,7 @@
  
  
@@ -9,27 +9,36 @@
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  
-@@ -288,7 +288,9 @@
+@@ -288,8 +288,9 @@
  		#endif
  	}
  
 -	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 +	core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
-+
-+	driver->setTransform(video::ETS_WORLD, matr);
  
++	driver->setTransform(video::ETS_WORLD, matr);
  	if (Shadow && PassCount==1)
  		Shadow->updateShadowVolumes();
-@@ -337,7 +339,7 @@
+ 
+@@ -311,7 +312,7 @@
  				if (RenderFromIdentity)
  					driver->setTransform(video::ETS_WORLD, core::IdentityMatrix );
  				else if (Mesh->getMeshType() == EAMT_SKINNED)
--					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((SSkinMeshBuffer*)mb)->Transformation);
-+					driver->setTransform(video::ETS_WORLD, matr * ((SSkinMeshBuffer*)mb)->Transformation);
+-					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((IMeshBuffer*)mb)->getTransformation());
++					driver->setTransform(video::ETS_WORLD, matr * ((IMeshBuffer*)mb)->getTransformation());
+ 
+ 				driver->setMaterial(mat);
+ 				driver->drawMeshBuffer(mb);
+@@ -337,7 +338,7 @@
+ 				if (RenderFromIdentity)
+ 					driver->setTransform(video::ETS_WORLD, core::IdentityMatrix );
+ 				else if (Mesh->getMeshType() == EAMT_SKINNED)
+-					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((IMeshBuffer*)mb)->getTransformation());
++					driver->setTransform(video::ETS_WORLD, matr * ((IMeshBuffer*)mb)->getTransformation());
  
  				driver->setMaterial(material);
  				driver->drawMeshBuffer(mb);
-@@ -345,7 +347,7 @@
+@@ -345,7 +346,7 @@
  		}
  	}
  
@@ -38,29 +47,38 @@
  
  	// for debug purposes only:
  	if (DebugDataVisible && PassCount==1)
-@@ -383,7 +385,7 @@
+@@ -383,7 +384,7 @@
  				const IMeshBuffer* mb = m->getMeshBuffer(g);
  
  				if (Mesh->getMeshType() == EAMT_SKINNED)
--					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((SSkinMeshBuffer*)mb)->Transformation);
-+					driver->setTransform(video::ETS_WORLD, matr * ((SSkinMeshBuffer*)mb)->Transformation);
+-					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((IMeshBuffer*)mb)->getTransformation());
++					driver->setTransform(video::ETS_WORLD, matr * ((IMeshBuffer*)mb)->getTransformation());
  				driver->draw3DBox(mb->getBoundingBox(), video::SColor(255,190,128,128));
  			}
  		}
---- CAnimatedMeshSceneNode.h	Sat Nov 03 18:08:16 2012
-+++ CAnimatedMeshSceneNode.h	Tue May 12 15:41:47 2015
+@@ -457,7 +458,7 @@
+ 				if (RenderFromIdentity)
+ 					driver->setTransform(video::ETS_WORLD, core::IdentityMatrix );
+ 				else if (Mesh->getMeshType() == EAMT_SKINNED)
+-					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((IMeshBuffer*)mb)->getTransformation());
++					driver->setTransform(video::ETS_WORLD, matr * ((IMeshBuffer*)mb)->getTransformation());
+ 				driver->drawMeshBuffer(mb);
+ 			}
+ 		}
+--- CAnimatedMeshSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CAnimatedMeshSceneNode.h	Fri Aug 07 20:15:11 2015
 @@ -40,7 +40,7 @@
- 		virtual void OnAnimate(u32 timeMs);
+ 		virtual void OnAnimate(u32 timeMs) _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
---- CBillboardSceneNode.cpp	Sat Nov 03 18:07:56 2012
-+++ CBillboardSceneNode.cpp	Tue May 12 16:02:53 2015
-@@ -57,7 +57,7 @@
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CBillboardSceneNode.cpp	Sun Jan 11 21:13:08 2015
++++ CBillboardSceneNode.cpp	Fri Aug 07 20:16:10 2015
+@@ -79,7 +79,7 @@
  
  
  //! render
@@ -69,82 +87,20 @@
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	ICameraSceneNode* camera = SceneManager->getActiveCamera();
-@@ -153,7 +153,7 @@
- {
- 	Size.set(bottomEdgeWidth, height);
- 	TopEdgeWidth = topEdgeWidth;
-- 
-+
- 	if (core::equals(Size.Height, 0.0f))
- 		Size.Height = 1.0f;
- 
-@@ -197,7 +197,7 @@
- 	bottomEdgeWidth = Size.Width;
- 	topEdgeWidth = TopEdgeWidth;
- }
-- 
-+
- 
- //! Writes attributes of the scene node.
- void CBillboardSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
---- CBillboardSceneNode.h	Sat Nov 03 18:07:58 2012
-+++ CBillboardSceneNode.h	Tue May 12 15:27:22 2015
-@@ -14,13 +14,13 @@
- {
- 
- //! Scene node which is a billboard. A billboard is like a 3d sprite: A 2d element,
--//! which always looks to the camera. 
-+//! which always looks to the camera.
- class CBillboardSceneNode : virtual public IBillboardSceneNode
- {
- public:
- 
- 	//! constructor
--	CBillboardSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,	
-+	CBillboardSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
- 		const core::vector3df& position, const core::dimension2d<f32>& size,
- 		video::SColor colorTop=video::SColor(0xFFFFFFFF),
- 		video::SColor colorBottom=video::SColor(0xFFFFFFFF));
-@@ -29,7 +29,7 @@
- 	virtual void OnRegisterSceneNode();
+--- CBillboardSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CBillboardSceneNode.h	Fri Aug 07 20:16:47 2015
+@@ -33,7 +33,7 @@
+ 	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  	//! render
--	virtual void render();
-+	virtual void render(f32 interpolate=1.f);
+-	virtual void render() _IRR_OVERRIDE_;
++	virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  	//! returns the axis aligned bounding box of this node
- 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -42,15 +42,15 @@
- 
-  	//! gets the size of the billboard
-  	virtual const core::dimension2d<f32>& getSize() const;
-- 
-+
- 	//! Gets the widths of the top and bottom edges of the billboard.
- 	virtual void getSize(f32& height, f32& bottomEdgeWidth, f32& topEdgeWidth) const;
- 
- 	virtual video::SMaterial& getMaterial(u32 i);
--	
-+
- 	//! returns amount of materials used by this scene node.
- 	virtual u32 getMaterialCount() const;
--	
-+
- 	//! Set the color of all vertices of the billboard
- 	//! \param overallColor: the color to set
- 	virtual void setColor(const video::SColor& overallColor);
-@@ -78,7 +78,7 @@
- 
- 	//! Creates a clone of this scene node and its children.
- 	virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
--	
-+
- private:
- 
- 	//! Size.Width is the bottom edge width
---- CCameraSceneNode.cpp	Sat Nov 03 18:07:52 2012
-+++ CCameraSceneNode.cpp	Tue Jul 14 15:48:05 2015
-@@ -172,6 +172,12 @@
+ 	virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CCameraSceneNode.cpp	Sun Jan 04 14:23:44 2015
++++ CCameraSceneNode.cpp	Fri Aug 07 23:09:01 2015
+@@ -173,6 +173,12 @@
  	return UpVector;
  }
  
@@ -157,12 +113,24 @@
  
  f32 CCameraSceneNode::getNearValue() const
  {
-@@ -242,15 +248,18 @@
+@@ -245,9 +251,9 @@
  
  
  //! render
 -void CCameraSceneNode::render()
 +void CCameraSceneNode::render(f32 interpolate)
+ {
+-	updateMatrices();
++	updateMatrices(interpolate);
+ 
+ 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
+ 	if ( driver)
+@@ -258,15 +264,18 @@
+ }
+ 
+ //! update
+-void CCameraSceneNode::updateMatrices()
++void CCameraSceneNode::updateMatrices(f32 interpolate)
  {
  	core::vector3df pos = getAbsolutePosition();
 -	core::vector3df tgtv = Target - pos;
@@ -179,7 +147,7 @@
  	up.normalize();
  
  	f32 dp = tgtv.dotProduct(up);
-@@ -260,7 +269,7 @@
+@@ -276,7 +285,7 @@
  		up.X += 0.5f;
  	}
  
@@ -187,68 +155,44 @@
 +	ViewArea.getTransform(video::ETS_VIEW).buildCameraLookAtMatrixLH(pos, targ, up);
  	ViewArea.getTransform(video::ETS_VIEW) *= Affector;
  	recalculateViewArea();
- 
---- CCameraSceneNode.h	Sat Nov 03 18:08:00 2012
-+++ CCameraSceneNode.h	Tue Jul 14 15:37:59 2015
-@@ -18,7 +18,7 @@
- 	public:
- 
- 		//! constructor
--		CCameraSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id, 
-+		CCameraSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
- 			const core::vector3df& position = core::vector3df(0,0,0),
- 			const core::vector3df& lookat = core::vector3df(0,0,100));
- 
-@@ -48,10 +48,10 @@
- 		virtual const core::matrix4& getViewMatrixAffector() const;
- 
- 		//! It is possible to send mouse and key events to the camera. Most cameras
--		//! may ignore this input, but camera scene nodes which are created for 
-+		//! may ignore this input, but camera scene nodes which are created for
- 		//! example with scene::ISceneManager::addMayaCameraSceneNode or
- 		//! scene::ISceneManager::addMeshViewerCameraSceneNode, may want to get this input
--		//! for changing their position, look at target or whatever. 
-+		//! for changing their position, look at target or whatever.
- 		virtual bool OnEvent(const SEvent& event);
- 
- 		//! Sets the look at target of the camera
+ }
+--- CCameraSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CCameraSceneNode.h	Fri Aug 07 23:09:15 2015
 @@ -79,6 +79,8 @@
  		//! \return Returns the up vector of the camera.
- 		virtual const core::vector3df& getUpVector() const;
+ 		virtual const core::vector3df& getUpVector() const _IRR_OVERRIDE_;
  
-+        virtual void captureState();
++		virtual void captureState() _IRR_OVERRIDE_;
 +
  		//! Gets distance from the camera to the near plane.
  		//! \return Value of the near plane of the camera.
- 		virtual f32 getNearValue() const;
-@@ -111,7 +113,7 @@
- 		virtual void OnRegisterSceneNode();
+ 		virtual f32 getNearValue() const _IRR_OVERRIDE_;
+@@ -111,10 +113,10 @@
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! Render
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
+ 
+ 		//! Update
+-		virtual void updateMatrices() _IRR_OVERRIDE_;
++		virtual void updateMatrices(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! Returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -152,10 +154,12 @@
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+@@ -155,6 +157,9 @@
  
  		core::vector3df Target;
  		core::vector3df UpVector;
++
 +		core::vector3df CapturedTarget;
 +		core::vector3df CapturedUpVector;
  
--		f32 Fovy;	// Field of view, in radians. 
--		f32 Aspect;	// Aspect ratio. 
--		f32 ZNear;	// value of the near view-plane. 
-+		f32 Fovy;	// Field of view, in radians.
-+		f32 Aspect;	// Aspect ratio.
-+		f32 ZNear;	// value of the near view-plane.
- 		f32 ZFar;	// Z-value of the far view-plane.
- 
- 		SViewFrustum ViewArea;
---- CCubeSceneNode.cpp	Mon Dec 03 21:10:32 2012
-+++ CCubeSceneNode.cpp	Tue May 12 16:03:23 2015
-@@ -61,10 +61,13 @@
+ 		f32 Fovy;	// Field of view, in radians.
+ 		f32 Aspect;	// Aspect ratio.
+--- CCubeSceneNode.cpp	Sun Jan 06 02:40:58 2013
++++ CCubeSceneNode.cpp	Fri Aug 07 20:52:13 2015
+@@ -61,10 +61,12 @@
  
  
  //! renders the node.
@@ -257,55 +201,36 @@
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
 -	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-+
 +	core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
 +
 +	driver->setTransform(video::ETS_WORLD, matr);
  
  	if (Shadow)
  		Shadow->updateShadowVolumes();
---- CCubeSceneNode.h	Sat Nov 03 18:08:10 2012
-+++ CCubeSceneNode.h	Tue May 12 15:28:11 2015
+--- CCubeSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CCubeSceneNode.h	Fri Aug 07 20:52:48 2015
 @@ -27,7 +27,7 @@
- 		virtual void OnRegisterSceneNode();
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -66,7 +66,7 @@
- 		virtual IMesh* getMesh(void) { return Mesh; }
- 
- 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
--		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes 
-+		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes
- 		referencing this mesh to change too. */
- 		virtual void setReadOnlyMaterials(bool readonly) {}
- 
---- CDummyTransformationSceneNode.h	Sat Nov 03 18:07:58 2012
-+++ CDummyTransformationSceneNode.h	Tue May 12 15:28:15 2015
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CDummyTransformationSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CDummyTransformationSceneNode.h	Fri Aug 07 20:54:11 2015
 @@ -31,7 +31,7 @@
- 		virtual core::matrix4 getRelativeTransformation() const;
+ 		virtual core::matrix4 getRelativeTransformation() const _IRR_OVERRIDE_;
  
  		//! does nothing.
--		virtual void render() {}
-+		virtual void render(f32 interpolate=1.f) {}
+-		virtual void render() _IRR_OVERRIDE_ {}
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_ {}
  
  		//! Returns type of the scene node
- 		virtual ESCENE_NODE_TYPE getType() const { return ESNT_DUMMY_TRANSFORMATION; }
-@@ -42,7 +42,7 @@
- 
- 	private:
- 
--		// TODO: We can add least add some warnings to find troubles faster until we have 
-+		// TODO: We can add least add some warnings to find troubles faster until we have
- 		// fixed bug id 2318691.
- 		virtual const core::vector3df& getScale() const;
- 		virtual void setScale(const core::vector3df& scale);
---- CEmptySceneNode.cpp	Sat Nov 03 18:07:56 2012
-+++ CEmptySceneNode.cpp	Tue May 12 15:28:23 2015
+ 		virtual ESCENE_NODE_TYPE getType() const _IRR_OVERRIDE_ { return ESNT_DUMMY_TRANSFORMATION; }
+--- CEmptySceneNode.cpp	Sun Jan 06 02:40:58 2013
++++ CEmptySceneNode.cpp	Fri Aug 07 20:54:37 2015
 @@ -33,7 +33,7 @@
  
  
@@ -315,19 +240,54 @@
  {
  	// do nothing
  }
---- CEmptySceneNode.h	Sat Nov 03 18:08:16 2012
-+++ CEmptySceneNode.h	Tue May 12 15:28:27 2015
+--- CEmptySceneNode.h	Sun Jan 04 14:23:44 2015
++++ CEmptySceneNode.h	Fri Aug 07 20:55:01 2015
 @@ -26,7 +26,7 @@
- 		virtual void OnRegisterSceneNode();
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! does nothing.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! Returns type of the scene node
- 		virtual ESCENE_NODE_TYPE getType() const { return ESNT_EMPTY; }
---- CLightSceneNode.cpp	Sat Nov 03 18:08:08 2012
-+++ CLightSceneNode.cpp	Tue May 12 15:55:33 2015
+ 		virtual ESCENE_NODE_TYPE getType() const _IRR_OVERRIDE_ { return ESNT_EMPTY; }
+--- CInstancedMeshSceneNode.cpp	Sat Jan 10 21:24:40 2015
++++ CInstancedMeshSceneNode.cpp	Fri Aug 07 23:11:57 2015
+@@ -156,7 +156,7 @@
+ 		}
+ 
+ 		//! renders the node.
+-		void CInstancedMeshSceneNode::render()
++		void CInstancedMeshSceneNode::render(f32 interpolate)
+ 		{
+ 			if (!IsVisible || !SceneManager->getActiveCamera())
+ 				return;
+@@ -164,10 +164,11 @@
+ 			if (!baseMesh || baseMesh->getMeshBuffer(0)->getVertexBuffer(1)->getVertexCount() == 0)
+ 				return;
+ 
++            core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
+ 			IMeshBuffer* renderBuffer = baseMesh->getMeshBuffer(0);
+ 
+ 			video::IVideoDriver* driver = SceneManager->getVideoDriver();
+-			driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
++			driver->setTransform(video::ETS_WORLD, matr);
+ 			driver->setMaterial(readOnlyMaterial ? material : renderBuffer->getMaterial());
+ 
+ 			driver->drawMeshBuffer(renderBuffer);
+--- CInstancedMeshSceneNode.h	Sat Jan 10 21:24:40 2015
++++ CInstancedMeshSceneNode.h	Fri Aug 07 23:11:08 2015
+@@ -31,7 +31,7 @@
+ 			virtual void OnRegisterSceneNode();
+ 
+ 			//! renders the node.
+-			virtual void render();
++			virtual void render(f32 interpolate=1.f);
+ 
+ 			virtual void OnAnimate(u32 timeMs);
+ 
+--- CLightSceneNode.cpp	Sun Jan 06 02:40:58 2013
++++ CLightSceneNode.cpp	Fri Aug 07 23:12:14 2015
 @@ -44,15 +44,17 @@
  
  
@@ -348,37 +308,19 @@
  		video::SMaterial m;
  		m.Lighting = false;
  		driver->setMaterial(m);
---- CLightSceneNode.h	Sat Nov 03 18:07:52 2012
-+++ CLightSceneNode.h	Tue May 12 15:28:43 2015
-@@ -12,7 +12,7 @@
- namespace scene
- {
- 
--//! Scene node which is a dynamic light. You can switch the light on and off by 
-+//! Scene node which is a dynamic light. You can switch the light on and off by
- //! making it visible or not, and let it be animated by ordinary scene node animators.
- class CLightSceneNode : public ILightSceneNode
- {
-@@ -28,7 +28,7 @@
- 	virtual void OnRegisterSceneNode();
+--- CLightSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CLightSceneNode.h	Fri Aug 07 20:57:16 2015
+@@ -26,7 +26,7 @@
+ 	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  	//! render
--	virtual void render();
-+	virtual void render(f32 interpolate=1.f);
+-	virtual void render() _IRR_OVERRIDE_;
++	virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  	//! set node light data from light info
- 	virtual void setLightData(const video::SLight& light);
-@@ -58,7 +58,7 @@
- 	virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
- 
- 	//! Creates a clone of this scene node and its children.
--	virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0); 
-+	virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
- 
- 
- 	//! Sets the light's radius of influence.
---- CMeshSceneNode.cpp	Mon Nov 12 12:02:44 2012
-+++ CMeshSceneNode.cpp	Tue May 12 16:04:19 2015
+ 	virtual void setLightData(const video::SLight& light) _IRR_OVERRIDE_;
+--- CMeshSceneNode.cpp	Sun Jan 04 14:23:44 2015
++++ CMeshSceneNode.cpp	Fri Aug 07 21:02:55 2015
 @@ -111,10 +111,16 @@
  	}
  }
@@ -392,7 +334,7 @@
 -void CMeshSceneNode::render()
 +void CMeshSceneNode::render(f32 interpolate)
  {
-+    core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
++	core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
 +
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  
@@ -415,10 +357,11 @@
  
  	// for debug purposes only:
  	if (DebugDataVisible && PassCount==1)
-@@ -226,6 +232,39 @@
+@@ -224,6 +230,39 @@
+ 			}
+ 		}
  	}
- }
- 
++}
 +
 +void CMeshSceneNode::fastRender(const irr::core::vector3df &camWorldPos)
 +{
@@ -451,348 +394,60 @@
 +        }
 +    }
 +
-+}
+ }
  
- //! Removes a child from this scene node.
- //! Implemented here, to be able to remove the shadow properly, if there is one,
---- CMeshSceneNode.h	Sat Nov 03 18:07:58 2012
-+++ CMeshSceneNode.h	Tue May 12 15:29:00 2015
+ 
+--- CMeshSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CMeshSceneNode.h	Fri Aug 07 21:23:14 2015
 @@ -29,8 +29,12 @@
  		//! frame
- 		virtual void OnRegisterSceneNode();
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
-+		virtual void fastRegister();
++        virtual void fastRegister() _IRR_OVERRIDE_;
 +
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
 +
-+		virtual void fastRender(const irr::core::vector3df &camWorldPos);
++        virtual void fastRender(const irr::core::vector3df &camWorldPos) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -41,7 +45,7 @@
- 		//! optimal position for minimizing renderstate changes, but can also be used
- 		//! to directly modify the material of a scene node.
- 		virtual video::SMaterial& getMaterial(u32 i);
--		
-+
- 		//! returns amount of materials used by this scene node.
- 		virtual u32 getMaterialCount() const;
- 
-@@ -66,7 +70,7 @@
- 			s32 id, bool zfailmethod=true, f32 infinity=10000.0f);
- 
- 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
--		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes 
-+		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes
- 		referencing this mesh to change too. */
- 		virtual void setReadOnlyMaterials(bool readonly);
- 
---- COctreeSceneNode.cpp	Sat Nov 03 18:08:10 2012
-+++ COctreeSceneNode.cpp	Tue May 12 15:56:26 2015
-@@ -87,7 +87,7 @@
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- COctreeSceneNode.cpp	Sun Jan 04 14:23:44 2015
++++ COctreeSceneNode.cpp	Fri Aug 07 21:26:11 2015
+@@ -105,7 +105,7 @@
  
  
  //! renders the node.
 -void COctreeSceneNode::render()
 +void COctreeSceneNode::render(f32 interpolate)
  {
+ 	IRR_PROFILE(CProfileScope psRender(EPID_OC_RENDER);)
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
- 
-@@ -102,7 +102,8 @@
+@@ -121,7 +121,8 @@
  		SceneManager->getSceneNodeRenderPass() == scene::ESNRP_TRANSPARENT;
  	++PassCount;
  
 -	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-+    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
++	core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
 +	driver->setTransform(video::ETS_WORLD, mat);
  
  	if (Shadow)
  		Shadow->updateShadowVolumes();
---- COctreeSceneNode.h	Sat Nov 03 18:07:52 2012
-+++ COctreeSceneNode.h	Tue May 12 15:29:19 2015
+--- COctreeSceneNode.h	Sun Jan 04 14:23:44 2015
++++ COctreeSceneNode.h	Fri Aug 07 21:26:41 2015
 @@ -27,7 +27,7 @@
- 		virtual void OnRegisterSceneNode();
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
---- COpenGLDriver.cpp	Sun Nov 17 20:11:00 2013
-+++ COpenGLDriver.cpp	Wed Sep 03 19:36:42 2014
-@@ -394,15 +394,15 @@
- 			if (PixelFormat)
- 				break;
- 		}
--	}
- 
--	// set pixel format
--	if (!SetPixelFormat(HDc, PixelFormat, &pfd))
--	{
--		os::Printer::log("Cannot set the pixel format.", ELL_ERROR);
--		return false;
-+		// set pixel format
-+        if (!SetPixelFormat(HDc, PixelFormat, &pfd))
-+        {
-+            os::Printer::log("Cannot set the pixel format.", ELL_ERROR);
-+            return false;
-+        }
-+        os::Printer::log("Pixel Format", core::stringc(PixelFormat).c_str(), ELL_DEBUG);
- 	}
--	os::Printer::log("Pixel Format", core::stringc(PixelFormat).c_str(), ELL_DEBUG);
- 
- 	// create rendering context
- #ifdef WGL_ARB_create_context
-@@ -3541,6 +3541,7 @@
- {
- 	GLfloat data[4] = {color.r, color.g, color.b, color.a};
- 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, data);
-+	AmbientLight = color;
- }
- 
- 
-@@ -3839,6 +3840,7 @@
- {
- 	CNullDriver::OnResize(size);
- 	glViewport(0, 0, size.Width, size.Height);
-+	ViewPort = core::rect<s32>(0,0, size.Width, size.Height);
- 	Transformation3DChanged = true;
- }
- 
-@@ -4153,6 +4155,7 @@
- 		{
- 			// we want to set a new target. so do this.
- 			glViewport(0, 0, texture->getSize().Width, texture->getSize().Height);
-+			ViewPort = core::rect<s32>(0,0, texture->getSize().Width, texture->getSize().Height);
- 			RenderTargetTexture = static_cast<COpenGLTexture*>(texture);
- 			// calls glDrawBuffer as well
- 			RenderTargetTexture->bindRTT();
-@@ -4162,6 +4165,7 @@
- 		else
- 		{
- 			glViewport(0,0,ScreenSize.Width,ScreenSize.Height);
-+			ViewPort = core::rect<s32>(0,0, ScreenSize.Width, ScreenSize.Height);
- 			RenderTargetTexture = 0;
- 			CurrentRendertargetSize = core::dimension2d<u32>(0,0);
- 			CurrentTarget=ERT_FRAME_BUFFER;
---- COpenGLNormalMapRenderer.cpp	Sat Nov 03 18:08:16 2012
-+++ COpenGLNormalMapRenderer.cpp	Sun Aug 24 15:48:16 2014
-@@ -38,19 +38,31 @@
- 	"\n"\
- 	"#output\n"\
- 	"OUTPUT OutPos = result.position;\n"\
--	"OUTPUT OutLightColor1 = result.color.primary;\n"\
--	"OUTPUT OutLightColor2 = result.color.secondary;\n"\
-+	"OUTPUT OutPrimaryColor = result.color.primary; \n"\
-+
- 	"OUTPUT OutTexCoord = result.texcoord[0];\n"\
- 	"OUTPUT OutLightVector1 = result.texcoord[1];\n"\
- 	"OUTPUT OutLightVector2 = result.texcoord[2];\n"\
-+    "OUTPUT OutLightVector3 = result.texcoord[3];\n"\
-+	"OUTPUT OutLightVector4 = result.texcoord[4];\n"\
-+
-+    "OUTPUT OutLightColor1 = result.texcoord[5];\n"\
-+	"OUTPUT OutLightColor2 = result.texcoord[6];\n"\
-+	"OUTPUT OutLightColor3 = result.texcoord[7];\n"\
-+	"OUTPUT OutLightColor4 = result.texcoord[8];\n"\
-+
- 	"\n"\
- 	"PARAM MVP[4] = { state.matrix.mvp }; # modelViewProjection matrix.\n"\
- 	"TEMP Temp;\n"\
- 	"TEMP TempColor;\n"\
- 	"TEMP TempLightVector1;\n"\
- 	"TEMP TempLightVector2;\n"\
-+	"TEMP TempLightVector3;\n"\
-+	"TEMP TempLightVector4;\n"\
- 	"TEMP TempTransLightV1;\n"\
- 	"TEMP TempTransLightV2;\n"\
-+	"TEMP TempTransLightV3;\n"\
-+	"TEMP TempTransLightV4;\n"\
- 	"\n"\
- 	"# transform position to clip space \n"\
- 	"DP4 OutPos.x, MVP[0], InPos;\n"\
-@@ -63,6 +75,8 @@
- 	"# vertex - lightpositions \n"\
- 	"SUB TempLightVector1, program.local[12], InPos; \n"\
- 	"SUB TempLightVector2, program.local[14], InPos; \n"\
-+	"SUB TempLightVector3, program.local[16], InPos; \n"\
-+	"SUB TempLightVector4, program.local[18], InPos; \n"\
- 	"\n"\
- 	"# transform the light vector 1 with U, V, W \n"\
- 	"DP3 TempTransLightV1.x, InTangent, TempLightVector1; \n"\
-@@ -74,6 +88,16 @@
- 	"DP3 TempTransLightV2.y, InBinormal, TempLightVector2; \n"\
- 	"DP3 TempTransLightV2.z, InNormal, TempLightVector2; \n"\
- 	"\n"\
-+	"# transform the light vector 3 with U, V, W \n"\
-+	"DP3 TempTransLightV3.x, InTangent, TempLightVector3; \n"\
-+	"DP3 TempTransLightV3.y, InBinormal, TempLightVector3; \n"\
-+	"DP3 TempTransLightV3.z, InNormal, TempLightVector3; \n"\
-+	"\n"\
-+	"# transform the light vector 4 with U, V, W \n"\
-+	"DP3 TempTransLightV4.x, InTangent, TempLightVector4; \n"\
-+	"DP3 TempTransLightV4.y, InBinormal, TempLightVector4; \n"\
-+	"DP3 TempTransLightV4.z, InNormal, TempLightVector4; \n"\
-+	"\n"\
- 	"# normalize light vector 1 \n"\
- 	"DP3 TempTransLightV1.w, TempTransLightV1, TempTransLightV1; \n"\
- 	"RSQ TempTransLightV1.w, TempTransLightV1.w; \n"\
-@@ -84,10 +108,22 @@
- 	"RSQ TempTransLightV2.w, TempTransLightV2.w; \n"\
- 	"MUL TempTransLightV2, TempTransLightV2, TempTransLightV2.w;\n"\
- 	"\n"\
-+	"# normalize light vector 3 \n"\
-+	"DP3 TempTransLightV3.w, TempTransLightV3, TempTransLightV3; \n"\
-+	"RSQ TempTransLightV3.w, TempTransLightV3.w; \n"\
-+	"MUL TempTransLightV3, TempTransLightV3, TempTransLightV3.w;\n"\
-+	"\n"\
-+	"# normalize light vector 4 \n"\
-+	"DP3 TempTransLightV4.w, TempTransLightV4, TempTransLightV4; \n"\
-+	"RSQ TempTransLightV4.w, TempTransLightV4.w; \n"\
-+	"MUL TempTransLightV4, TempTransLightV4, TempTransLightV4.w;\n"\
-+	"\n"\
- 	"\n"\
- 	"# move light vectors out\n"\
- 	"MAD OutLightVector1, TempTransLightV1, {0.5,0.5,0.5,0.5}, {0.5,0.5,0.5,0.5}; \n"\
- 	"MAD OutLightVector2, TempTransLightV2, {0.5,0.5,0.5,0.5}, {0.5,0.5,0.5,0.5}; \n"\
-+	"MAD OutLightVector3, TempTransLightV3, {0.5,0.5,0.5,0.5}, {0.5,0.5,0.5,0.5}; \n"\
-+	"MAD OutLightVector4, TempTransLightV4, {0.5,0.5,0.5,0.5}, {0.5,0.5,0.5,0.5}; \n"\
- 	"\n"\
- 	"# calculate attenuation of light 1\n"\
- 	"MOV TempLightVector1.w, {0,0,0,0}; \n"\
-@@ -103,9 +139,23 @@
- 	"RSQ TempLightVector2, TempLightVector2.x; \n"\
- 	"MUL OutLightColor2, TempLightVector2, program.local[15]; # resulting light color = lightcolor * attenuation \n"\
- 	"\n"\
-+	"# calculate attenuation of light 3\n"\
-+	"MOV TempLightVector3.w, {0,0,0,0}; \n"\
-+	"DP3 TempLightVector3.x, TempLightVector3, TempLightVector3; \n"\
-+	"MUL TempLightVector3.x, TempLightVector3.x, program.local[17].w;  \n"\
-+	"RSQ TempLightVector3, TempLightVector3.x; \n"\
-+	"MUL OutLightColor3, TempLightVector3, program.local[17]; # resulting light color = lightcolor * attenuation \n"\
-+	"\n"\
-+	"# calculate attenuation of light 4\n"\
-+	"MOV TempLightVector4.w, {0,0,0,0}; \n"\
-+	"DP3 TempLightVector4.x, TempLightVector4, TempLightVector4; \n"\
-+	"MUL TempLightVector4.x, TempLightVector4.x, program.local[19].w;  \n"\
-+	"RSQ TempLightVector4, TempLightVector4.x; \n"\
-+	"MUL OutLightColor4, TempLightVector4, program.local[19]; # resulting light color = lightcolor * attenuation \n"\
-+	"\n"\
- 	"# move out texture coordinates and original alpha value\n"\
- 	"MOV OutTexCoord, InTexCoord; \n"\
--	"MOV OutLightColor1.w, InColor.w; \n"\
-+	"MOV OutPrimaryColor, InColor; \n"\
- 	"\n"\
- 	"END\n";
- 
-@@ -118,15 +168,25 @@
- 	"\n"\
- 	"#Input\n"\
- 	"ATTRIB inTexCoord = fragment.texcoord[0];   \n"\
-+	"ATTRIB inColor = fragment.color.primary;   \n"\
- 	"ATTRIB light1Vector = fragment.texcoord[1]; \n"\
- 	"ATTRIB light2Vector = fragment.texcoord[2];    \n"\
--	"ATTRIB light1Color = fragment.color.primary;   \n"\
--	"ATTRIB light2Color = fragment.color.secondary; \n"\
-+	"ATTRIB light3Vector = fragment.texcoord[3];\n"\
-+	"ATTRIB light4Vector = fragment.texcoord[4];\n"\
-+
-+	"ATTRIB light1Color = fragment.texcoord[5];   \n"\
-+	"ATTRIB light2Color = fragment.texcoord[6]; \n"\
-+	"ATTRIB light3Color = fragment.texcoord[7];\n"\
-+	"ATTRIB light4Color = fragment.texcoord[8];\n"\
-+
- 	"\n"\
- 	"#Output\n"\
- 	"OUTPUT outColor = result.color;\n"\
- 	"TEMP temp;\n"\
-+	"TEMP temp1;\n"\
- 	"TEMP temp2;\n"\
-+	"TEMP temp3;\n"\
-+	"TEMP temp4;\n"\
- 	"TEMP colorMapColor;\n"\
- 	"TEMP normalMapColor;\n"\
- 	"\n"\
-@@ -136,18 +196,44 @@
- 	"\n"\
- 	"# calculate color of light1; \n"\
- 	"MAD normalMapColor, normalMapColor, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
--	"MAD temp, light1Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
--	"DP3_SAT temp, normalMapColor, temp; \n"\
--	"MUL temp, light1Color, temp; \n"\
-+	"MAD temp1, light1Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
-+	"DP3_SAT temp1, normalMapColor, temp1; \n"\
-+	/*"MUL temp, light1Color, temp; \n"\*/
- 	"\n"\
- 	"# calculate color of light2; \n"\
- 	"MAD temp2, light2Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
- 	"DP3_SAT temp2, normalMapColor, temp2; \n"\
--	"MAD temp, light2Color, temp2, temp; \n"\
-+	/*"MAD temp, light2Color, temp2, temp; \n"\*/
-+	"\n"\
-+
-+	"# calculate color of light3; \n"\
-+	"MAD temp3, light3Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
-+	"DP3_SAT temp3, normalMapColor, temp3; \n"\
-+	/*"MAD temp, light3Color, temp3, temp; \n"\*/
- 	"\n"\
-+	"# calculate color of light4; \n"\
-+	"MAD temp4, light4Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
-+	"DP3_SAT temp4, normalMapColor, temp4; \n"\
-+	/*"MAD temp, light4Color, temp4, temp; \n"\*/
-+	"\n"\
-+
-+    "MUL temp1, light1Color, temp1; \n"\
-+	"MUL temp2, light2Color, temp2; \n"\
-+	"MUL temp3, light3Color, temp3; \n"\
-+	"MUL temp4, light4Color, temp4; \n"\
-+
-+    "ADD temp, temp1, temp; \n"\
-+	"ADD temp, temp2, temp; \n"\
-+	"ADD temp, temp3, temp; \n"\
-+	"ADD temp, temp4, temp; \n"\
-+
-+	"ADD temp, temp, program.local[0]; \n"\
-+
-+	"MOV temp.w, 1; \n"\
-+
- 	"# luminance * base color; \n"\
-+	"MOV outColor, inColor; #write interpolated vertex alpha value\n"\
- 	"MUL outColor, temp, colorMapColor; \n"\
--	"MOV outColor.a, light1Color.a; #write interpolated vertex alpha value\n"\
- 	"\n"\
- 	"END\n";
- 
-@@ -257,7 +343,7 @@
- 	core::matrix4 invWorldMat;
- 	driver->getTransform(video::ETS_WORLD).getInverse(invWorldMat);
- 
--	for (u32 i=0; i<2; ++i)
-+	for (u32 i=0; i<4; ++i)
- 	{
- 		video::SLight light;
- 
-@@ -280,6 +366,14 @@
- 		services->setVertexShaderConstant(
- 			reinterpret_cast<const f32*>(&light.DiffuseColor), 13+(i*2), 1);
- 	}
-+
-+	//set ambient light
-+	//f32 factor = 1.0f;
-+
-+    SColorf gett = driver->getAmbientLight();
-+
-+	f32 c6[] = {gett.r, gett.g, gett.b, gett.a};
-+	services->setPixelShaderConstant(reinterpret_cast<const f32*>(c6), 0, 1);
- }
- 
- 
---- CParticleSystemSceneNode.cpp	Sat Nov 03 18:08:10 2012
-+++ CParticleSystemSceneNode.cpp	Tue May 12 15:57:35 2015
-@@ -304,7 +304,7 @@
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CParticleSystemSceneNode.cpp	Mon Jan 12 17:48:40 2015
++++ CParticleSystemSceneNode.cpp	Fri Aug 07 21:34:53 2015
+@@ -309,7 +309,7 @@
  
  
  //! render
@@ -801,7 +456,7 @@
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	ICameraSceneNode* camera = SceneManager->getActiveCamera();
-@@ -378,7 +378,7 @@
+@@ -387,7 +387,7 @@
  	// render all
  	core::matrix4 mat;
  	if (!ParticlesAreGlobal)
@@ -809,8 +464,8 @@
 +		mat.setTranslation(interpolatedAbsoluteTransform(interpolate).getTranslation());
  	driver->setTransform(video::ETS_WORLD, mat);
  
- 	driver->setMaterial(Buffer->Material);
-@@ -389,7 +389,7 @@
+ 	driver->setMaterial(MeshBuffer->getMaterial());
+@@ -397,7 +397,7 @@
  	// for debug purposes only:
  	if ( DebugDataVisible & scene::EDS_BBOX )
  	{
@@ -819,69 +474,40 @@
  		video::SMaterial deb_m;
  		deb_m.Lighting = false;
  		driver->setMaterial(deb_m);
---- CParticleSystemSceneNode.h	Sat Nov 03 18:07:56 2012
-+++ CParticleSystemSceneNode.h	Tue May 12 15:29:33 2015
+--- CParticleSystemSceneNode.h	Mon Jan 12 17:48:40 2015
++++ CParticleSystemSceneNode.h	Fri Aug 07 21:36:02 2015
 @@ -58,7 +58,7 @@
- 	virtual void OnRegisterSceneNode();
+ 	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  	//! render
--	virtual void render();
-+	virtual void render(f32 interpolate=1.f);
+-	virtual void render() _IRR_OVERRIDE_;
++	virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  	//! returns the axis aligned bounding box of this node
- 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
---- CQuake3ShaderSceneNode.cpp	Sat Nov 03 18:08:08 2012
-+++ CQuake3ShaderSceneNode.cpp	Tue May 12 15:58:15 2015
-@@ -30,7 +30,7 @@
- 			scene::ISceneNode* parent, scene::ISceneManager* mgr,s32 id,
- 			io::IFileSystem *fileSystem, const scene::IMeshBuffer *original,
- 			const IShader * shader)
--: scene::IMeshSceneNode(parent, mgr, id, 
-+: scene::IMeshSceneNode(parent, mgr, id,
- 		core::vector3df(0.f, 0.f, 0.f),
- 		core::vector3df(0.f, 0.f, 0.f),
- 		core::vector3df(1.f, 1.f, 1.f)),
-@@ -58,7 +58,7 @@
- 	Original->grab();
- 
- 	// clone meshbuffer to modifiable buffer
--	cloneBuffer(MeshBuffer, Original, 
-+	cloneBuffer(MeshBuffer, Original,
- 			Original->getMaterial().ColorMask != 0);
- 
- 	// load all Textures in all stages
-@@ -249,7 +249,7 @@
- 		ret = ESNRP_TRANSPARENT_EFFECT;
- 	}
- 	else
--*/	
-+*/
- 	if ( group->isDefined( "sort", "opaque" ) )
- 	{
- 		ret = ESNRP_SOLID;
-@@ -298,8 +298,9 @@
+ 	virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CQuake3ShaderSceneNode.cpp	Sun Jan 04 14:23:44 2015
++++ CQuake3ShaderSceneNode.cpp	Fri Aug 07 21:39:36 2015
+@@ -301,8 +301,9 @@
  /*
  	render in multipass technique
  */
 -void CQuake3ShaderSceneNode::render()
 +void CQuake3ShaderSceneNode::render(f32 interpolate)
  {
-+    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
++	core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	E_SCENE_NODE_RENDER_PASS pass = SceneManager->getSceneNodeRenderPass();
  
-@@ -411,8 +412,8 @@
- 		video::SMaterial deb_m;
+@@ -342,7 +343,7 @@
+ 		pushProjection |= 1;
+ 	}
  
- 		IAnimatedMesh * arrow = SceneManager->addArrowMesh (
--				"__debugnormalq3", 
--				0xFFECEC00,0xFF999900, 
-+				"__debugnormalq3",
-+				0xFFECEC00,0xFF999900,
- 				4, 8,
- 				8.f, 6.f,
- 				0.5f,1.f
-@@ -475,7 +476,7 @@
+-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation );
++	driver->setTransform(video::ETS_WORLD, mat );
+ 	if (Shadow)
+ 		Shadow->updateShadowVolumes();
+ 
+@@ -478,7 +479,7 @@
  
  			v = (const video::S3DVertex*) ( (u8*) v + vSize );
  		}
@@ -890,247 +516,20 @@
  	}
  
  
-@@ -489,7 +490,7 @@
- 		video::SMaterial deb_m;
- 		deb_m.Lighting = false;
- 		driver->setMaterial(deb_m);
--		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-+		driver->setTransform(video::ETS_WORLD, mat);
- 		driver->draw3DBox( getBoundingBox(), video::SColor(255,255,0,0));
- 	}
- 
-@@ -534,7 +535,7 @@
- 3.3.1 deformVertexes wave <div> <func> <base> <amplitude> <phase> <freq>
- 	Designed for water surfaces, modifying the values differently at each point.
- 	It accepts the standard wave functions of the type sin, triangle, square, sawtooth
--	or inversesawtooth. The "div" parameter is used to control the wave "spread" 
-+	or inversesawtooth. The "div" parameter is used to control the wave "spread"
- 	- a value equal to the tessSize of the surface is a good default value
- 	(tessSize is subdivision size, in game units, used for the shader when seen in the game world) .
- */
-@@ -572,15 +573,15 @@
- 
- /*!
- 	deformVertexes move x y z func base amplitude phase freq
--	The move parameter is used to make a brush, curve patch or model 
-+	The move parameter is used to make a brush, curve patch or model
- 	appear to move together as a unit. The x y z values are the distance
--	and direction in game units the object appears to move relative to 
-+	and direction in game units the object appears to move relative to
- 	it's point of origin in the map. The func base amplitude phase freq values are
- 	the same as found in other waveform manipulations.
- 
- 	The product of the function modifies the values x, y, and z.
--	Therefore, if you have an amplitude of 5 and an x value of 2, 
--	the object will travel 10 units from its point of origin along the x axis. 
-+	Therefore, if you have an amplitude of 5 and an x value of 2,
-+	the object will travel 10 units from its point of origin along the x axis.
- 	This results in a total of 20 units of motion along the x axis, since the
- 	amplitude is the variation both above and below the base.
- 
-@@ -588,7 +589,7 @@
- 	change position, it only appears to.
- 
- 	Design Notes:
--	If an object is made up of surfaces with different shaders, all must have 
-+	If an object is made up of surfaces with different shaders, all must have
- 	matching deformVertexes move values or the object will appear to tear itself apart.
- */
- void CQuake3ShaderSceneNode::deformvertexes_move( f32 dt, SModifierFunction &function )
-@@ -626,7 +627,7 @@
- 		be no visible effect.
- 
- 		Design Notes: Putting values of 0.1 t o 0.5 in Amplitude and 1.0 to 4.0 in the
--		Frequency can produce some satisfying results. Some things that have been 
-+		Frequency can produce some satisfying results. Some things that have been
- 		done with it: A small fluttering bat, falling leaves, rain, flags.
- */
- void CQuake3ShaderSceneNode::deformvertexes_normal( f32 dt, SModifierFunction &function )
-@@ -663,31 +664,31 @@
- 
- 	Specific parameter definitions for deform keywords:
- 		<div>	This is roughly defined as the size of the waves that occur.
--				It is measured in game units. Smaller values create a greater 
--				density of smaller wave forms occurring in a given area. 
-+				It is measured in game units. Smaller values create a greater
-+				density of smaller wave forms occurring in a given area.
- 				Larger values create a lesser density of waves, or otherwise put,
--				the appearance of larger waves. To look correct this value should 
-+				the appearance of larger waves. To look correct this value should
- 				closely correspond to the value (in pixels) set for tessSize (tessellation size)
--				of the texture. A value of 100.0 is a good default value 
-+				of the texture. A value of 100.0 is a good default value
- 				(which means your tessSize should be close to that for things to look "wavelike").
- 
--		<func>	This is the type of wave form being created. Sin stands for sine wave, 
-+		<func>	This is the type of wave form being created. Sin stands for sine wave,
- 				a regular smoothly flowing wave. Triangle is a wave with a sharp ascent
- 				and a sharp decay. It will make a choppy looking wave forms.
--				A square wave is simply on or off for the period of the 
-+				A square wave is simply on or off for the period of the
- 				frequency with no in between. The sawtooth wave has the ascent of a
--				triangle wave, but has the decay cut off sharply like a square wave. 
-+				triangle wave, but has the decay cut off sharply like a square wave.
- 				An inversesawtooth wave reverses this.
- 
--		<base>	This is the distance, in game units that the apparent surface of the 
--				texture is displaced from the actual surface of the brush as placed 
--				in the editor. A positive value appears above the brush surface. 
--				A negative value appears below the brush surface. 
--				An example of this is the Quad effect, which essentially is a 
--				shell with a positive base value to stand it away from the model 
-+		<base>	This is the distance, in game units that the apparent surface of the
-+				texture is displaced from the actual surface of the brush as placed
-+				in the editor. A positive value appears above the brush surface.
-+				A negative value appears below the brush surface.
-+				An example of this is the Quad effect, which essentially is a
-+				shell with a positive base value to stand it away from the model
- 				surface and a 0 (zero) value for amplitude.
- 
--		<amplitude> The distance that the deformation moves away from the base value. 
-+		<amplitude> The distance that the deformation moves away from the base value.
- 					See Wave Forms in the introduction for a description of amplitude.
- 
- 		<phase> See Wave Forms in the introduction for a description of phase)
-@@ -696,7 +697,7 @@
- 
- 		Design Note: The div and amplitude parameters, when used in conjunction with
- 		liquid volumes like water should take into consideration how much the water
--		will be moving. A large ocean area would have have massive swells (big div values) 
-+		will be moving. A large ocean area would have have massive swells (big div values)
- 		that rose and fell dramatically (big amplitude values). While a small, quiet pool
- 		may move very little.
- */
-@@ -735,14 +736,14 @@
- 	function.count = 1;
- }
- 
--						
-+
- /*!
- 	deformVertexes autosprite
- 
--	This function can be used to make any given triangle quad 
-+	This function can be used to make any given triangle quad
- 	(pair of triangles that form a square rectangle) automatically behave
--	like a sprite without having to make it a separate entity. This means 
--	that the "sprite" on which the texture is placed will rotate to always 
-+	like a sprite without having to make it a separate entity. This means
-+	that the "sprite" on which the texture is placed will rotate to always
- 	appear at right angles to the player's view as a sprite would. Any four-sided
- 	brush side, flat patch, or pair of triangles in a model can have the autosprite
- 	effect on it. The brush face containing a texture with this shader keyword must
-@@ -784,7 +785,7 @@
- /*!
- 	deformVertexes autosprite2
- 	Is a slightly modified "sprite" that only rotates around the middle of its longest axis.
--	This allows you to make a pillar of fire that you can walk around, or an energy beam 
-+	This allows you to make a pillar of fire that you can walk around, or an energy beam
- 	stretched across the room.
- */
- 
-@@ -859,7 +860,7 @@
- 				MeshBuffer->Vertices[i].Color.set(0xFF7F7F7F);
- 			break;
- 
--		case EXACTVERTEX:		
-+		case EXACTVERTEX:
- 			// alphagen exactvertex TODO lighting
- 		case VERTEX:
- 			// rgbgen vertex
-@@ -905,7 +906,7 @@
- 				MeshBuffer->Vertices[i].Color.setAlpha ( 0xFF );
- 			break;
- 
--		case EXACTVERTEX:	
-+		case EXACTVERTEX:
- 			// alphagen exactvertex TODO lighting
- 		case VERTEX:
- 			// alphagen vertex
-@@ -1014,8 +1015,8 @@
- 				n += Original->Vertices[i].Normal;
- 				n.normalize();
- 
--				MeshBuffer->Vertices[i].TCoords.X = 0.5f*(1.f+(n.X*m[0]+n.Y*m[1]+n.Z*m[2])); 
--				MeshBuffer->Vertices[i].TCoords.Y = 0.5f*(1.f+(n.X*m[4]+n.Y*m[5]+n.Z*m[6])); 
-+				MeshBuffer->Vertices[i].TCoords.X = 0.5f*(1.f+(n.X*m[0]+n.Y*m[1]+n.Z*m[2]));
-+				MeshBuffer->Vertices[i].TCoords.Y = 0.5f*(1.f+(n.X*m[4]+n.Y*m[5]+n.Z*m[6]));
- 			}
- 
- 		} break;
-@@ -1101,9 +1102,9 @@
- 	{
- 		const SVariable &v = group->Variable[g];
- 
--		// get the modifier 
-+		// get the modifier
- 		static const c8 * modifierList[] =
--		{ 
-+		{
- 			"tcmod","deformvertexes","rgbgen","tcgen","map","alphagen"
- 		};
- 
-@@ -1125,7 +1126,7 @@
- 
- 		// get the modifier function
- 		static const c8 * funclist[] =
--		{ 
-+		{
- 			"scroll","scale","rotate","stretch","turb",
- 			"wave","identity","vertex",
- 			"texture","lightmap","environment","$lightmap",
-@@ -1156,7 +1157,7 @@
- 				break;
- 			case ROTATE:
- 				// tcmod rotate <degress per second>
--				m2.setTextureRotationCenter(	getAsFloat( v.content, pos ) * 
-+				m2.setTextureRotationCenter(	getAsFloat( v.content, pos ) *
- 												core::DEGTORAD *
- 												TimeAbs
- 											);
-@@ -1228,8 +1229,8 @@
- 					case TURBULENCE:
- 						//tcMod turb <base> <amplitude> <phase> <freq>
- 						//function.tcgen = TURBULENCE;
--						m2.setTextureRotationCenter(	function.frequency * 
--														core::DEGTORAD * 
-+						m2.setTextureRotationCenter(	function.frequency *
-+														core::DEGTORAD *
- 														TimeAbs
- 													);
- 						break;
-@@ -1283,7 +1284,7 @@
- 					default:
- 						break;
- 				}
--				
-+
- 			} break;
- 			case TEXTURE:
- 			case LIGHTMAP:
-@@ -1366,7 +1367,7 @@
- 	if ( Q3Texture [ i ].TextureIndex )
- 		m.setTexture(0, Q3Texture [ i ].Texture [ Q3Texture [ i ].TextureIndex ]);
- 	return m;
--}	
-+}
- 
- 
- } // end namespace scene
---- CQuake3ShaderSceneNode.h	Sat Nov 03 18:08:16 2012
-+++ CQuake3ShaderSceneNode.h	Tue May 12 15:29:47 2015
-@@ -32,7 +32,7 @@
+--- CQuake3ShaderSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CQuake3ShaderSceneNode.h	Fri Aug 07 21:40:43 2015
+@@ -31,7 +31,7 @@
  	virtual ~CQuake3ShaderSceneNode();
  
- 	virtual void OnRegisterSceneNode();
--	virtual void render();
-+	virtual void render(f32 interpolate=1.f);
- 	virtual void OnAnimate(u32 timeMs);
- 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
+ 	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
+-	virtual void render() _IRR_OVERRIDE_;
++	virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
+ 	virtual void OnAnimate(u32 timeMs) _IRR_OVERRIDE_;
+ 	virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
  
---- CSceneManager.cpp	Tue Oct 29 21:34:58 2013
-+++ CSceneManager.cpp	Sun Jul 12 19:43:47 2015
-@@ -1139,7 +1139,7 @@
+--- CSceneManager.cpp	Sat Jan 10 21:24:40 2015
++++ CSceneManager.cpp	Sat Aug 08 16:23:30 2015
+@@ -1163,7 +1163,7 @@
  
  
  //! renders the node.
@@ -1139,7 +538,7 @@
  {
  }
  
-@@ -1337,10 +1337,14 @@
+@@ -1441,10 +1441,14 @@
  	return taken;
  }
  
@@ -1153,9 +552,9 @@
 -void CSceneManager::drawAll()
 +void CSceneManager::drawAll(f32 interpolate)
  {
- 	if (!Driver)
- 		return;
-@@ -1377,7 +1381,7 @@
+ 	IRR_PROFILE(CProfileScope psAll(EPID_SM_DRAW_ALL);)
+ 
+@@ -1485,7 +1489,7 @@
  	camWorldPos.set(0,0,0);
  	if (ActiveCamera)
  	{
@@ -1163,9 +562,9 @@
 +		ActiveCamera->render(interpolate);
  		camWorldPos = ActiveCamera->getAbsolutePosition();
  	}
- 
-@@ -1396,7 +1400,7 @@
- 			LightManager->OnRenderPassPreRender(CurrentRendertime);
+ 	IRR_PROFILE(getProfiler().stop(EPID_SM_RENDER_CAMERAS));
+@@ -1506,7 +1510,7 @@
+ 			LightManager->OnRenderPassPreRender(CurrentRenderPass);
  
  		for (i=0; i<CameraList.size(); ++i)
 -			CameraList[i]->render();
@@ -1173,7 +572,7 @@
  
  		CameraList.set_used(0);
  
-@@ -1442,7 +1446,7 @@
+@@ -1553,7 +1557,7 @@
  			maxLights = core::min_ ( Driver->getMaximalDynamicLightAmount(), maxLights);
  
  		for (i=0; i< maxLights; ++i)
@@ -1181,8 +580,8 @@
 +			LightList[i]->render(interpolate);
  
  		if (LightManager)
- 			LightManager->OnRenderPassPostRender(CurrentRendertime);
-@@ -1460,14 +1464,14 @@
+ 			LightManager->OnRenderPassPostRender(CurrentRenderPass);
+@@ -1572,14 +1576,14 @@
  			{
  				ISceneNode* node = SkyBoxList[i];
  				LightManager->OnNodePreRender(node);
@@ -1199,12 +598,12 @@
  		}
  
  		SkyBoxList.set_used(0);
-@@ -1491,14 +1495,17 @@
+@@ -1604,14 +1608,17 @@
  			{
  				ISceneNode* node = SolidNodeList[i].Node;
  				LightManager->OnNodePreRender(node);
 -				node->render();
-+				Driver->currentlyRenderedNode = node;
++				Driver->currentlyRenderedNode = SolidNodeList[i].Node;
 +				node->render(interpolate);
  				LightManager->OnNodePostRender(node);
  			}
@@ -1214,13 +613,25 @@
 -			for (i=0; i<SolidNodeList.size(); ++i)
 -				SolidNodeList[i].Node->render();
 +			for (i=0; i<SolidNodeList.size(); ++i) {
-+                Driver->currentlyRenderedNode = SolidNodeList[i].Node;
++				Driver->currentlyRenderedNode = SolidNodeList[i].Node;
 +				SolidNodeList[i].Node->render(interpolate);
-+            }
++			}
  		}
  
  #ifdef _IRR_SCENEMANAGER_DEBUG
-@@ -1522,14 +1529,14 @@
+@@ -1619,9 +1626,10 @@
+ #endif
+ 		SolidNodeList.set_used(0);
+ 
+-		if (LightManager)
++		if (LightManager) {
+ 			LightManager->OnRenderPassPostRender(CurrentRenderPass);
+ 	}
++	}
+ 
+ 	// render shadows
+ 	{
+@@ -1636,14 +1644,14 @@
  			{
  				ISceneNode* node = ShadowNodeList[i];
  				LightManager->OnNodePreRender(node);
@@ -1237,13 +648,9 @@
  		}
  
  		if (!ShadowNodeList.empty())
-@@ -1554,16 +1561,20 @@
- 
- 			for (i=0; i<TransparentNodeList.size(); ++i)
+@@ -1671,14 +1679,14 @@
  			{
-+
  				ISceneNode* node = TransparentNodeList[i].Node;
-+				Driver->currentlyRenderedNode = node;
  				LightManager->OnNodePreRender(node);
 -				node->render();
 +				node->render(interpolate);
@@ -1252,16 +659,13 @@
  		}
  		else
  		{
--			for (i=0; i<TransparentNodeList.size(); ++i)
+ 			for (i=0; i<TransparentNodeList.size(); ++i)
 -				TransparentNodeList[i].Node->render();
-+			for (i=0; i<TransparentNodeList.size(); ++i) {
-+                Driver->currentlyRenderedNode = TransparentNodeList[i].Node;
 +				TransparentNodeList[i].Node->render(interpolate);
-+            }
  		}
  
  #ifdef _IRR_SCENEMANAGER_DEBUG
-@@ -1590,14 +1601,14 @@
+@@ -1706,14 +1714,14 @@
  			{
  				ISceneNode* node = TransparentEffectNodeList[i].Node;
  				LightManager->OnNodePreRender(node);
@@ -1277,16 +681,11 @@
 +				TransparentEffectNodeList[i].Node->render(interpolate);
  		}
  #ifdef _IRR_SCENEMANAGER_DEBUG
- 		Parameters.setAttribute ( "drawn_transparent_effect", (s32) TransparentEffectNodeList.size() );
-@@ -1607,6 +1618,156 @@
+ 		Parameters->setAttribute("drawn_transparent_effect", (s32) TransparentEffectNodeList.size());
+@@ -1728,6 +1736,154 @@
+ 	clearDeletionList();
  
- 	if (LightManager)
- 		LightManager->OnPostRender();
-+
-+	LightList.set_used(0);
-+	clearDeletionList();
-+
-+	CurrentRendertime = ESNRP_NONE;
+ 	CurrentRenderPass = ESNRP_NONE;
 +}
 +
 +void CSceneManager::fastDrawAll_init(const core::vector3df &camPos)
@@ -1335,7 +734,7 @@
 +
 +	//render camera scenes
 +	{
-+		CurrentRendertime = ESNRP_CAMERA;
++		CurrentRenderPass = ESNRP_CAMERA;
 +		//Driver->getOverrideMaterial().Enabled = ((Driver->getOverrideMaterial().EnablePasses & CurrentRendertime) != 0);
 +
 +		/*if (LightManager)
@@ -1350,19 +749,19 @@
 +
 +	//render lights scenes
 +	{
-+		CurrentRendertime = ESNRP_LIGHT;
++		CurrentRenderPass = ESNRP_LIGHT;
 +	}
 +
 +	// render skyboxes
 +	{
-+		CurrentRendertime = ESNRP_SKY_BOX;
++		CurrentRenderPass = ESNRP_SKY_BOX;
 +	}
 +
 +
 +	// render default objects
 +	{
-+		CurrentRendertime = ESNRP_SOLID;
-+		Driver->getOverrideMaterial().Enabled = ((Driver->getOverrideMaterial().EnablePasses & CurrentRendertime) != 0);
++		CurrentRenderPass = ESNRP_SOLID;
++		Driver->getOverrideMaterial().Enabled = ((Driver->getOverrideMaterial().EnablePasses & CurrentRenderPass) != 0);
 +
 +		//SolidNodeList.sort(); // sort by textures
 +
@@ -1373,23 +772,23 @@
 +
 +	// render shadows
 +	{
-+		CurrentRendertime = ESNRP_SHADOW;
++		CurrentRenderPass = ESNRP_SHADOW;
 +	}
 +
 +	// render transparent objects.
 +	{
-+		CurrentRendertime = ESNRP_TRANSPARENT;
++		CurrentRenderPass = ESNRP_TRANSPARENT;
 +	}
 +
 +	// render transparent effect objects.
 +	{
-+		CurrentRendertime = ESNRP_TRANSPARENT_EFFECT;
++		CurrentRenderPass = ESNRP_TRANSPARENT_EFFECT;
 +	}
 +
 +	/*if (LightManager)
 +		LightManager->OnPostRender();*/
 +
-+	CurrentRendertime = ESNRP_NONE;
++	CurrentRenderPass = ESNRP_NONE;
 +}
 +
 +void CSceneManager::fastDrawAll_end()
@@ -1408,7 +807,6 @@
 +	{
 +		SkyBoxList.set_used(0);
 +	}
-+
 +
 +	// render default objects
 +	{
@@ -1432,41 +830,46 @@
 +
 +	/*if (LightManager)
 +		LightManager->OnPostRender();*/
++
++ 	LightList.set_used(0);
++ 	clearDeletionList();
++ 	CurrentRenderPass = ESNRP_NONE;
+ }
  
- 	LightList.set_used(0);
- 	clearDeletionList();
---- CSceneManager.h	Tue Oct 29 21:34:58 2013
-+++ CSceneManager.h	Sun Jul 12 19:43:20 2015
-@@ -102,7 +102,7 @@
- 			const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f));
+ void CSceneManager::setLightManager(ILightManager* lightManager)
+--- CSceneManager.h	Sat Jan 10 21:24:40 2015
++++ CSceneManager.h	Fri Aug 07 22:30:47 2015
+@@ -112,7 +112,7 @@
+ 			const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f)) _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -111,7 +111,8 @@
- 		virtual u32 registerNodeForRendering(ISceneNode* node, E_SCENE_NODE_RENDER_PASS pass = ESNRP_AUTOMATIC);
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+@@ -121,7 +121,8 @@
+ 		virtual u32 registerNodeForRendering(ISceneNode* node, E_SCENE_NODE_RENDER_PASS pass = ESNRP_AUTOMATIC) _IRR_OVERRIDE_;
  
  		//! draws all scene nodes
--		virtual void drawAll();
-+		virtual void drawAll(f32 interpolate=1.f);
-+		virtual void captureAll();
+-		virtual void drawAll() _IRR_OVERRIDE_;
++		virtual void drawAll(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void captureAll() _IRR_OVERRIDE_;
+ 
+ 		//! Adds a camera scene node to the tree and sets it as active camera.
+ 		//! \param position: Position of the space relative to its parent where the camera will be placed.
+@@ -521,6 +522,10 @@
+ 		//! returns if this is culled
+ 		virtual bool isCulled(core::aabbox3d<f32> tbox, scene::E_CULLING_TYPE type, const core::matrix4& absoluteTransformation) const;
+ 
++        virtual void fastDrawAll_init(const core::vector3df &camPos) _IRR_OVERRIDE_;
++        virtual void fastDrawAll(const core::matrix4 &projectionMatrix,const core::matrix4 &viewMatrix) _IRR_OVERRIDE_;
++        virtual void fastDrawAll_end() _IRR_OVERRIDE_;
++
+ 	protected:
  
  		//! Adds a scene node for rendering using a octree to the scene graph. This a good method for rendering
- 		//! scenes with lots of geometry. The Octree is built on the fly from the mesh, much
-@@ -521,6 +522,9 @@
- 		//! returns if node is culled
- 		virtual bool isCulled(const ISceneNode* node) const;
- 
-+        virtual void fastDrawAll_init(const core::vector3df &camPos);
-+        virtual void fastDrawAll(const core::matrix4 &projectionMatrix,const core::matrix4 &viewMatrix);
-+        virtual void fastDrawAll_end();
- 	private:
- 
- 		//! clears the deletion list
-@@ -650,6 +654,13 @@
+@@ -658,6 +663,13 @@
  		const core::stringw IRR_XML_FORMAT_NODE_ATTR_TYPE;
  
  		IGeometryCreator* GeometryCreator;
@@ -1480,9 +883,9 @@
  	};
  
  } // end namespace video
---- CShadowVolumeSceneNode.cpp	Sat Nov 03 18:07:58 2012
-+++ CShadowVolumeSceneNode.cpp	Tue May 12 15:32:55 2015
-@@ -304,7 +304,7 @@
+--- CShadowVolumeSceneNode.cpp	Sat May 10 10:23:34 2014
++++ CShadowVolumeSceneNode.cpp	Fri Aug 07 22:33:34 2015
+@@ -328,7 +328,7 @@
  }
  
  //! renders the node.
@@ -1491,29 +894,20 @@
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  
---- CShadowVolumeSceneNode.h	Sat Nov 03 18:07:52 2012
-+++ CShadowVolumeSceneNode.h	Tue May 12 15:33:06 2015
-@@ -18,7 +18,7 @@
- 	public:
- 
- 		//! constructor
--		CShadowVolumeSceneNode(const IMesh* shadowMesh, ISceneNode* parent, ISceneManager* mgr, 
-+		CShadowVolumeSceneNode(const IMesh* shadowMesh, ISceneNode* parent, ISceneManager* mgr,
- 			s32 id,  bool zfailmethod=true, f32 infinity=10000.0f);
- 
- 		//! destructor
+--- CShadowVolumeSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CShadowVolumeSceneNode.h	Fri Aug 07 22:34:18 2015
 @@ -37,7 +37,7 @@
- 		virtual void OnRegisterSceneNode();
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
---- CSkyBoxSceneNode.cpp	Sat Nov 03 18:08:16 2012
-+++ CSkyBoxSceneNode.cpp	Tue May 12 15:33:31 2015
-@@ -128,7 +128,7 @@
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CSkyBoxSceneNode.cpp	Wed May 14 17:43:08 2014
++++ CSkyBoxSceneNode.cpp	Fri Aug 07 22:36:33 2015
+@@ -199,7 +199,7 @@
  
  
  //! renders the node.
@@ -1522,28 +916,19 @@
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	scene::ICameraSceneNode* camera = SceneManager->getActiveCamera();
---- CSkyBoxSceneNode.h	Sat Nov 03 18:08:08 2012
-+++ CSkyBoxSceneNode.h	Tue May 12 15:33:34 2015
-@@ -26,7 +26,7 @@
- 		virtual void OnRegisterSceneNode();
+--- CSkyBoxSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CSkyBoxSceneNode.h	Fri Aug 07 22:37:01 2015
+@@ -30,7 +30,7 @@
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -45,7 +45,7 @@
- 		virtual ESCENE_NODE_TYPE getType() const { return ESNT_SKY_BOX; }
- 
- 		//! Creates a clone of this scene node and its children.
--		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0); 
-+		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
- 
- 	private:
- 
---- CSkyDomeSceneNode.cpp	Sat Nov 03 18:08:10 2012
-+++ CSkyDomeSceneNode.cpp	Tue May 12 15:41:38 2015
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CSkyDomeSceneNode.cpp	Sat May 10 10:23:34 2014
++++ CSkyDomeSceneNode.cpp	Fri Aug 07 22:38:56 2015
 @@ -131,7 +131,7 @@
  
  
@@ -1553,19 +938,19 @@
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	scene::ICameraSceneNode* camera = SceneManager->getActiveCamera();
---- CSkyDomeSceneNode.h	Sat Nov 03 18:08:14 2012
-+++ CSkyDomeSceneNode.h	Tue May 12 15:41:42 2015
+--- CSkyDomeSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CSkyDomeSceneNode.h	Fri Aug 07 22:40:32 2015
 @@ -22,7 +22,7 @@
  			ISceneNode* parent, ISceneManager* smgr, s32 id);
  		virtual ~CSkyDomeSceneNode();
- 		virtual void OnRegisterSceneNode();
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
- 		virtual video::SMaterial& getMaterial(u32 i);
- 		virtual u32 getMaterialCount() const;
---- CSphereSceneNode.cpp	Mon Dec 03 21:10:32 2012
-+++ CSphereSceneNode.cpp	Tue May 12 15:58:33 2015
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+ 		virtual video::SMaterial& getMaterial(u32 i) _IRR_OVERRIDE_;
+ 		virtual u32 getMaterialCount() const _IRR_OVERRIDE_;
+--- CSphereSceneNode.cpp	Sun Jan 06 02:40:58 2013
++++ CSphereSceneNode.cpp	Fri Aug 07 22:43:05 2015
 @@ -40,14 +40,15 @@
  
  
@@ -1584,29 +969,20 @@
  		if (Shadow)
  			Shadow->updateShadowVolumes();
  
---- CSphereSceneNode.h	Sat Nov 03 18:08:16 2012
-+++ CSphereSceneNode.h	Tue May 12 15:37:08 2015
+--- CSphereSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CSphereSceneNode.h	Fri Aug 07 22:44:18 2015
 @@ -28,7 +28,7 @@
- 		virtual void OnRegisterSceneNode();
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -62,7 +62,7 @@
- 		virtual IMesh* getMesh() { return Mesh; }
- 
- 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
--		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes 
-+		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes
- 		referencing this mesh to change too. */
- 		virtual void setReadOnlyMaterials(bool readonly) {}
- 
---- CTerrainSceneNode.cpp	Sat Nov 03 18:08:08 2012
-+++ CTerrainSceneNode.cpp	Tue May 12 15:59:25 2015
-@@ -720,8 +720,9 @@
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CTerrainSceneNode.cpp	Sat May 10 10:23:34 2014
++++ CTerrainSceneNode.cpp	Fri Aug 07 22:46:11 2015
+@@ -769,8 +769,9 @@
  
  
  	//! Render the scene node
@@ -1617,7 +993,7 @@
  		if (!IsVisible || !SceneManager->getActiveCamera())
  			return;
  
-@@ -768,7 +769,7 @@
+@@ -817,7 +818,7 @@
  				driver->drawMeshBufferNormals(RenderBuffer, debugNormalLength, debugNormalColor);
  			}
  
@@ -1626,33 +1002,19 @@
  
  			static u32 lastTime = 0;
  
---- CTerrainSceneNode.h	Sat Nov 03 18:08:00 2012
-+++ CTerrainSceneNode.h	Tue May 12 15:37:18 2015
-@@ -118,7 +118,7 @@
- 		virtual void OnRegisterSceneNode();
+--- CTerrainSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CTerrainSceneNode.h	Fri Aug 07 22:46:24 2015
+@@ -119,7 +119,7 @@
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! Render the scene node
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! Return the bounding box of the entire terrain.
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -258,10 +258,10 @@
- 			core::aabbox3df	BoundingBox;
- 			core::array<f64> LODDistanceThreshold;
- 		};
--    
--    
-+
-+
-     virtual void preRenderCalculationsIfNeeded();
--    
-+
- 		virtual void preRenderLODCalculations();
- 		virtual void preRenderIndicesCalculations();
- 
---- CTextSceneNode.cpp	Sat Nov 03 18:08:08 2012
-+++ CTextSceneNode.cpp	Tue May 12 16:07:26 2015
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CTextSceneNode.cpp	Sun Jan 04 14:23:44 2015
++++ CTextSceneNode.cpp	Fri Aug 07 22:50:11 2015
 @@ -52,7 +52,7 @@
  }
  
@@ -1662,16 +1024,7 @@
  {
  	if (!Font || !Coll)
  		return;
-@@ -239,7 +239,7 @@
- void CBillboardTextSceneNode::OnAnimate(u32 timeMs)
- {
- 	ISceneNode::OnAnimate(timeMs);
--	
-+
- 	if (!IsVisible || !Font || !Mesh)
- 		return;
- 
-@@ -331,16 +331,17 @@
+@@ -335,16 +335,17 @@
  
  
  //! render
@@ -1692,7 +1045,7 @@
  
  	for (u32 i = 0; i < Mesh->getMeshBufferCount(); ++i)
  	{
-@@ -350,7 +351,7 @@
+@@ -354,7 +355,7 @@
  
  	if ( DebugDataVisible & scene::EDS_BBOX )
  	{
@@ -1701,47 +1054,38 @@
  		video::SMaterial m;
  		m.Lighting = false;
  		driver->setMaterial(m);
---- CTextSceneNode.h	Sat Nov 03 18:08:08 2012
-+++ CTextSceneNode.h	Tue May 12 15:38:15 2015
-@@ -34,7 +34,7 @@
- 		virtual void OnRegisterSceneNode();
+--- CTextSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CTextSceneNode.h	Fri Aug 07 22:48:45 2015
+@@ -33,7 +33,7 @@
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
-@@ -76,7 +76,7 @@
- 		virtual void OnRegisterSceneNode();
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+@@ -75,7 +75,7 @@
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
---- CTriangleSelector.cpp	Sat Nov 03 18:08:08 2012
-+++ CTriangleSelector.cpp	Mon Sep 29 18:23:11 2014
-@@ -94,6 +94,7 @@
- 					buf->getPosition(indices[j+0]),
- 					buf->getPosition(indices[j+1]),
- 					buf->getPosition(indices[j+2])));
-+			Triangles[Triangles.size()-1].index = i;
- 			const core::triangle3df& tri = Triangles.getLast();
- 			BoundingBox.addInternalPoint(tri.pointA);
- 			BoundingBox.addInternalPoint(tri.pointB);
-@@ -216,7 +217,7 @@
- 	const u32 cnt = Triangles.size();
- 	for (u32 i=0; i<cnt; ++i)
- 	{
--		// This isn't an accurate test, but it's fast, and the 
-+		// This isn't an accurate test, but it's fast, and the
- 		// API contract doesn't guarantee complete accuracy.
- 		if (Triangles[i].isTotalOutsideBox(tBox))
- 		   continue;
---- CVolumeLightSceneNode.cpp	Sat Nov 03 18:07:58 2012
-+++ CVolumeLightSceneNode.cpp	Tue May 12 16:00:05 2015
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- CTriangleSelector.cpp	Sun Jan 04 14:23:44 2015
++++ CTriangleSelector.cpp	Fri Aug 07 22:55:56 2015
+@@ -113,6 +113,7 @@
+ 			core::vector3df* position2 = (core::vector3df*)(offset + buf->getVertexBuffer()->getVertexSize() * buf->getIndexBuffer()->getIndex(index+2));
+ 
+ 			core::triangle3df& tri = Triangles[triangleCount++];
++			tri.meshBufferIndex = i;
+ 			tri.pointA = *position0;
+ 			tri.pointB = *position1;
+ 			tri.pointC = *position2;
+--- CVolumeLightSceneNode.cpp	Sun Jan 06 02:40:58 2013
++++ CVolumeLightSceneNode.cpp	Fri Aug 07 22:57:08 2015
 @@ -50,13 +50,14 @@
  
  
@@ -1759,14 +1103,1180 @@
  
  	driver->setMaterial(Mesh->getMeshBuffer(0)->getMaterial());
  	driver->drawMeshBuffer(Mesh->getMeshBuffer(0));
---- CVolumeLightSceneNode.h	Sat Nov 03 18:08:12 2012
-+++ CVolumeLightSceneNode.h	Tue May 12 15:38:35 2015
+--- CVolumeLightSceneNode.h	Sun Jan 04 14:23:44 2015
++++ CVolumeLightSceneNode.h	Fri Aug 07 22:57:34 2015
 @@ -32,7 +32,7 @@
- 		virtual void OnRegisterSceneNode();
+ 		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
--		virtual void render();
-+		virtual void render(f32 interpolate=1.f);
+-		virtual void render() _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
- 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
+ 		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
+--- Irrlicht-gcc.cbp	Sun Jan 04 14:23:44 2015
++++ Irrlicht-gcc.cbp	Sat Aug 08 00:11:53 2015
+@@ -8,8 +8,8 @@
+ 		<Build>
+ 			<Target title="Win32 - Debug - dll">
+ 				<Option platforms="Windows;" />
+-				<Option output="..\..\lib\Win32-gcc\Irrlicht" prefix_auto="1" extension_auto="1" />
+-				<Option object_output="..\obj\win32-gcc-debug-dll" />
++				<Option output="../../lib/Win32-gcc/Irrlicht" prefix_auto="1" extension_auto="1" />
++				<Option object_output="../obj/win32-gcc-debug-dll" />
+ 				<Option type="3" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -27,7 +27,7 @@
+ 					<Add option="-DIRRLICHT_EXPORTS" />
+ 					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+ 					<Add option="-D__GNUWIN32__" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 				</Compiler>
+ 				<Linker>
+@@ -51,8 +51,8 @@
+ 			</Target>
+ 			<Target title="Win32 - Release - accurate math - dll">
+ 				<Option platforms="Windows;" />
+-				<Option output="..\..\lib\Win32-gcc\Irrlicht" prefix_auto="1" extension_auto="1" />
+-				<Option object_output="..\obj\win32-gcc-release-dll" />
++				<Option output="../../lib/Win32-gcc/Irrlicht" prefix_auto="1" extension_auto="1" />
++				<Option object_output="../obj/win32-gcc-release-dll" />
+ 				<Option type="3" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -68,7 +68,7 @@
+ 					<Add option="-DIRRLICHT_EXPORTS" />
+ 					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+ 					<Add option="-D__GNUWIN32__" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 				</Compiler>
+ 				<Linker>
+@@ -93,8 +93,8 @@
+ 			</Target>
+ 			<Target title="Win32 - Release - fast math - dll">
+ 				<Option platforms="Windows;" />
+-				<Option output="..\..\lib\Win32-gcc\Irrlicht" prefix_auto="1" extension_auto="1" />
+-				<Option object_output="..\obj\win32-gcc-release-fast-dll" />
++				<Option output="../../lib/Win32-gcc/Irrlicht" prefix_auto="1" extension_auto="1" />
++				<Option object_output="../obj/win32-gcc-release-fast-dll" />
+ 				<Option type="3" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -111,7 +111,7 @@
+ 					<Add option="-DIRRLICHT_EXPORTS" />
+ 					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+ 					<Add option="-D__GNUWIN32__" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 				</Compiler>
+ 				<Linker>
+@@ -135,9 +135,9 @@
+ 			</Target>
+ 			<Target title="Win32 - Debug - static">
+ 				<Option platforms="Windows;" />
+-				<Option output="..\..\lib\Win32-gcc\Irrlicht" prefix_auto="1" extension_auto="1" />
++				<Option output="../../lib/Win32-gcc/Irrlicht" prefix_auto="1" extension_auto="1" />
+ 				<Option working_dir="" />
+-				<Option object_output="..\obj\win32-gcc-debug-static" />
++				<Option object_output="../obj/win32-gcc-debug-static" />
+ 				<Option type="2" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -153,7 +153,7 @@
+ 					<Add option="-D_IRR_STATIC_LIB_" />
+ 					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+ 					<Add option="-D__GNUWIN32__" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 				</Compiler>
+ 				<Linker>
+@@ -173,9 +173,9 @@
+ 			</Target>
+ 			<Target title="Win32 - Release - accurate math - static">
+ 				<Option platforms="Windows;" />
+-				<Option output="..\..\lib\Win32-gcc\Irrlicht" prefix_auto="1" extension_auto="1" />
++				<Option output="../../lib/Win32-gcc/Irrlicht" prefix_auto="1" extension_auto="1" />
+ 				<Option working_dir="" />
+-				<Option object_output="..\obj\win32-gcc-release-static" />
++				<Option object_output="../obj/win32-gcc-release-static" />
+ 				<Option type="2" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -191,7 +191,7 @@
+ 					<Add option="-D_IRR_STATIC_LIB_" />
+ 					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+ 					<Add option="-D__GNUWIN32__" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 				</Compiler>
+ 				<Linker>
+@@ -212,9 +212,9 @@
+ 			</Target>
+ 			<Target title="Win32 - Release - fast math - static">
+ 				<Option platforms="Windows;" />
+-				<Option output="..\..\lib\Win32-gcc\Irrlicht" prefix_auto="1" extension_auto="1" />
++				<Option output="../../lib/Win32-gcc/Irrlicht" prefix_auto="1" extension_auto="1" />
+ 				<Option working_dir="" />
+-				<Option object_output="..\obj\win32-gcc-release-fast-static" />
++				<Option object_output="../obj/win32-gcc-release-fast-static" />
+ 				<Option type="2" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -231,7 +231,7 @@
+ 					<Add option="-D_IRR_STATIC_LIB_" />
+ 					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+ 					<Add option="-D__GNUWIN32__" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 				</Compiler>
+ 				<Linker>
+@@ -252,8 +252,8 @@
+ 			</Target>
+ 			<Target title="Linux - Debug - shared">
+ 				<Option platforms="Unix;" />
+-				<Option output="..\..\lib\Linux\libIrrlicht" prefix_auto="0" extension_auto="1" />
+-				<Option object_output="..\obj\linux-gcc-debug-shared" />
++				<Option output="../../lib/Linux/libIrrlicht" prefix_auto="0" extension_auto="1" />
++				<Option object_output="../obj/linux-gcc-debug-shared" />
+ 				<Option type="3" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -265,7 +265,7 @@
+ 					<Add option="-O0" />
+ 					<Add option="-fPIC" />
+ 					<Add option="-D_DEBUG" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 					<Add directory="libpng" />
+ 					<Add directory="jpeglib" />
+@@ -273,14 +273,14 @@
+ 				<Linker>
+ 					<Add library="GL" />
+ 					<Add library="Xxf86vm" />
+-					<Add directory="\usr\X11R6\lib" />
+-					<Add directory="\usr\local\lib" />
++					<Add directory="/usr/X11R6/lib" />
++					<Add directory="/usr/local/lib" />
+ 				</Linker>
+ 			</Target>
+ 			<Target title="Linux - Release - accurate math - shared">
+ 				<Option platforms="Unix;" />
+-				<Option output="..\..\lib\Linux\libIrrlicht" prefix_auto="0" extension_auto="1" />
+-				<Option object_output="..\obj\linux-gcc-release-shared" />
++				<Option output="../../lib/Linux/libIrrlicht" prefix_auto="0" extension_auto="1" />
++				<Option object_output="../obj/linux-gcc-release-shared" />
+ 				<Option type="3" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -289,7 +289,7 @@
+ 					<Add option="-O3" />
+ 					<Add option="-Wextra" />
+ 					<Add option="-fPIC" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 					<Add directory="libpng" />
+ 					<Add directory="jpeglib" />
+@@ -297,14 +297,14 @@
+ 				<Linker>
+ 					<Add library="GL" />
+ 					<Add library="Xxf86vm" />
+-					<Add directory="\usr\X11R6\lib" />
+-					<Add directory="\usr\local\lib" />
++					<Add directory="/usr/X11R6/lib" />
++					<Add directory="/usr/local/lib" />
+ 				</Linker>
+ 			</Target>
+ 			<Target title="Linux - Release - fast math - shared">
+ 				<Option platforms="Unix;" />
+-				<Option output="..\..\lib\Linux\libIrrlicht" prefix_auto="0" extension_auto="1" />
+-				<Option object_output="..\obj\linux-gcc-release-fast-shared" />
++				<Option output="../../lib/Linux/libIrrlicht" prefix_auto="0" extension_auto="1" />
++				<Option object_output="../obj/linux-gcc-release-fast-shared" />
+ 				<Option type="3" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -314,7 +314,7 @@
+ 					<Add option="-Wextra" />
+ 					<Add option="-fPIC" />
+ 					<Add option="-ffast-math" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 					<Add directory="libpng" />
+ 					<Add directory="jpeglib" />
+@@ -322,15 +322,15 @@
+ 				<Linker>
+ 					<Add library="GL" />
+ 					<Add library="Xxf86vm" />
+-					<Add directory="\usr\X11R6\lib" />
+-					<Add directory="\usr\local\lib" />
++					<Add directory="/usr/X11R6/lib" />
++					<Add directory="/usr/local/lib" />
+ 				</Linker>
+ 			</Target>
+ 			<Target title="Linux - Debug - static">
+ 				<Option platforms="Unix;" />
+-				<Option output="..\..\lib\Linux\libIrrlicht" prefix_auto="0" extension_auto="1" />
++				<Option output="../../lib/Linux/libIrrlicht" prefix_auto="0" extension_auto="1" />
+ 				<Option working_dir="" />
+-				<Option object_output="..\obj\linux-gcc-debug-static" />
++				<Option object_output="../obj/linux-gcc-debug-static" />
+ 				<Option type="2" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -341,22 +341,22 @@
+ 					<Add option="-O0" />
+ 					<Add option="-D_IRR_STATIC_LIB_" />
+ 					<Add option="-D_DEBUG" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 					<Add directory="libpng" />
+ 				</Compiler>
+ 				<Linker>
+ 					<Add library="GL" />
+ 					<Add library="Xxf86vm" />
+-					<Add directory="\usr\X11R6\lib" />
+-					<Add directory="\usr\local\lib" />
++					<Add directory="/usr/X11R6/lib" />
++					<Add directory="/usr/local/lib" />
+ 				</Linker>
+ 			</Target>
+ 			<Target title="Linux - Release - accurate math - static">
+ 				<Option platforms="Unix;" />
+-				<Option output="..\..\lib\Linux\libIrrlicht" prefix_auto="0" extension_auto="1" />
++				<Option output="../../lib/Linux/libIrrlicht" prefix_auto="0" extension_auto="1" />
+ 				<Option working_dir="" />
+-				<Option object_output="..\obj\linux-gcc-release-static" />
++				<Option object_output="../obj/linux-gcc-release-static" />
+ 				<Option type="2" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -365,22 +365,22 @@
+ 					<Add option="-Wextra" />
+ 					<Add option="-fno-exceptions" />
+ 					<Add option="-D_IRR_STATIC_LIB_" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 					<Add directory="libpng" />
+ 				</Compiler>
+ 				<Linker>
+ 					<Add library="GL" />
+ 					<Add library="Xxf86vm" />
+-					<Add directory="\usr\X11R6\lib" />
+-					<Add directory="\usr\local\lib" />
++					<Add directory="/usr/X11R6/lib" />
++					<Add directory="/usr/local/lib" />
+ 				</Linker>
+ 			</Target>
+ 			<Target title="Linux - Release - fast math - static">
+ 				<Option platforms="Unix;" />
+-				<Option output="..\..\lib\Linux\libIrrlicht" prefix_auto="0" extension_auto="1" />
++				<Option output="../../lib/Linux/libIrrlicht" prefix_auto="0" extension_auto="1" />
+ 				<Option working_dir="" />
+-				<Option object_output="..\obj\linux-gcc-release-fast-static" />
++				<Option object_output="../obj/linux-gcc-release-fast-static" />
+ 				<Option type="2" />
+ 				<Option compiler="gcc" />
+ 				<Option createDefFile="1" />
+@@ -389,15 +389,15 @@
+ 					<Add option="-Wextra" />
+ 					<Add option="-ffast-math" />
+ 					<Add option="-D_IRR_STATIC_LIB_" />
+-					<Add directory="..\..\include" />
++					<Add directory="../../include" />
+ 					<Add directory="zlib" />
+ 					<Add directory="libpng" />
+ 				</Compiler>
+ 				<Linker>
+ 					<Add library="GL" />
+ 					<Add library="Xxf86vm" />
+-					<Add directory="\usr\X11R6\lib" />
+-					<Add directory="\usr\local\lib" />
++					<Add directory="/usr/X11R6/lib" />
++					<Add directory="/usr/local/lib" />
+ 				</Linker>
+ 			</Target>
+ 		</Build>
+@@ -410,193 +410,193 @@
+ 			<Add option="-fno-rtti" />
+ 			<Add option="-fstrict-aliasing" />
+ 		</Compiler>
+-		<Unit filename="..\..\changes.txt" />
+-		<Unit filename="..\..\include\CDynamicMeshBuffer.h" />
+-		<Unit filename="..\..\include\CIndexBuffer.h" />
+-		<Unit filename="..\..\include\CMeshBuffer.h" />
+-		<Unit filename="..\..\include\CVertexBuffer.h" />
+-		<Unit filename="..\..\include\EAttributes.h" />
+-		<Unit filename="..\..\include\ECullingTypes.h" />
+-		<Unit filename="..\..\include\EDebugSceneTypes.h" />
+-		<Unit filename="..\..\include\EDeviceTypes.h" />
+-		<Unit filename="..\..\include\EDriverFeatures.h" />
+-		<Unit filename="..\..\include\EDriverTypes.h" />
+-		<Unit filename="..\..\include\EFocusFlags.h" />
+-		<Unit filename="..\..\include\EGUIAlignment.h" />
+-		<Unit filename="..\..\include\EGUIElementTypes.h" />
+-		<Unit filename="..\..\include\EHardwareBufferFlags.h" />
+-		<Unit filename="..\..\include\EMaterialFlags.h" />
+-		<Unit filename="..\..\include\EMaterialTypes.h" />
+-		<Unit filename="..\..\include\EMeshWriterEnums.h" />
+-		<Unit filename="..\..\include\EMessageBoxFlags.h" />
+-		<Unit filename="..\..\include\EPrimitiveTypes.h" />
+-		<Unit filename="..\..\include\ESceneNodeAnimatorTypes.h" />
+-		<Unit filename="..\..\include\ESceneNodeTypes.h" />
+-		<Unit filename="..\..\include\EShaderTypes.h" />
+-		<Unit filename="..\..\include\ETerrainElements.h" />
+-		<Unit filename="..\..\include\IAnimatedMesh.h" />
+-		<Unit filename="..\..\include\IAnimatedMeshMD2.h" />
+-		<Unit filename="..\..\include\IAnimatedMeshMD3.h" />
+-		<Unit filename="..\..\include\IAnimatedMeshSceneNode.h" />
+-		<Unit filename="..\..\include\IAttributeExchangingObject.h" />
+-		<Unit filename="..\..\include\IAttributes.h" />
+-		<Unit filename="..\..\include\IBillboardSceneNode.h" />
+-		<Unit filename="..\..\include\IBillboardTextSceneNode.h" />
+-		<Unit filename="..\..\include\IBoneSceneNode.h" />
+-		<Unit filename="..\..\include\ICameraSceneNode.h" />
+-		<Unit filename="..\..\include\IColladaMeshWriter.h" />
+-		<Unit filename="..\..\include\ICursorControl.h" />
+-		<Unit filename="..\..\include\IDummyTransformationSceneNode.h" />
+-		<Unit filename="..\..\include\IDynamicMeshBuffer.h" />
+-		<Unit filename="..\..\include\IEventReceiver.h" />
+-		<Unit filename="..\..\include\IFileArchive.h" />
+-		<Unit filename="..\..\include\IFileList.h" />
+-		<Unit filename="..\..\include\IFileSystem.h" />
+-		<Unit filename="..\..\include\IGPUProgrammingServices.h" />
+-		<Unit filename="..\..\include\IGUIButton.h" />
+-		<Unit filename="..\..\include\IGUICheckBox.h" />
+-		<Unit filename="..\..\include\IGUIColorSelectDialog.h" />
+-		<Unit filename="..\..\include\IGUIComboBox.h" />
+-		<Unit filename="..\..\include\IGUIContextMenu.h" />
+-		<Unit filename="..\..\include\IGUIEditBox.h" />
+-		<Unit filename="..\..\include\IGUIElement.h" />
+-		<Unit filename="..\..\include\IGUIElementFactory.h" />
+-		<Unit filename="..\..\include\IGUIEnvironment.h" />
+-		<Unit filename="..\..\include\IGUIFileOpenDialog.h" />
+-		<Unit filename="..\..\include\IGUIFont.h" />
+-		<Unit filename="..\..\include\IGUIFontBitmap.h" />
+-		<Unit filename="..\..\include\IGUIImage.h" />
+-		<Unit filename="..\..\include\IGUIImageList.h" />
+-		<Unit filename="..\..\include\IGUIInOutFader.h" />
+-		<Unit filename="..\..\include\IGUIListBox.h" />
+-		<Unit filename="..\..\include\IGUIMeshViewer.h" />
+-		<Unit filename="..\..\include\IGUIProfiler.h" />
+-		<Unit filename="..\..\include\IGUIScrollBar.h" />
+-		<Unit filename="..\..\include\IGUISkin.h" />
+-		<Unit filename="..\..\include\IGUISpinBox.h" />
+-		<Unit filename="..\..\include\IGUISpriteBank.h" />
+-		<Unit filename="..\..\include\IGUIStaticText.h" />
+-		<Unit filename="..\..\include\IGUITabControl.h" />
+-		<Unit filename="..\..\include\IGUITable.h" />
+-		<Unit filename="..\..\include\IGUIToolbar.h" />
+-		<Unit filename="..\..\include\IGUITreeView.h" />
+-		<Unit filename="..\..\include\IGUIWindow.h" />
+-		<Unit filename="..\..\include\IGeometryCreator.h" />
+-		<Unit filename="..\..\include\IImage.h" />
+-		<Unit filename="..\..\include\IImageLoader.h" />
+-		<Unit filename="..\..\include\IImageWriter.h" />
+-		<Unit filename="..\..\include\IIndexBuffer.h" />
+-		<Unit filename="..\..\include\ILightManager.h" />
+-		<Unit filename="..\..\include\ILightSceneNode.h" />
+-		<Unit filename="..\..\include\ILogger.h" />
+-		<Unit filename="..\..\include\IMaterialRenderer.h" />
+-		<Unit filename="..\..\include\IMaterialRendererServices.h" />
+-		<Unit filename="..\..\include\IMesh.h" />
+-		<Unit filename="..\..\include\IMeshBuffer.h" />
+-		<Unit filename="..\..\include\IMeshCache.h" />
+-		<Unit filename="..\..\include\IMeshLoader.h" />
+-		<Unit filename="..\..\include\IMeshManipulator.h" />
+-		<Unit filename="..\..\include\IMeshSceneNode.h" />
+-		<Unit filename="..\..\include\IMeshTextureLoader.h" />
+-		<Unit filename="..\..\include\IMeshWriter.h" />
+-		<Unit filename="..\..\include\IMetaTriangleSelector.h" />
+-		<Unit filename="..\..\include\IOSOperator.h" />
+-		<Unit filename="..\..\include\IParticleAffector.h" />
+-		<Unit filename="..\..\include\IParticleAnimatedMeshSceneNodeEmitter.h" />
+-		<Unit filename="..\..\include\IParticleAttractionAffector.h" />
+-		<Unit filename="..\..\include\IParticleBoxEmitter.h" />
+-		<Unit filename="..\..\include\IParticleCylinderEmitter.h" />
+-		<Unit filename="..\..\include\IParticleEmitter.h" />
+-		<Unit filename="..\..\include\IParticleFadeOutAffector.h" />
+-		<Unit filename="..\..\include\IParticleGravityAffector.h" />
+-		<Unit filename="..\..\include\IParticleMeshEmitter.h" />
+-		<Unit filename="..\..\include\IParticleRingEmitter.h" />
+-		<Unit filename="..\..\include\IParticleRotationAffector.h" />
+-		<Unit filename="..\..\include\IParticleSphereEmitter.h" />
+-		<Unit filename="..\..\include\IParticleSystemSceneNode.h" />
+-		<Unit filename="..\..\include\IProfiler.h" />
+-		<Unit filename="..\..\include\IQ3LevelMesh.h" />
+-		<Unit filename="..\..\include\IQ3Shader.h" />
+-		<Unit filename="..\..\include\IReadFile.h" />
+-		<Unit filename="..\..\include\IReferenceCounted.h" />
+-		<Unit filename="..\..\include\ISceneCollisionManager.h" />
+-		<Unit filename="..\..\include\ISceneLoader.h" />
+-		<Unit filename="..\..\include\ISceneManager.h" />
+-		<Unit filename="..\..\include\ISceneNode.h" />
+-		<Unit filename="..\..\include\ISceneNodeAnimator.h" />
+-		<Unit filename="..\..\include\ISceneNodeAnimatorCameraFPS.h" />
+-		<Unit filename="..\..\include\ISceneNodeAnimatorCameraMaya.h" />
+-		<Unit filename="..\..\include\ISceneNodeAnimatorCollisionResponse.h" />
+-		<Unit filename="..\..\include\ISceneNodeAnimatorFactory.h" />
+-		<Unit filename="..\..\include\ISceneNodeFactory.h" />
+-		<Unit filename="..\..\include\ISceneUserDataSerializer.h" />
+-		<Unit filename="..\..\include\IShaderConstantSetCallBack.h" />
+-		<Unit filename="..\..\include\IShadowVolumeSceneNode.h" />
+-		<Unit filename="..\..\include\ISkinnedMesh.h" />
+-		<Unit filename="..\..\include\ITerrainSceneNode.h" />
+-		<Unit filename="..\..\include\ITextSceneNode.h" />
+-		<Unit filename="..\..\include\ITexture.h" />
+-		<Unit filename="..\..\include\ITimer.h" />
+-		<Unit filename="..\..\include\ITriangleSelector.h" />
+-		<Unit filename="..\..\include\IVertexBuffer.h" />
+-		<Unit filename="..\..\include\IVideoDriver.h" />
+-		<Unit filename="..\..\include\IVideoModeList.h" />
+-		<Unit filename="..\..\include\IVolumeLightSceneNode.h" />
+-		<Unit filename="..\..\include\IWriteFile.h" />
+-		<Unit filename="..\..\include\IXMLReader.h" />
+-		<Unit filename="..\..\include\IXMLWriter.h" />
+-		<Unit filename="..\..\include\IrrCompileConfig.h" />
+-		<Unit filename="..\..\include\IrrlichtDevice.h" />
+-		<Unit filename="..\..\include\Keycodes.h" />
+-		<Unit filename="..\..\include\S3DVertex.h" />
+-		<Unit filename="..\..\include\SAnimatedMesh.h" />
+-		<Unit filename="..\..\include\SColor.h" />
+-		<Unit filename="..\..\include\SExposedVideoData.h" />
+-		<Unit filename="..\..\include\SIrrCreationParameters.h" />
+-		<Unit filename="..\..\include\SKeyMap.h" />
+-		<Unit filename="..\..\include\SLight.h" />
+-		<Unit filename="..\..\include\SMaterial.h" />
+-		<Unit filename="..\..\include\SMaterialLayer.h" />
+-		<Unit filename="..\..\include\SMesh.h" />
+-		<Unit filename="..\..\include\SMeshBuffer.h" />
+-		<Unit filename="..\..\include\SMeshBufferLightMap.h" />
+-		<Unit filename="..\..\include\SMeshBufferTangents.h" />
+-		<Unit filename="..\..\include\SParticle.h" />
+-		<Unit filename="..\..\include\SSharedMeshBuffer.h" />
+-		<Unit filename="..\..\include\SSkinMeshBuffer.h" />
+-		<Unit filename="..\..\include\SVertexIndex.h" />
+-		<Unit filename="..\..\include\SVertexManipulator.h" />
+-		<Unit filename="..\..\include\SViewFrustum.h" />
+-		<Unit filename="..\..\include\SceneParameters.h" />
+-		<Unit filename="..\..\include\aabbox3d.h" />
+-		<Unit filename="..\..\include\coreutil.h" />
+-		<Unit filename="..\..\include\dimension2d.h" />
+-		<Unit filename="..\..\include\fast_atof.h" />
+-		<Unit filename="..\..\include\heapsort.h" />
+-		<Unit filename="..\..\include\irrAllocator.h" />
+-		<Unit filename="..\..\include\irrArray.h" />
+-		<Unit filename="..\..\include\irrList.h" />
+-		<Unit filename="..\..\include\irrMap.h" />
+-		<Unit filename="..\..\include\irrMath.h" />
+-		<Unit filename="..\..\include\irrString.h" />
+-		<Unit filename="..\..\include\irrTypes.h" />
+-		<Unit filename="..\..\include\irrXML.h" />
+-		<Unit filename="..\..\include\irrlicht.h" />
+-		<Unit filename="..\..\include\irrpack.h" />
+-		<Unit filename="..\..\include\irrunpack.h" />
+-		<Unit filename="..\..\include\leakHunter.h" />
+-		<Unit filename="..\..\include\line2d.h" />
+-		<Unit filename="..\..\include\line3d.h" />
+-		<Unit filename="..\..\include\matrix4.h" />
+-		<Unit filename="..\..\include\path.h" />
+-		<Unit filename="..\..\include\plane3d.h" />
+-		<Unit filename="..\..\include\position2d.h" />
+-		<Unit filename="..\..\include\quaternion.h" />
+-		<Unit filename="..\..\include\rect.h" />
+-		<Unit filename="..\..\include\triangle3d.h" />
+-		<Unit filename="..\..\include\vector2d.h" />
+-		<Unit filename="..\..\include\vector3d.h" />
+-		<Unit filename="..\..\readme.txt" />
++		<Unit filename="../../changes.txt" />
++		<Unit filename="../../include/CDynamicMeshBuffer.h" />
++		<Unit filename="../../include/CIndexBuffer.h" />
++		<Unit filename="../../include/CMeshBuffer.h" />
++		<Unit filename="../../include/CVertexBuffer.h" />
++		<Unit filename="../../include/EAttributes.h" />
++		<Unit filename="../../include/ECullingTypes.h" />
++		<Unit filename="../../include/EDebugSceneTypes.h" />
++		<Unit filename="../../include/EDeviceTypes.h" />
++		<Unit filename="../../include/EDriverFeatures.h" />
++		<Unit filename="../../include/EDriverTypes.h" />
++		<Unit filename="../../include/EFocusFlags.h" />
++		<Unit filename="../../include/EGUIAlignment.h" />
++		<Unit filename="../../include/EGUIElementTypes.h" />
++		<Unit filename="../../include/EHardwareBufferFlags.h" />
++		<Unit filename="../../include/EMaterialFlags.h" />
++		<Unit filename="../../include/EMaterialTypes.h" />
++		<Unit filename="../../include/EMeshWriterEnums.h" />
++		<Unit filename="../../include/EMessageBoxFlags.h" />
++		<Unit filename="../../include/EPrimitiveTypes.h" />
++		<Unit filename="../../include/ESceneNodeAnimatorTypes.h" />
++		<Unit filename="../../include/ESceneNodeTypes.h" />
++		<Unit filename="../../include/EShaderTypes.h" />
++		<Unit filename="../../include/ETerrainElements.h" />
++		<Unit filename="../../include/IAnimatedMesh.h" />
++		<Unit filename="../../include/IAnimatedMeshMD2.h" />
++		<Unit filename="../../include/IAnimatedMeshMD3.h" />
++		<Unit filename="../../include/IAnimatedMeshSceneNode.h" />
++		<Unit filename="../../include/IAttributeExchangingObject.h" />
++		<Unit filename="../../include/IAttributes.h" />
++		<Unit filename="../../include/IBillboardSceneNode.h" />
++		<Unit filename="../../include/IBillboardTextSceneNode.h" />
++		<Unit filename="../../include/IBoneSceneNode.h" />
++		<Unit filename="../../include/ICameraSceneNode.h" />
++		<Unit filename="../../include/IColladaMeshWriter.h" />
++		<Unit filename="../../include/ICursorControl.h" />
++		<Unit filename="../../include/IDummyTransformationSceneNode.h" />
++		<Unit filename="../../include/IDynamicMeshBuffer.h" />
++		<Unit filename="../../include/IEventReceiver.h" />
++		<Unit filename="../../include/IFileArchive.h" />
++		<Unit filename="../../include/IFileList.h" />
++		<Unit filename="../../include/IFileSystem.h" />
++		<Unit filename="../../include/IGPUProgrammingServices.h" />
++		<Unit filename="../../include/IGUIButton.h" />
++		<Unit filename="../../include/IGUICheckBox.h" />
++		<Unit filename="../../include/IGUIColorSelectDialog.h" />
++		<Unit filename="../../include/IGUIComboBox.h" />
++		<Unit filename="../../include/IGUIContextMenu.h" />
++		<Unit filename="../../include/IGUIEditBox.h" />
++		<Unit filename="../../include/IGUIElement.h" />
++		<Unit filename="../../include/IGUIElementFactory.h" />
++		<Unit filename="../../include/IGUIEnvironment.h" />
++		<Unit filename="../../include/IGUIFileOpenDialog.h" />
++		<Unit filename="../../include/IGUIFont.h" />
++		<Unit filename="../../include/IGUIFontBitmap.h" />
++		<Unit filename="../../include/IGUIImage.h" />
++		<Unit filename="../../include/IGUIImageList.h" />
++		<Unit filename="../../include/IGUIInOutFader.h" />
++		<Unit filename="../../include/IGUIListBox.h" />
++		<Unit filename="../../include/IGUIMeshViewer.h" />
++		<Unit filename="../../include/IGUIProfiler.h" />
++		<Unit filename="../../include/IGUIScrollBar.h" />
++		<Unit filename="../../include/IGUISkin.h" />
++		<Unit filename="../../include/IGUISpinBox.h" />
++		<Unit filename="../../include/IGUISpriteBank.h" />
++		<Unit filename="../../include/IGUIStaticText.h" />
++		<Unit filename="../../include/IGUITabControl.h" />
++		<Unit filename="../../include/IGUITable.h" />
++		<Unit filename="../../include/IGUIToolbar.h" />
++		<Unit filename="../../include/IGUITreeView.h" />
++		<Unit filename="../../include/IGUIWindow.h" />
++		<Unit filename="../../include/IGeometryCreator.h" />
++		<Unit filename="../../include/IImage.h" />
++		<Unit filename="../../include/IImageLoader.h" />
++		<Unit filename="../../include/IImageWriter.h" />
++		<Unit filename="../../include/IIndexBuffer.h" />
++		<Unit filename="../../include/ILightManager.h" />
++		<Unit filename="../../include/ILightSceneNode.h" />
++		<Unit filename="../../include/ILogger.h" />
++		<Unit filename="../../include/IMaterialRenderer.h" />
++		<Unit filename="../../include/IMaterialRendererServices.h" />
++		<Unit filename="../../include/IMesh.h" />
++		<Unit filename="../../include/IMeshBuffer.h" />
++		<Unit filename="../../include/IMeshCache.h" />
++		<Unit filename="../../include/IMeshLoader.h" />
++		<Unit filename="../../include/IMeshManipulator.h" />
++		<Unit filename="../../include/IMeshSceneNode.h" />
++		<Unit filename="../../include/IMeshTextureLoader.h" />
++		<Unit filename="../../include/IMeshWriter.h" />
++		<Unit filename="../../include/IMetaTriangleSelector.h" />
++		<Unit filename="../../include/IOSOperator.h" />
++		<Unit filename="../../include/IParticleAffector.h" />
++		<Unit filename="../../include/IParticleAnimatedMeshSceneNodeEmitter.h" />
++		<Unit filename="../../include/IParticleAttractionAffector.h" />
++		<Unit filename="../../include/IParticleBoxEmitter.h" />
++		<Unit filename="../../include/IParticleCylinderEmitter.h" />
++		<Unit filename="../../include/IParticleEmitter.h" />
++		<Unit filename="../../include/IParticleFadeOutAffector.h" />
++		<Unit filename="../../include/IParticleGravityAffector.h" />
++		<Unit filename="../../include/IParticleMeshEmitter.h" />
++		<Unit filename="../../include/IParticleRingEmitter.h" />
++		<Unit filename="../../include/IParticleRotationAffector.h" />
++		<Unit filename="../../include/IParticleSphereEmitter.h" />
++		<Unit filename="../../include/IParticleSystemSceneNode.h" />
++		<Unit filename="../../include/IProfiler.h" />
++		<Unit filename="../../include/IQ3LevelMesh.h" />
++		<Unit filename="../../include/IQ3Shader.h" />
++		<Unit filename="../../include/IReadFile.h" />
++		<Unit filename="../../include/IReferenceCounted.h" />
++		<Unit filename="../../include/ISceneCollisionManager.h" />
++		<Unit filename="../../include/ISceneLoader.h" />
++		<Unit filename="../../include/ISceneManager.h" />
++		<Unit filename="../../include/ISceneNode.h" />
++		<Unit filename="../../include/ISceneNodeAnimator.h" />
++		<Unit filename="../../include/ISceneNodeAnimatorCameraFPS.h" />
++		<Unit filename="../../include/ISceneNodeAnimatorCameraMaya.h" />
++		<Unit filename="../../include/ISceneNodeAnimatorCollisionResponse.h" />
++		<Unit filename="../../include/ISceneNodeAnimatorFactory.h" />
++		<Unit filename="../../include/ISceneNodeFactory.h" />
++		<Unit filename="../../include/ISceneUserDataSerializer.h" />
++		<Unit filename="../../include/IShaderConstantSetCallBack.h" />
++		<Unit filename="../../include/IShadowVolumeSceneNode.h" />
++		<Unit filename="../../include/ISkinnedMesh.h" />
++		<Unit filename="../../include/ITerrainSceneNode.h" />
++		<Unit filename="../../include/ITextSceneNode.h" />
++		<Unit filename="../../include/ITexture.h" />
++		<Unit filename="../../include/ITimer.h" />
++		<Unit filename="../../include/ITriangleSelector.h" />
++		<Unit filename="../../include/IVertexBuffer.h" />
++		<Unit filename="../../include/IVideoDriver.h" />
++		<Unit filename="../../include/IVideoModeList.h" />
++		<Unit filename="../../include/IVolumeLightSceneNode.h" />
++		<Unit filename="../../include/IWriteFile.h" />
++		<Unit filename="../../include/IXMLReader.h" />
++		<Unit filename="../../include/IXMLWriter.h" />
++		<Unit filename="../../include/IrrCompileConfig.h" />
++		<Unit filename="../../include/IrrlichtDevice.h" />
++		<Unit filename="../../include/Keycodes.h" />
++		<Unit filename="../../include/S3DVertex.h" />
++		<Unit filename="../../include/SAnimatedMesh.h" />
++		<Unit filename="../../include/SColor.h" />
++		<Unit filename="../../include/SExposedVideoData.h" />
++		<Unit filename="../../include/SIrrCreationParameters.h" />
++		<Unit filename="../../include/SKeyMap.h" />
++		<Unit filename="../../include/SLight.h" />
++		<Unit filename="../../include/SMaterial.h" />
++		<Unit filename="../../include/SMaterialLayer.h" />
++		<Unit filename="../../include/SMesh.h" />
++		<Unit filename="../../include/SMeshBuffer.h" />
++		<Unit filename="../../include/SMeshBufferLightMap.h" />
++		<Unit filename="../../include/SMeshBufferTangents.h" />
++		<Unit filename="../../include/SParticle.h" />
++		<Unit filename="../../include/SSharedMeshBuffer.h" />
++		<Unit filename="../../include/SSkinMeshBuffer.h" />
++		<Unit filename="../../include/SVertexIndex.h" />
++		<Unit filename="../../include/SVertexManipulator.h" />
++		<Unit filename="../../include/SViewFrustum.h" />
++		<Unit filename="../../include/SceneParameters.h" />
++		<Unit filename="../../include/aabbox3d.h" />
++		<Unit filename="../../include/coreutil.h" />
++		<Unit filename="../../include/dimension2d.h" />
++		<Unit filename="../../include/fast_atof.h" />
++		<Unit filename="../../include/heapsort.h" />
++		<Unit filename="../../include/irrAllocator.h" />
++		<Unit filename="../../include/irrArray.h" />
++		<Unit filename="../../include/irrList.h" />
++		<Unit filename="../../include/irrMap.h" />
++		<Unit filename="../../include/irrMath.h" />
++		<Unit filename="../../include/irrString.h" />
++		<Unit filename="../../include/irrTypes.h" />
++		<Unit filename="../../include/irrXML.h" />
++		<Unit filename="../../include/irrlicht.h" />
++		<Unit filename="../../include/irrpack.h" />
++		<Unit filename="../../include/irrunpack.h" />
++		<Unit filename="../../include/leakHunter.h" />
++		<Unit filename="../../include/line2d.h" />
++		<Unit filename="../../include/line3d.h" />
++		<Unit filename="../../include/matrix4.h" />
++		<Unit filename="../../include/path.h" />
++		<Unit filename="../../include/plane3d.h" />
++		<Unit filename="../../include/position2d.h" />
++		<Unit filename="../../include/quaternion.h" />
++		<Unit filename="../../include/rect.h" />
++		<Unit filename="../../include/triangle3d.h" />
++		<Unit filename="../../include/vector2d.h" />
++		<Unit filename="../../include/vector3d.h" />
++		<Unit filename="../../readme.txt" />
+ 		<Unit filename="BuiltInFont.h" />
+ 		<Unit filename="C3DSMeshFileLoader.cpp" />
+ 		<Unit filename="C3DSMeshFileLoader.h" />
+@@ -635,6 +635,24 @@
+ 		<Unit filename="CColorConverter.h" />
+ 		<Unit filename="CCubeSceneNode.cpp" />
+ 		<Unit filename="CCubeSceneNode.h" />
++		<Unit filename="CD3D11CallBridge.cpp" />
++		<Unit filename="CD3D11CallBridge.h" />
++		<Unit filename="CD3D11Driver.cpp" />
++		<Unit filename="CD3D11Driver.h" />
++		<Unit filename="CD3D11FixedPipelineRenderer.cpp" />
++		<Unit filename="CD3D11FixedPipelineRenderer.h" />
++		<Unit filename="CD3D11HardwareBuffer.cpp" />
++		<Unit filename="CD3D11HardwareBuffer.h" />
++		<Unit filename="CD3D11MaterialRenderer.cpp" />
++		<Unit filename="CD3D11MaterialRenderer.h" />
++		<Unit filename="CD3D11NormalMapRenderer.cpp" />
++		<Unit filename="CD3D11NormalMapRenderer.h" />
++		<Unit filename="CD3D11ParallaxMapRenderer.cpp" />
++		<Unit filename="CD3D11ParallaxMapRenderer.h" />
++		<Unit filename="CD3D11Texture.cpp" />
++		<Unit filename="CD3D11Texture.h" />
++		<Unit filename="CD3D11VertexDescriptor.cpp" />
++		<Unit filename="CD3D11VertexDescriptor.h" />
+ 		<Unit filename="CD3D8Driver.cpp" />
+ 		<Unit filename="CD3D8Driver.h" />
+ 		<Unit filename="CD3D8MaterialRenderer.h" />
+@@ -684,6 +702,7 @@
+ 		<Unit filename="CGUIButton.cpp" />
+ 		<Unit filename="CGUIButton.h" />
+ 		<Unit filename="CGUICheckBox.cpp" />
++		<Unit filename="CGUICheckBox.h" />
+ 		<Unit filename="CGUICheckbox.h" />
+ 		<Unit filename="CGUIColorSelectDialog.cpp" />
+ 		<Unit filename="CGUIColorSelectDialog.h" />
+@@ -775,8 +794,12 @@
+ 		<Unit filename="CImageWriterPSD.h" />
+ 		<Unit filename="CImageWriterTGA.cpp" />
+ 		<Unit filename="CImageWriterTGA.h" />
++		<Unit filename="CInstancedMeshSceneNode.cpp" />
++		<Unit filename="CInstancedMeshSceneNode.h" />
+ 		<Unit filename="CIrrDeviceConsole.cpp" />
+ 		<Unit filename="CIrrDeviceConsole.h" />
++		<Unit filename="CIrrDeviceFB.cpp" />
++		<Unit filename="CIrrDeviceFB.h" />
+ 		<Unit filename="CIrrDeviceLinux.cpp" />
+ 		<Unit filename="CIrrDeviceLinux.h" />
+ 		<Unit filename="CIrrDeviceSDL.cpp" />
+@@ -992,6 +1015,8 @@
+ 		<Unit filename="CTriangleBBSelector.h" />
+ 		<Unit filename="CTriangleSelector.cpp" />
+ 		<Unit filename="CTriangleSelector.h" />
++		<Unit filename="CVertexDescriptor.cpp" />
++		<Unit filename="CVertexDescriptor.h" />
+ 		<Unit filename="CVideoModeList.cpp" />
+ 		<Unit filename="CVideoModeList.h" />
+ 		<Unit filename="CVolumeLightSceneNode.cpp" />
+@@ -1019,304 +1044,308 @@
+ 		<Unit filename="IBurningShader.h" />
+ 		<Unit filename="IDepthBuffer.h" />
+ 		<Unit filename="IImagePresenter.h" />
++		<Unit filename="ISceneNodeAnimatorFinishing.h" />
+ 		<Unit filename="ITriangleRenderer.h" />
+ 		<Unit filename="IZBuffer.h" />
+ 		<Unit filename="Irrlicht.cpp" />
+-		<Unit filename="MacOSX\CIrrDeviceMacOSX.h" />
+-		<Unit filename="MacOSX\CIrrDeviceMacOSX.mm" />
++		<Unit filename="MacOSX/CIrrDeviceMacOSX.h" />
++		<Unit filename="MacOSX/CIrrDeviceMacOSX.mm" />
+ 		<Unit filename="Octree.h" />
+ 		<Unit filename="S2DVertex.h" />
+ 		<Unit filename="S4DVertex.h" />
+ 		<Unit filename="SoftwareDriver2_compile_config.h" />
+ 		<Unit filename="SoftwareDriver2_helper.h" />
+-		<Unit filename="aesGladman\aes.h" />
+-		<Unit filename="aesGladman\aescrypt.cpp" />
+-		<Unit filename="aesGladman\aeskey.cpp" />
+-		<Unit filename="aesGladman\aesopt.h" />
+-		<Unit filename="aesGladman\aestab.cpp" />
+-		<Unit filename="aesGladman\fileenc.cpp" />
+-		<Unit filename="aesGladman\fileenc.h" />
+-		<Unit filename="aesGladman\hmac.cpp" />
+-		<Unit filename="aesGladman\hmac.h" />
+-		<Unit filename="aesGladman\prng.cpp" />
+-		<Unit filename="aesGladman\prng.h" />
+-		<Unit filename="aesGladman\pwd2key.cpp" />
+-		<Unit filename="aesGladman\pwd2key.h" />
+-		<Unit filename="aesGladman\sha1.cpp" />
+-		<Unit filename="aesGladman\sha1.h" />
+-		<Unit filename="aesGladman\sha2.cpp" />
+-		<Unit filename="aesGladman\sha2.h" />
+-		<Unit filename="bzip2\blocksort.c">
++		<Unit filename="aesGladman/aes.h" />
++		<Unit filename="aesGladman/aescrypt.cpp" />
++		<Unit filename="aesGladman/aeskey.cpp" />
++		<Unit filename="aesGladman/aesopt.h" />
++		<Unit filename="aesGladman/aestab.cpp" />
++		<Unit filename="aesGladman/fileenc.cpp" />
++		<Unit filename="aesGladman/fileenc.h" />
++		<Unit filename="aesGladman/hmac.cpp" />
++		<Unit filename="aesGladman/hmac.h" />
++		<Unit filename="aesGladman/prng.cpp" />
++		<Unit filename="aesGladman/prng.h" />
++		<Unit filename="aesGladman/pwd2key.cpp" />
++		<Unit filename="aesGladman/pwd2key.h" />
++		<Unit filename="aesGladman/sha1.cpp" />
++		<Unit filename="aesGladman/sha1.h" />
++		<Unit filename="aesGladman/sha2.cpp" />
++		<Unit filename="aesGladman/sha2.h" />
++		<Unit filename="bzip2/blocksort.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="bzip2\bzcompress.c">
++		<Unit filename="bzip2/bzcompress.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="bzip2\bzlib.c">
++		<Unit filename="bzip2/bzlib.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="bzip2\bzlib.h" />
+-		<Unit filename="bzip2\bzlib_private.h" />
+-		<Unit filename="bzip2\crctable.c">
++		<Unit filename="bzip2/bzlib.h" />
++		<Unit filename="bzip2/bzlib_private.h" />
++		<Unit filename="bzip2/crctable.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="bzip2\decompress.c">
++		<Unit filename="bzip2/decompress.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="bzip2\huffman.c">
++		<Unit filename="bzip2/huffman.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="bzip2\randtable.c">
++		<Unit filename="bzip2/randtable.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+ 		<Unit filename="dmfsupport.h" />
+ 		<Unit filename="glext.h" />
++		<Unit filename="glxext.h" />
+ 		<Unit filename="irrXML.cpp" />
+-		<Unit filename="jpeglib\cderror.h" />
+-		<Unit filename="jpeglib\jaricom.c">
++		<Unit filename="jpeglib/cderror.h" />
++		<Unit filename="jpeglib/jaricom.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcapimin.c">
++		<Unit filename="jpeglib/jcapimin.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcapistd.c">
++		<Unit filename="jpeglib/jcapistd.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcarith.c">
++		<Unit filename="jpeglib/jcarith.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jccoefct.c">
++		<Unit filename="jpeglib/jccoefct.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jccolor.c">
++		<Unit filename="jpeglib/jccolor.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcdctmgr.c">
++		<Unit filename="jpeglib/jcdctmgr.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jchuff.c">
++		<Unit filename="jpeglib/jchuff.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jchuff.h" />
+-		<Unit filename="jpeglib\jcinit.c">
++		<Unit filename="jpeglib/jchuff.h" />
++		<Unit filename="jpeglib/jcinit.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcmainct.c">
++		<Unit filename="jpeglib/jcmainct.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcmarker.c">
++		<Unit filename="jpeglib/jcmarker.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcmaster.c">
++		<Unit filename="jpeglib/jcmaster.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcomapi.c">
++		<Unit filename="jpeglib/jcomapi.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jconfig.h" />
+-		<Unit filename="jpeglib\jcparam.c">
++		<Unit filename="jpeglib/jconfig.h" />
++		<Unit filename="jpeglib/jcparam.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcprepct.c">
++		<Unit filename="jpeglib/jcprepct.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jcsample.c">
++		<Unit filename="jpeglib/jcsample.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jctrans.c">
++		<Unit filename="jpeglib/jctrans.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdapimin.c">
++		<Unit filename="jpeglib/jdapimin.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdapistd.c">
++		<Unit filename="jpeglib/jdapistd.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdarith.c">
++		<Unit filename="jpeglib/jdarith.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdatadst.c">
++		<Unit filename="jpeglib/jdatadst.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdatasrc.c">
++		<Unit filename="jpeglib/jdatasrc.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdcoefct.c">
++		<Unit filename="jpeglib/jdcoefct.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdcolor.c">
++		<Unit filename="jpeglib/jdcolor.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdct.h" />
+-		<Unit filename="jpeglib\jddctmgr.c">
++		<Unit filename="jpeglib/jdct.h" />
++		<Unit filename="jpeglib/jddctmgr.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdhuff.c">
++		<Unit filename="jpeglib/jdhuff.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdhuff.h" />
+-		<Unit filename="jpeglib\jdinput.c">
++		<Unit filename="jpeglib/jdhuff.h" />
++		<Unit filename="jpeglib/jdinput.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdmainct.c">
++		<Unit filename="jpeglib/jdmainct.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdmarker.c">
++		<Unit filename="jpeglib/jdmarker.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdmaster.c">
++		<Unit filename="jpeglib/jdmaster.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdmerge.c">
++		<Unit filename="jpeglib/jdmerge.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdpostct.c">
++		<Unit filename="jpeglib/jdpostct.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdsample.c">
++		<Unit filename="jpeglib/jdsample.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jdtrans.c">
++		<Unit filename="jpeglib/jdtrans.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jerror.c">
++		<Unit filename="jpeglib/jerror.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jerror.h" />
+-		<Unit filename="jpeglib\jfdctflt.c">
++		<Unit filename="jpeglib/jerror.h" />
++		<Unit filename="jpeglib/jfdctflt.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jfdctfst.c">
++		<Unit filename="jpeglib/jfdctfst.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jfdctint.c">
++		<Unit filename="jpeglib/jfdctint.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jidctflt.c">
++		<Unit filename="jpeglib/jidctflt.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jidctfst.c">
++		<Unit filename="jpeglib/jidctfst.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jidctint.c">
++		<Unit filename="jpeglib/jidctint.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jinclude.h" />
+-		<Unit filename="jpeglib\jmemmgr.c">
++		<Unit filename="jpeglib/jinclude.h" />
++		<Unit filename="jpeglib/jmemmgr.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jmemnobs.c">
++		<Unit filename="jpeglib/jmemnobs.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jmemsys.h" />
+-		<Unit filename="jpeglib\jmorecfg.h" />
+-		<Unit filename="jpeglib\jpegint.h" />
+-		<Unit filename="jpeglib\jpeglib.h" />
+-		<Unit filename="jpeglib\jquant1.c">
++		<Unit filename="jpeglib/jmemsys.h" />
++		<Unit filename="jpeglib/jmorecfg.h" />
++		<Unit filename="jpeglib/jpegint.h" />
++		<Unit filename="jpeglib/jpeglib.h" />
++		<Unit filename="jpeglib/jquant1.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jquant2.c">
++		<Unit filename="jpeglib/jquant2.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jutils.c">
++		<Unit filename="jpeglib/jutils.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="jpeglib\jversion.h" />
++		<Unit filename="jpeglib/jversion.h" />
+ 		<Unit filename="leakHunter.cpp" />
+-		<Unit filename="libpng\png.c">
++		<Unit filename="libpng/png.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\png.h" />
+-		<Unit filename="libpng\pngconf.h" />
+-		<Unit filename="libpng\pngerror.c">
++		<Unit filename="libpng/png.h" />
++		<Unit filename="libpng/pngconf.h" />
++		<Unit filename="libpng/pngerror.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngget.c">
++		<Unit filename="libpng/pngget.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngmem.c">
++		<Unit filename="libpng/pngmem.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngpread.c">
++		<Unit filename="libpng/pngpread.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngread.c">
++		<Unit filename="libpng/pngread.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngrio.c">
++		<Unit filename="libpng/pngrio.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngrtran.c">
++		<Unit filename="libpng/pngrtran.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngrutil.c">
++		<Unit filename="libpng/pngrutil.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngset.c">
++		<Unit filename="libpng/pngset.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngtrans.c">
++		<Unit filename="libpng/pngtrans.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngwio.c">
++		<Unit filename="libpng/pngwio.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngwrite.c">
++		<Unit filename="libpng/pngwrite.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngwtran.c">
++		<Unit filename="libpng/pngwtran.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="libpng\pngwutil.c">
++		<Unit filename="libpng/pngwutil.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="lzma\LzmaDec.c">
++		<Unit filename="lzma/LzmaDec.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="lzma\LzmaDec.h" />
+-		<Unit filename="lzma\Types.h" />
++		<Unit filename="lzma/LzmaDec.h" />
++		<Unit filename="lzma/Types.h" />
+ 		<Unit filename="os.cpp" />
+ 		<Unit filename="os.h" />
++		<Unit filename="resource.h" />
+ 		<Unit filename="utf8.cpp" />
+-		<Unit filename="zlib\adler32.c">
++		<Unit filename="wglext.h" />
++		<Unit filename="zlib/adler32.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\compress.c">
++		<Unit filename="zlib/compress.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\crc32.c">
++		<Unit filename="zlib/crc32.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\crc32.h" />
+-		<Unit filename="zlib\deflate.c">
++		<Unit filename="zlib/crc32.h" />
++		<Unit filename="zlib/deflate.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\deflate.h" />
+-		<Unit filename="zlib\inffast.c">
++		<Unit filename="zlib/deflate.h" />
++		<Unit filename="zlib/inffast.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\inffast.h" />
+-		<Unit filename="zlib\inffixed.h" />
+-		<Unit filename="zlib\inflate.c">
++		<Unit filename="zlib/inffast.h" />
++		<Unit filename="zlib/inffixed.h" />
++		<Unit filename="zlib/inflate.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\inftrees.c">
++		<Unit filename="zlib/inftrees.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\inftrees.h" />
+-		<Unit filename="zlib\trees.c">
++		<Unit filename="zlib/inftrees.h" />
++		<Unit filename="zlib/trees.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\trees.h" />
+-		<Unit filename="zlib\uncompr.c">
++		<Unit filename="zlib/trees.h" />
++		<Unit filename="zlib/uncompr.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\zconf.h" />
+-		<Unit filename="zlib\zlib.h" />
+-		<Unit filename="zlib\zutil.c">
++		<Unit filename="zlib/zconf.h" />
++		<Unit filename="zlib/zlib.h" />
++		<Unit filename="zlib/zutil.c">
+ 			<Option compilerVar="CC" />
+ 		</Unit>
+-		<Unit filename="zlib\zutil.h" />
++		<Unit filename="zlib/zutil.h" />
+ 		<Extensions>
+ 			<code_completion />
+ 			<debugger />

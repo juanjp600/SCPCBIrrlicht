@@ -203,6 +203,31 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 		services->setPixelShaderConstant(lightColor.c_str(), (float*)(&light.color), 4);
 	}
 
+	if (driver->currentlyRenderedNode->getType()==irr::scene::ESCENE_NODE_TYPE::ESNT_ANIMATED_MESH) {
+        irr::scene::ISkinnedMesh* mesh = (irr::scene::ISkinnedMesh*)(((irr::scene::IAnimatedMeshSceneNode*)(driver->currentlyRenderedNode))->getMesh());
+        irr::f32* JointArray = new irr::f32[mesh->getAllJoints().size() * 16];
+
+        int copyIncrement = 0;
+
+        std::cout<<"fffff "<<mesh->getAllJoints().size()<<"\n";
+        for(int i = 0;i < mesh->getAllJoints().size();++i)
+        {
+            irr::core::matrix4 JointVertexPull(irr::core::matrix4::EM4CONST_NOTHING);
+            JointVertexPull.setbyproduct(
+                mesh->getAllJoints()[i]->GlobalAnimatedMatrix,
+                mesh->getAllJoints()[i]->GlobalInversedMatrix);
+
+            for(int j = 0;j < 16;++j) {
+                JointArray[copyIncrement+j] = JointVertexPull[j];
+            }
+            copyIncrement += 16;
+        }
+
+        services->setVertexShaderConstant("uBone", JointArray, mesh->getAllJoints().size() * 16);
+
+        delete[] JointArray;
+    }
+
 	irr::s32 TextureLayerID = 0;
 	services->setPixelShaderConstant("baseMap", &TextureLayerID, 1);
 

@@ -354,7 +354,7 @@ namespace gui
 			core::vector2di getKerning(const uchar32_t thisLetter, const uchar32_t previousLetter) const;
 			core::dimension2d<u32> getDimensionUntilEndOfLine(const wchar_t* p) const;
 
-			void createSharedPlane();
+			void createSharedPlane(scene::ISceneManager* smgr);
 
 			irr::IrrlichtDevice* Device;
 			gui::IGUIEnvironment* Environment;

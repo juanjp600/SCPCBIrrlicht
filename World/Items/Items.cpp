@@ -86,11 +86,11 @@ void Item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 	for (i=0; i<bufferCount; i++) //get mesh boundaries
 	{
 		irr::scene::IMeshBuffer* mb=irrMesh->getMeshBuffer(i);
-		if(mb->getVertexType()==irr::video::EVT_STANDARD)
+		if(static_cast<irr::video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==irr::video::EVT_STANDARD)
 		{
-			irr::video::S3DVertex* mb_vertices=(irr::video::S3DVertex*)mb->getVertices();
+			irr::video::S3DVertex* mb_vertices=(irr::video::S3DVertex*)mb->getVertexBuffer()->getVertices();
 			//mb_indices = mb->getIndices();
-			numVertices = mb->getVertexCount();
+			numVertices = mb->getVertexBuffer()->getVertexCount();
 
 			precLoss = 1;
 
@@ -109,10 +109,10 @@ void Item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 				Mz = std::max(Mz,irrPos2.Z * scaling.Z);
 			}
 		}
-		else if(mb->getVertexType()==irr::video::EVT_2TCOORDS)
+		else if(static_cast<irr::video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==irr::video::EVT_2TCOORDS)
 		{
-			irr::video::S3DVertex2TCoords* mb_vertices=(irr::video::S3DVertex2TCoords*)mb->getVertices();
-			numVertices = mb->getVertexCount();
+			irr::video::S3DVertex2TCoords* mb_vertices=(irr::video::S3DVertex2TCoords*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount();
 
 			precLoss = 1;
 
@@ -131,10 +131,10 @@ void Item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 				Mz = std::max(Mz,irrPos2.Z * scaling.Z);
 			}
 		}
-		else if(mb->getVertexType()==irr::video::EVT_TANGENTS)
+		else if(static_cast<irr::video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==irr::video::EVT_TANGENTS)
 		{
-			irr::video::S3DVertexTangents* mb_vertices=(irr::video::S3DVertexTangents*)mb->getVertices();
-			numVertices = mb->getVertexCount();
+			irr::video::S3DVertexTangents* mb_vertices=(irr::video::S3DVertexTangents*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount();
 
 			precLoss = 1;
 
@@ -164,10 +164,10 @@ void Item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 	for (i=0; i<bufferCount; i++) //set offset to vertices
 	{
 		irr::scene::IMeshBuffer* mb=irrMesh->getMeshBuffer(i);
-		if(mb->getVertexType()==irr::video::EVT_STANDARD)
+		if(static_cast<irr::video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==irr::video::EVT_STANDARD)
 		{
-			irr::video::S3DVertex* mb_vertices=(irr::video::S3DVertex*)mb->getVertices();
-			numVertices = mb->getVertexCount();
+			irr::video::S3DVertex* mb_vertices=(irr::video::S3DVertex*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount();
 
 			precLoss = 1;
 
@@ -182,10 +182,10 @@ void Item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 				dynShape->addPoint(btPos2);
 			}
 		}
-		else if(mb->getVertexType()==irr::video::EVT_2TCOORDS)
+		else if(static_cast<irr::video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==irr::video::EVT_2TCOORDS)
 		{
-			irr::video::S3DVertex2TCoords* mb_vertices=(irr::video::S3DVertex2TCoords*)mb->getVertices();
-			numVertices = mb->getVertexCount();
+			irr::video::S3DVertex2TCoords* mb_vertices=(irr::video::S3DVertex2TCoords*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount();
 
 			precLoss = 1;
 
@@ -200,10 +200,10 @@ void Item::createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShap
 				dynShape->addPoint(btPos2);
 			}
 		}
-		else if(mb->getVertexType()==irr::video::EVT_TANGENTS)
+		else if(static_cast<irr::video::S3DVertex*>(mb->getVertexBuffer()->getVertices())->getType()==irr::video::EVT_TANGENTS)
 		{
-			irr::video::S3DVertexTangents* mb_vertices=(irr::video::S3DVertexTangents*)mb->getVertices();
-			numVertices = mb->getVertexCount();
+			irr::video::S3DVertexTangents* mb_vertices=(irr::video::S3DVertexTangents*)mb->getVertexBuffer()->getVertices();
+			numVertices = mb->getVertexBuffer()->getVertexCount();
 
 			precLoss = 1;
 

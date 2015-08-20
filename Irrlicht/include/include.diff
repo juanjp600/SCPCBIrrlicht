@@ -1,18 +1,18 @@
---- EMaterialFlags.h	Sat Nov 03 18:08:32 2012
-+++ EMaterialFlags.h	Sun Oct 19 17:58:51 2014
-@@ -84,7 +84,9 @@
- 		EMF_BLEND_OPERATION = 0x40000,
+--- EMaterialFlags.h	Sun Jan 04 14:23:44 2015
++++ EMaterialFlags.h	Fri Aug 07 22:59:31 2015
+@@ -87,7 +87,9 @@
+ 		EMF_POLYGON_OFFSET = 0x80000,
  
- 		//! Flag for polygon offset
--		EMF_POLYGON_OFFSET = 0x80000
-+		EMF_POLYGON_OFFSET = 0x80000,
+         //! Flag for blend factor
+-		EMF_BLEND_FACTOR = 0x160000
++		EMF_BLEND_FACTOR = 0x160000,
 +
-+		EMF_MATERIAL_TYPE = 0x100000
++		EMF_MATERIAL_TYPE = 0x320000
  	};
  
  } // end namespace video
---- IBoneSceneNode.h	Sat Nov 03 18:08:32 2012
-+++ IBoneSceneNode.h	Tue May 12 15:42:18 2015
+--- IBoneSceneNode.h	Sun Jan 06 02:40:58 2013
++++ IBoneSceneNode.h	Fri Aug 07 22:59:56 2015
 @@ -84,7 +84,7 @@
  
  		//! The render method.
@@ -22,67 +22,40 @@
  
  		//! How the relative transformation of the bone is used
  		virtual void setSkinningSpace( E_BONE_SKINNING_SPACE space ) =0;
---- IReferenceCounted.h	Sat Nov 03 18:08:32 2012
-+++ IReferenceCounted.h	Sun Nov 23 20:51:30 2014
-@@ -7,6 +7,10 @@
+--- ICameraSceneNode.h	Sun Jan 04 14:23:44 2015
++++ ICameraSceneNode.h	Fri Aug 07 23:09:32 2015
+@@ -166,7 +166,7 @@
+ 		virtual void bindTargetAndRotation(bool bound) =0;
  
- #include "irrTypes.h"
+ 		//! Updates the matrices without uploading them to the driver
+-		virtual void updateMatrices() = 0;
++		virtual void updateMatrices(f32 interpolate=1.f) = 0;
  
-+#ifdef _IRR_COMPILE_WITH_LEAK_HUNTER_
-+	#include "leakHunter.h"
-+#endif
-+
- namespace irr
- {
+ 		//! Queries if the camera scene node's rotation and its target position are bound together.
+ 		/** @see bindTargetAndRotation() */
+--- IrrCompileConfig.h	Sat Jan 10 21:24:40 2015
++++ IrrCompileConfig.h	Fri Aug 07 23:01:00 2015
+@@ -130,7 +130,7 @@
  
-@@ -46,11 +50,17 @@
- 		IReferenceCounted()
- 			: DebugName(0), ReferenceCounter(1)
- 		{
-+#ifdef _IRR_COMPILE_WITH_LEAK_HUNTER_
-+			LeakHunter::addObject(this);
-+#endif
- 		}
- 
- 		//! Destructor.
- 		virtual ~IReferenceCounted()
- 		{
-+#ifdef _IRR_COMPILE_WITH_LEAK_HUNTER_
-+				LeakHunter::removeObject(this);
-+#endif
- 		}
- 
- 		//! Grabs the object. Increments the reference counter by one.
---- IrrCompileConfig.h	Tue Oct 29 21:34:58 2013
-+++ IrrCompileConfig.h	Sun Mar 15 22:31:55 2015
-@@ -114,7 +114,14 @@
- 
- 
- //! Maximum number of texture an SMaterial can have, up to 8 are supported by Irrlicht.
--#define _IRR_MATERIAL_MAX_TEXTURES_ 4
-+#define _IRR_MATERIAL_MAX_TEXTURES_ 8
-+
-+//! Add a leak-hunter to Irrlicht which helps finding unreleased reference counted objects.
-+//! NOTE: This is slow and should only be used for debugging
+ //! Add a leak-hunter to Irrlicht which helps finding unreleased reference counted objects.
+ //! NOTE: This is slow and should only be used for debugging
+-//#define _IRR_COMPILE_WITH_LEAK_HUNTER_
 +#define _IRR_COMPILE_WITH_LEAK_HUNTER_
-+#ifdef NO_IRR_COMPILE_WITH_LEAK_HUNTER_
-+#undef _IRR_COMPILE_WITH_LEAK_HUNTER_
-+#endif
- 
- //! Define _IRR_COMPILE_WITH_DIRECT3D_8_ and _IRR_COMPILE_WITH_DIRECT3D_9_ to
- //! compile the Irrlicht engine with Direct3D8 and/or DIRECT3D9.
-@@ -148,6 +155,8 @@
+ #ifdef NO_IRR_COMPILE_WITH_LEAK_HUNTER_
+ #undef _IRR_COMPILE_WITH_LEAK_HUNTER_
+ #endif
+@@ -176,6 +176,8 @@
  //! Only define _IRR_COMPILE_WITH_DIRECT3D_8_ if you have an appropriate DXSDK, e.g. Summer 2004
  // #define _IRR_COMPILE_WITH_DIRECT3D_8_
  #define _IRR_COMPILE_WITH_DIRECT3D_9_
 +
 +#define NO_IRR_COMPILE_WITH_DIRECT3D_9_
- 
- #ifdef NO_IRR_COMPILE_WITH_DIRECT3D_8_
- #undef _IRR_COMPILE_WITH_DIRECT3D_8_
---- ISceneManager.h	Mon Jun 17 11:09:20 2013
-+++ ISceneManager.h	Sun Jul 12 19:42:18 2015
-@@ -1153,7 +1153,8 @@
+ //! Only define _IRR_COMPILE_WITH_DIRECT3D_11_ if you have an appropriate DXSDK
+ //! Download: http://msdn.microsoft.com/en-us/windows/desktop/hh852363.aspx
+ #define _IRR_COMPILE_WITH_DIRECT3D_11_
+--- ISceneManager.h	Sat Jan 10 21:24:40 2015
++++ ISceneManager.h	Fri Aug 07 23:14:09 2015
+@@ -1172,7 +1172,8 @@
  		IVideoDriver::beginScene() and IVideoDriver::endScene(). Please note that
  		the scene is not only drawn when calling this, but also animated
  		by existing scene node animators, culling of scene nodes is done, etc. */
@@ -92,24 +65,24 @@
  
  		//! Creates a rotation animator, which rotates the attached scene node around itself.
  		/** \param rotationSpeed Specifies the speed of the animation in degree per 10 milliseconds.
-@@ -1653,6 +1654,10 @@
- 		\return True if node is not visible in the current scene, else
- 		false. */
+@@ -1677,6 +1678,10 @@
  		virtual bool isCulled(const ISceneNode* node) const =0;
+ 
+ 		virtual bool isCulled(core::aabbox3d<f32> tbox, scene::E_CULLING_TYPE type, const core::matrix4& absoluteTransformation) const = 0;
 +
-+        virtual void fastDrawAll_init(const core::vector3df &camPos) =0;
-+		virtual void fastDrawAll(const core::matrix4 &projectionMatrix,const core::matrix4 &viewMatrix) = 0;
++		virtual void fastDrawAll_init(const core::vector3df &camPos) =0;
++        virtual void fastDrawAll(const core::matrix4 &projectionMatrix,const core::matrix4 &viewMatrix) = 0;
 +        virtual void fastDrawAll_end() =0;
- 	};
  
+ 	protected:
  
---- ISceneNode.h	Sat Nov 03 18:08:34 2012
-+++ ISceneNode.h	Tue Jul 14 14:13:38 2015
+--- ISceneNode.h	Sun Jan 04 14:23:44 2015
++++ ISceneNode.h	Fri Aug 07 23:04:18 2015
 @@ -98,6 +98,20 @@
  			}
  		}
  
-+		virtual void fastRegister() {}
++        virtual void fastRegister() {}
 +
 +        virtual void captureState()
 +        {
@@ -126,7 +99,7 @@
  
  		//! OnAnimate() is called just before rendering the whole scene.
  		/** Nodes may calculate or store animations here, and may do other useful things,
-@@ -135,7 +149,9 @@
+@@ -138,7 +152,9 @@
  
  
  		//! Renders the node.
@@ -137,36 +110,7 @@
  
  
  		//! Returns the name of the node.
-@@ -184,10 +200,10 @@
- 
- 
- 		//! Get the absolute transformation of the node. Is recalculated every OnAnimate()-call.
--		/** NOTE: For speed reasons the absolute transformation is not 
--		automatically recalculated on each change of the relative 
-+		/** NOTE: For speed reasons the absolute transformation is not
-+		automatically recalculated on each change of the relative
- 		transformation or by a transformation change of an parent. Instead the
--		update usually happens once per frame in OnAnimate. You can enforce 
-+		update usually happens once per frame in OnAnimate. You can enforce
- 		an update with updateAbsolutePosition().
- 		\return The absolute transformation matrix. */
- 		virtual const core::matrix4& getAbsoluteTransformation() const
-@@ -513,10 +529,10 @@
- 		//! Gets the absolute position of the node in world coordinates.
- 		/** If you want the position of the node relative to its parent,
- 		use getPosition() instead.
--		NOTE: For speed reasons the absolute position is not 
--		automatically recalculated on each change of the relative 
--		position or by a position change of an parent. Instead the 
--		update usually happens once per frame in OnAnimate. You can enforce 
-+		NOTE: For speed reasons the absolute position is not
-+		automatically recalculated on each change of the relative
-+		position or by a position change of an parent. Instead the
-+		update usually happens once per frame in OnAnimate. You can enforce
- 		an update with updateAbsolutePosition().
- 		\return The current absolute position of the scene node (updated on last call of updateAbsolutePosition). */
- 		virtual core::vector3df getAbsolutePosition() const
-@@ -660,6 +676,44 @@
+@@ -677,6 +693,44 @@
  				AbsoluteTransformation = getRelativeTransformation();
  		}
  
@@ -211,7 +155,7 @@
  
  		//! Returns the parent of this scene node
  		/** \return A pointer to the parent. */
-@@ -812,12 +866,15 @@
+@@ -832,12 +886,15 @@
  
  		//! Relative translation of the scene node.
  		core::vector3df RelativeTranslation;
@@ -227,81 +171,32 @@
  
  		//! Pointer to the parent
  		ISceneNode* Parent;
---- IVideoDriver.h	Sat Nov 03 18:08:34 2012
-+++ IVideoDriver.h	Mon Jul 06 19:36:49 2015
-@@ -200,6 +200,7 @@
+--- IVideoDriver.h	Sun Jan 04 14:23:44 2015
++++ IVideoDriver.h	Fri Aug 07 23:05:21 2015
+@@ -302,6 +302,7 @@
  						case EMF_POLYGON_OFFSET:
  							material.PolygonOffsetDirection = Material.PolygonOffsetDirection;
  							material.PolygonOffsetFactor = Material.PolygonOffsetFactor; break;
-+						case EMF_MATERIAL_TYPE: material.MaterialType = Material.MaterialType; break;
++                        case EMF_MATERIAL_TYPE: material.MaterialType = Material.MaterialType; break;
  						}
  					}
  				}
-@@ -255,6 +256,8 @@
- 	*/
- 	class IVideoDriver : public virtual IReferenceCounted
- 	{
-+	protected:
-+        SColorf AmbientLight;
- 	public:
+@@ -1479,6 +1480,8 @@
+ 		virtual IVertexDescriptor* getVertexDescriptor(const core::stringc& pName) const = 0;
  
- 		//! Applications must call this method before performing any rendering.
-@@ -1441,6 +1444,10 @@
- 		\param color New color of the ambient light. */
- 		virtual void setAmbientLight(const SColorf& color) =0;
- 
-+		SColorf getAmbientLight() {
-+            return AmbientLight;
-+		};
+ 		virtual u32 getVertexDescriptorCount() const = 0;
 +
- 		//! Only used by the engine internally.
- 		/** Passes the global material flag AllowZWriteOnTransparent.
- 		Use the SceneManager attribute to set this value from your app.
-@@ -1462,6 +1469,8 @@
- 		*/
- 		virtual void convertColor(const void* sP, ECOLOR_FORMAT sF, s32 sN,
- 				void* dP, ECOLOR_FORMAT dF) const =0;
-+
-+        irr::scene::ISceneNode* currentlyRenderedNode;
++		irr::scene::ISceneNode* currentlyRenderedNode;
  	};
  
  } // end namespace video
---- SMaterial.h	Sat Nov 03 18:08:34 2012
-+++ SMaterial.h	Sun Oct 19 18:06:01 2014
-@@ -366,7 +366,7 @@
- 		u8 ZBuffer;
- 
- 		//! Sets the antialiasing mode
--		/** Values are chosen from E_ANTI_ALIASING_MODE. Default is 
-+		/** Values are chosen from E_ANTI_ALIASING_MODE. Default is
- 		EAAM_SIMPLE|EAAM_LINE_SMOOTH, i.e. simple multi-sample
- 		anti-aliasing and lime smoothing is enabled. */
- 		u8 AntiAliasing;
-@@ -380,7 +380,7 @@
- 
- 		//! Defines the interpretation of vertex color in the lighting equation
- 		/** Values should be chosen from E_COLOR_MATERIAL.
--		When lighting is enabled, vertex color can be used instead of the 
-+		When lighting is enabled, vertex color can be used instead of the
- 		material values for light modulation. This allows to easily change e.g. the
- 		diffuse light behavior of each face. The default, ECM_DIFFUSE, will result in
- 		a very similar rendering as with lighting turned off, just with light shading. */
-@@ -617,6 +617,8 @@
- 					return BlendOperation != EBO_NONE;
- 				case EMF_POLYGON_OFFSET:
- 					return PolygonOffsetFactor != 0;
-+				break;
-+				default:break;
- 			}
- 
- 			return false;
---- triangle3d.h	Sat Nov 03 18:08:32 2012
-+++ triangle3d.h	Mon Sep 29 18:10:42 2014
+--- triangle3d.h	Sun Jan 04 14:23:44 2015
++++ triangle3d.h	Fri Aug 07 23:06:47 2015
 @@ -240,6 +240,8 @@
  		vector3d<T> pointB;
  		vector3d<T> pointC;
  
-+		u32 index;
++		u32 meshBufferIndex;
 +
  	private:
  		// Using f64 instead of <T> to avoid integer overflows when T=int (maybe also less floating point troubles).

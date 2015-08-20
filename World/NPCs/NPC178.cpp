@@ -18,6 +18,10 @@ NPC178::NPC178() {
     memDir.X = rand()%500-250;
     memDir.Z = rand()%500-250;
     memDir = memDir.normalize();
+    walkTimer = rand()%300+500;
+    //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(64,92);
+    //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(1.0f+(rand()%100));
+    //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setJointMode(irr::scene::E_JOINT_UPDATE_ON_RENDER::EJUOR_NONE);
 }
 
 NPC178* NPC178::createNPC178() {
@@ -272,14 +276,24 @@ void NPC178::update() {
         } else {
             collider->setLinearVelocity(btVector3(0,0,0));
             skipStuckCheck = 3;
-            if (rand()%90==1) {
+            if (walkTimer<spinTimer) {
                 memDir =irr::core::vector3df(rand()%500-250,0.f,rand()%500-250);
                 memDir = memDir.normalize();
+                spinTimer -= (rand()%150)+50;
             }
         }
-        walkTimer-=1.f;
-        if (walkTimer<-700.f) {
-            walkTimer = 500.f+rand()%200;
+        int prevWalkTimer = walkTimer;
+        walkTimer-=1;
+        if (prevWalkTimer>=0 && walkTimer<0) {
+            static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(206, 240);
+            static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(8.0f);
+        }
+        if (walkTimer<minWalkTimer) {
+            walkTimer = rand()%300+500;
+            static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(64,92);
+            static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(24.0f);
+            minWalkTimer = -(rand()%300+500);
+            spinTimer = -(rand()%200);
         }
     }
     prevPos = getPosition();
