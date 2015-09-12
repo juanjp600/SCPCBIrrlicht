@@ -120,14 +120,24 @@ bool Sound::loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum
         format = AL_FORMAT_STEREO16;
     }
     freq = pInfo->rate;
+    char div = 1;
     if (isPanned && format==AL_FORMAT_STEREO16) {
-		//OpenAL does not perform automatic panning or attenuation with stereo tracks
-		format = AL_FORMAT_MONO16;
-		freq*=2;
+        //OpenAL does not perform automatic panning or attenuation with stereo tracks
+        format = AL_FORMAT_MONO16;
+        div=2;
     }
+    char tmparry[32768];
     do {
-        bytes = ov_read(&oggfile,arry,32768,endian,2,1,&bitStream);
-        buffer.insert(buffer.end(),arry,arry+bytes);
+        bytes = ov_read(&oggfile,tmparry,32768,endian,2,1,&bitStream);
+        for (unsigned int i=0;i<bytes/(div*2);i++) {
+            arry[i*2]=tmparry[i*div*2];
+            arry[(i*2)+1]=tmparry[(i*div*2)+1];
+            if (div>1) {
+                arry[i*2]=tmparry[(i*div*2)+2];
+                arry[(i*2)+1]=tmparry[(i*div*2)+3];
+            }
+        }
+        buffer.insert(buffer.end(),arry,arry+(bytes/div));
     } while (bytes>0);
 
     ov_clear(&oggfile);
@@ -189,6 +199,10 @@ Sound* Sound::getSound(const std::string &filename,bool isPanned,unsigned char c
 				case AL_OUT_OF_MEMORY:
 					std::cout<<"AL_OUT_OF_MEMORY\n";
 				break;
+
+				default:
+                    std::cout<<error<<"\n";
+                break;
 			}
 		}
 
