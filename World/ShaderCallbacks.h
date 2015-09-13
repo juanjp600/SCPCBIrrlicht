@@ -5,7 +5,19 @@
 #include <vector>
 #include <algorithm>
 
-class RoomShaderCallBack : public irr::video::IShaderConstantSetCallBack {
+class SharedShaderCallBack : public irr::video::IShaderConstantSetCallBack {
+    protected:
+        void setFogConstants(irr::video::IMaterialRendererServices* services);
+    public:
+		static irr::video::SColorf ambientLight;
+		static irr::video::SColorf addColor;
+		static irr::scene::ICameraSceneNode* camera;
+        static float fogNear;
+        static float fogFar;
+        //static irr::video::ITexture* fogTexture;
+};
+
+class RoomShaderCallBack : public SharedShaderCallBack {
     public:
 
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
@@ -13,19 +25,19 @@ class RoomShaderCallBack : public irr::video::IShaderConstantSetCallBack {
 		irr::f32 reflectFactor = 1.f;
 };
 
-class RoomShaderCallBack_noNormals : public irr::video::IShaderConstantSetCallBack {
+class RoomShaderCallBack_noNormals : public SharedShaderCallBack {
     public:
 
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };
 
-class VertLightShaderCallBack : public irr::video::IShaderConstantSetCallBack {
+class VertLightShaderCallBack : public SharedShaderCallBack {
     public:
 
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };
 
-class PostProcShaderCallBack : public irr::video::IShaderConstantSetCallBack {
+class PostProcShaderCallBack : public SharedShaderCallBack {
     public:
 
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
@@ -39,13 +51,13 @@ class PostProcShaderCallBack : public irr::video::IShaderConstantSetCallBack {
 		irr::f32 invGammaFactor = 1.f;
 };
 
-class ZBufferShaderCallBack : public irr::video::IShaderConstantSetCallBack {
+class ZBufferShaderCallBack : public SharedShaderCallBack {
     public:
 
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };
 
-class LightsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
+class LightsShaderCallBack: public SharedShaderCallBack {
     protected:
 
 	public:
@@ -60,15 +72,14 @@ class LightsShaderCallBack: public irr::video::IShaderConstantSetCallBack {
 			bool operator < (const sortHelper &other) const {
 				return (dist<other.dist);
 			}
-			irr::core::matrix4 viewMatrix[6];
+			//irr::core::matrix4 viewMatrix[6];
 		};
 
-        std::vector<sortHelper> lightList;
+        static std::vector<sortHelper> lightList;
 
-		irr::video::SColorf ambient;
-		void setLights(const std::vector<class pointLight> &inList,unsigned int prioritize);
+		static void setLights(const std::vector<class pointLight> &inList,unsigned int prioritize);
 
-		void sortLights(irr::core::vector3df nodePos);
+		static void sortLights(irr::core::vector3df nodePos);
 
 		//virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };

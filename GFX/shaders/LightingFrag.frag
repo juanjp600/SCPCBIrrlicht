@@ -1,5 +1,3 @@
-#version 110
-
 varying mat4 olightPos;
 varying vec3 v;
 varying vec3 TN;
@@ -11,7 +9,14 @@ uniform vec4 lightColor4;
 
 uniform sampler2D baseMap;
 
+uniform sampler2D fogTexture;
+
 uniform vec4 ambientLight;
+
+varying vec4 distFromCenter;
+
+uniform float fogNear;
+uniform float fogFar;
 
 float getLengthSQR (vec3 vec) {
 	return(vec.x*vec.x+vec.y*vec.y+vec.z*vec.z);
@@ -93,6 +98,11 @@ void main(void)
 	Idiff1.w = 1.0; Idiff2.w = 1.0; Idiff3.w = 1.0; Idiff4.w = 1.0;
 	
 	vec4 fdiff1 = Idiff1+Idiff2+Idiff3+Idiff4+ambientLight;
-
-	gl_FragColor = vec4(vec4(fdiff1)*vec4(texture2D( baseMap, gl_TexCoord[0].xy ).xyz,1.0));
+	
+	float fog = (sqrt(distFromCenter.x*distFromCenter.x+distFromCenter.y*distFromCenter.y+distFromCenter.z*distFromCenter.z)-fogNear);
+	fog /= fogFar-fogNear;
+	fog = clamp(1.0-fog,0.0,1.0);
+	fog*=fog;
+	
+	gl_FragColor = (vec4(fdiff1)*vec4(texture2D( baseMap, gl_TexCoord[0].xy ).xyz,1.0)*vec4(fog))+(texture2D(fogTexture,gl_FragCoord.xy/vec2(1280.0,720.0))*vec4(1.0-fog));
 }

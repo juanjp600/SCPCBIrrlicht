@@ -3,6 +3,11 @@
 #include "NPCs/NPC.h"
 #include "Rooms/Door.h"
 
+#include "Rooms/LCZIncludes.h"
+#include "Rooms/HCZIncludes.h"
+#include "Rooms/EZIncludes.h"
+#include "Rooms/MiscIncludes.h"
+
 Room* World::addRandomRoom(unsigned short x,unsigned short y,RoomTypes type,char angle,int zone) {
 	int choice = 0;
 	Room* retRoom = nullptr;
@@ -889,15 +894,41 @@ void World::createMap(unsigned char zone) {
 							case 0: //LCZ
 								if (currentRoom1==0) {
 									roomArray[x][y] = RoomStart::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,50.f*RoomScale,y*204.8f*RoomScale));
 									for (int i=0;i<15;i++) {
-                                        testNPC[i]->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
+                                        //testNPC[i]->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
                                     }
 
 									for (unsigned int i=0;i<itemList.size();i++) {
-										itemList[i]->unpick(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+										itemList[i]->unpick(irr::core::vector3df(x*204.8f*RoomScale,50.f*RoomScale,y*204.8f*RoomScale));
 									}
+                                    irr::core::vector3df roomPos(x*204.8f*RoomScale,0,y*204.8f*RoomScale);
 
+                                    irr::scene::IAnimatedMeshSceneNode* franklin = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/classd.b3d"));
+                                    franklin->setMaterialType(plainLightShader);
+                                    franklin->setScale(irr::core::vector3df(0.072f,0.072f,0.072f));
+                                    franklin->setMaterialTexture(0,irrDriver->getTexture("GFX/NPCs/scientist2.jpg"));
+                                    franklin->setRotation(irr::core::vector3df(0.f,180.f,0.f));
+                                    franklin->setAnimationSpeed(0.f);
+                                    franklin->setMaterialTexture(1,fogTexture);
+                                    setupForHWSkinning(static_cast<irr::scene::IAnimatedMesh*>(franklin->getMesh()));
+                                    irr::scene::IAnimatedMeshSceneNode* ulgrin = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/guard.b3d"));
+                                    ulgrin->setMaterialType(plainLightShader);
+                                    ulgrin->setScale(irr::core::vector3df(0.6f,0.6f,0.6f));
+                                    ulgrin->setRotation(irr::core::vector3df(-90.f,0.f,0.f));
+                                    ulgrin->setAnimationSpeed(0.f);
+                                    ulgrin->setMaterialTexture(1,fogTexture);
+                                    setupForHWSkinning(static_cast<irr::scene::IAnimatedMesh*>(ulgrin->getMesh()));
+                                    Door* tempDoor = Door::createDoor(0,0,0,0);
+                                    tempDoor->setPosition(roomPos+irr::core::vector3df(128.f*RoomScale,38.25f*RoomScale,31.f*RoomScale));
+                                    tempDoor->setRotation(0.f);
+                                    tempDoor->setButtonVisibility(0,false);
+                                    tempDoor->setButtonVisibility(1,false);
+                                    tempDoor->setDoorVisibility(0,false);
+                                    doorList.push_back(tempDoor);
+                                    roomArray[x][y]->setIrrNode(0,franklin);
+                                    roomArray[x][y]->setIrrNode(1,ulgrin);
+                                    roomArray[x][y]->setDoor(0,tempDoor);
 								} else if (currentRoom1==(int)(0.4f*(float)Room1amount)) {
 									roomArray[x][y] = Roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.8f*(float)Room1amount)) {

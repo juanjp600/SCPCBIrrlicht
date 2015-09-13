@@ -3,30 +3,47 @@
 
 #include "Rooms/RMesh.h"
 
+std::vector<LightsShaderCallBack::sortHelper> LightsShaderCallBack::lightList;
+
+irr::video::SColorf SharedShaderCallBack::ambientLight;
+irr::video::SColorf SharedShaderCallBack::addColor;
+irr::scene::ICameraSceneNode* SharedShaderCallBack::camera;
+float SharedShaderCallBack::fogNear;
+float SharedShaderCallBack::fogFar;
+//irr::video::ITexture* SharedShaderCallBack::fogTexture;
+
+void SharedShaderCallBack::setFogConstants(irr::video::IMaterialRendererServices* services) {
+    irr::video::IVideoDriver* driver = services->getVideoDriver();
+    irr::core::matrix4 worldMat;
+	worldMat = driver->getTransform(irr::video::ETS_WORLD);
+
+    float camPos[3];
+    SharedShaderCallBack::camera->getAbsolutePosition().getAs3Values(camPos);
+	services->setVertexShaderConstant("mWorld", worldMat.pointer(), 16);
+
+    services->setVertexShaderConstant("cameraPos",camPos,3);
+
+	services->setPixelShaderConstant("fogNear",&SharedShaderCallBack::fogNear,1);
+	services->setPixelShaderConstant("fogFar",&SharedShaderCallBack::fogFar,1);
+}
+
 void RoomShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::video::IVideoDriver* driver = services->getVideoDriver();
-
-	irr::core::matrix4 worldViewProj;
-	/*worldViewProj = driver->getTransform(irr::video::ETS_PROJECTION);
-	worldViewProj *= driver->getTransform(irr::video::ETS_VIEW);*/
-	worldViewProj = driver->getTransform(irr::video::ETS_WORLD);
-
-	services->setVertexShaderConstant("mWorld", worldViewProj.pointer(), 16);
 
 	irr::s32 TextureLayerID = 0;
 	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
 	irr::s32 TextureLayerID2 = 1;
 	services->setPixelShaderConstant("Texture1", &TextureLayerID2, 1);
-	irr::s32 TextureLayerID4 = 4;
-	services->setPixelShaderConstant("Texture1_t", &TextureLayerID4, 1);
-	irr::s32 TextureLayerID5 = 5;
-	services->setPixelShaderConstant("Texture1_b", &TextureLayerID5, 1);
 	irr::s32 TextureLayerID3 = 2;
 	services->setPixelShaderConstant("Texture2", &TextureLayerID3, 1);
 	irr::s32 TextureLayerIDNY = 3;
 	services->setPixelShaderConstant("reflection", &TextureLayerIDNY, 1);
 
 	services->setPixelShaderConstant("reflectFactor", &reflectFactor, 1);
+
+    SharedShaderCallBack::setFogConstants(services);
+    irr::s32 TextureLayerID5 = 4;
+	services->setPixelShaderConstant("fogTexture", &TextureLayerID5, 1);
 }
 
 void ZBufferShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
@@ -40,22 +57,25 @@ void ZBufferShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices
 void RoomShaderCallBack_noNormals::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::video::IVideoDriver* driver = services->getVideoDriver();
 
-	irr::core::matrix4 worldViewProj;
-	/*worldViewProj = driver->getTransform(irr::video::ETS_PROJECTION);
-	worldViewProj *= driver->getTransform(irr::video::ETS_VIEW);*/
-	worldViewProj = driver->getTransform(irr::video::ETS_WORLD);
-
-	services->setVertexShaderConstant("mWorld", worldViewProj.pointer(), 16);
-
 	irr::s32 TextureLayerID = 0;
 	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
 	irr::s32 TextureLayerID2 = 1;
 	services->setPixelShaderConstant("Texture1", &TextureLayerID2, 1);
+
+	SharedShaderCallBack::setFogConstants(services);
+
+	irr::s32 TextureLayerID3 = 2;
+	services->setPixelShaderConstant("fogTexture", &TextureLayerID3, 1);
 }
 
 void VertLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::s32 TextureLayerID = 0;
 	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
+
+	SharedShaderCallBack::setFogConstants(services);
+
+	irr::s32 TextureLayerID2 = 1;
+	services->setPixelShaderConstant("fogTexture", &TextureLayerID2, 1);
 }
 
 void PostProcShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
@@ -127,7 +147,9 @@ void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices
 	irr::s32 TextureLayerID2 = 2;
 	services->setPixelShaderConstant("specMap", &TextureLayerID2, 1);
 
-	services->setPixelShaderConstant("ambientLight", (float*)(&ambient), 4);
+	services->setPixelShaderConstant("ambientLight", (float*)(&SharedShaderCallBack::ambientLight), 4);
+	services->setPixelShaderConstant("fogNear",&SharedShaderCallBack::fogNear,1);
+	services->setPixelShaderConstant("fogFar",&SharedShaderCallBack::fogFar,1);
 }
 
 void LightsShaderCallBack::setLights(const std::vector<pointLight> &inList,unsigned int prioritize) {
@@ -141,9 +163,6 @@ void LightsShaderCallBack::setLights(const std::vector<pointLight> &inList,unsig
 		lig.pos[2] = inList[i].position.Z;
 		lig.pos[3] = inList[i].radius*inList[i].radius;
 		lig.intensity = inList[i].intensity;
-		for (unsigned int j=0;j<6;j++) {
-            lig.viewMatrix[j] = inList[i].viewMatrix[j];
-		}
 		lig.dist = 0;
 		lig.prioritize = (i<prioritize);
 		lightList[i] = lig;
@@ -209,7 +228,7 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 
         int copyIncrement = 0;
 
-        std::cout<<"fffff "<<mesh->getAllJoints().size()<<"\n";
+        //std::cout<<"fffff "<<mesh->getAllJoints().size()<<"\n";
         for(int i = 0;i < mesh->getAllJoints().size();++i)
         {
             irr::core::matrix4 JointVertexPull(irr::core::matrix4::EM4CONST_NOTHING);
@@ -231,7 +250,12 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 	irr::s32 TextureLayerID = 0;
 	services->setPixelShaderConstant("baseMap", &TextureLayerID, 1);
 
-	services->setPixelShaderConstant("ambientLight", (float*)(&ambient), 4);
+	services->setPixelShaderConstant("ambientLight", (float*)(&SharedShaderCallBack::ambientLight), 4);
+
+	SharedShaderCallBack::setFogConstants(services);
+
+	irr::s32 TextureLayerID2 = 1;
+	services->setPixelShaderConstant("fogTexture", &TextureLayerID2, 1);
 }
 #endif
 
@@ -273,14 +297,14 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 
     services->setVertexShaderConstant(lightPosition.c_str(), (float*)(light.pos), 4);
     services->setPixelShaderConstant(lightColor.c_str(), (float*)(&light.color), 4);
-	//}
+	//\}
 
 	irr::s32 TextureLayerID = 0;
 	services->setPixelShaderConstant("renderedLights", &TextureLayerID, 1);
 	irr::s32 TextureLayerID2 = 1;
 	services->setPixelShaderConstant("lightDepthMap", &TextureLayerID2, 1);
 
-	services->setPixelShaderConstant("ambientLight", (float*)(&ambient), 4);
+	services->setPixelShaderConstant("ambientLight", (float*)(&SharedShaderCallBack::ambientLight), 4);
 
 	float TBN[3];
 	TBN[0] = useTBN.X; TBN[1] = useTBN.Y; TBN[2] = useTBN.Z;

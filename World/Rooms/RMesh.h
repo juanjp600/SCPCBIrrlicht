@@ -21,7 +21,7 @@ struct pointLight {
     float radius;
     float intensity;
     irr::video::SColorf color;
-    irr::core::matrix4 viewMatrix[6];
+    //irr::core::matrix4 viewMatrix[6];
 };
 
 struct RMesh {
@@ -38,6 +38,6 @@ struct RMesh {
     std::vector<waypoint*> waypoints;
 };
 
-RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneManager* smgr,irr::video::ITexture** reflection,irr::video::E_MATERIAL_TYPE* roomShaders,PlainLightShaderCallBack* plainLightCallback);
+RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneManager* smgr,irr::video::ITexture** roomTextures,irr::video::E_MATERIAL_TYPE* roomShaders);
 
 #endif // RMESH_H_INCLUDED

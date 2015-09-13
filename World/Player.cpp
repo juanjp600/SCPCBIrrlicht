@@ -681,6 +681,7 @@ void Player::reflectNY() {
     camera->setTarget(camera->getAbsolutePosition()+prevTarget);
     prevUpVector.Y=-prevUpVector.Y;
     camera->setUpVector(prevUpVector);
+    camera->updateMatrices();
 }
 
 void Player::reflectPY() {

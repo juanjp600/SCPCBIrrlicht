@@ -7,10 +7,10 @@ class Door {
     private:
         Door();
         ~Door();
-        irr::scene::ISceneNode* doorNode1;
-        irr::scene::ISceneNode* doorNode2;
-        irr::scene::ISceneNode* buttonNode1;
-        irr::scene::ISceneNode* buttonNode2;
+        irr::scene::ISceneNode* doorNode1; bool doorVisible1;
+        irr::scene::ISceneNode* doorNode2; bool doorVisible2;
+        irr::scene::ISceneNode* buttonNode1; bool buttonVisible1; irr::core::vector3df buttonOffset1;
+        irr::scene::ISceneNode* buttonNode2; bool buttonVisible2; irr::core::vector3df buttonOffset2;
         irr::scene::ISceneNode* frameNode;
         class btRigidBody* collider;
         //static class World* owner;
@@ -34,12 +34,16 @@ class Door {
         virtual void forceToggle();
         virtual void toggle(unsigned char inKeycard,short inCode,unsigned char inScanner);
         virtual irr::core::vector3df getPosition();
-        float getRotation();
+        virtual float getRotation();
         virtual irr::core::vector3df getButtonPosition(unsigned char index);
-        float getButtonRotation(unsigned char index);
-        unsigned char getButtonIndex();
+        virtual float getButtonRotation(unsigned char index);
+        virtual bool getButtonVisibility(unsigned char index);
+        virtual unsigned char getButtonIndex();
         virtual void setPosition(irr::core::vector3df newPos);
         virtual void setRotation(float newAngle);
+        virtual void setButtonVisibility(unsigned char index,bool newVisible);
+        virtual void setDoorVisibility(unsigned char index,bool newVisible);
+        virtual void setButtonOffset(unsigned char index,irr::core::vector3df newOffset);
         static class World* owner;
         static class irrDynamics* dynamics;
         static class Player* player;

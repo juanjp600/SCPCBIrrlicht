@@ -256,6 +256,7 @@ irr::scene::IMeshSceneNode* World::genItemNode(const std::string &meshPath,const
 		irr::video::ITexture* tex = irrDriver->getTexture(texPath.c_str());
 		node->setMaterialTexture(0,tex);
 	}
+	node->setMaterialTexture(1,fogTexture);
 
     node->setMaterialType(plainLightShader);
 

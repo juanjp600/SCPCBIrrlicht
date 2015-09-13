@@ -8,6 +8,11 @@
 #include "Rooms/Room.h"
 #include "Rooms/RMesh.h"
 
+#include "Rooms/LCZIncludes.h"
+#include "Rooms/HCZIncludes.h"
+#include "Rooms/EZIncludes.h"
+#include "Rooms/MiscIncludes.h"
+
 #include "Rooms/Door.h"
 
 #include <iostream>
@@ -16,6 +21,7 @@
 #include <sstream>
 
 void World::renderLights() {
+#if 0
     //smCamera->setVisible(true);
     //mainPlayer->setVisible(false);
     irr::scene::ICameraSceneNode* oldCam = irrSmgr->getActiveCamera();
@@ -100,6 +106,7 @@ void World::renderLights() {
     irrDriver->draw2DImage(lightPass[0],irr::core::vector2di(0,0));
 
     irrSmgr->fastDrawAll_end();
+#endif
 }
 
 World::World(unsigned int width,unsigned int height,bool fullscreen) {
@@ -155,11 +162,11 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     zBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"ZBuffer",irr::video::ECF_R16F);
     finalImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"finalImage",irr::video::ECF_R8G8B8);
 
-    lightPass[0] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass0",irr::video::ECF_R8G8B8);
-    lightPass[1] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass1",irr::video::ECF_R8G8B8);
-    lightDepth = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightDepth",irr::video::ECF_R16F);
+    //lightPass[0] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass0",irr::video::ECF_R8G8B8);
+    //lightPass[1] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass1",irr::video::ECF_R8G8B8);
+    //lightDepth = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightDepth",irr::video::ECF_R16F);
 
-    reflection = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(64,64),"relection",irr::video::ECF_R8G8B8);
+    reflection = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(128,128),"relection",irr::video::ECF_R8G8B8);
 
     fogTexture = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"fogTexture",irr::video::ECF_A8R8G8B8);
 
@@ -326,101 +333,95 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	}
 	RMesh* rme;
 
-	irr::video::E_MATERIAL_TYPE roomShaders[5];
+	irr::video::E_MATERIAL_TYPE roomShaders[4];
 	roomShaders[0] = roomShader;
 	roomShaders[1] = roomShader_noNormals;
 	roomShaders[2] = vertLightShader;
 	roomShaders[3] = vertLightShader_alpha;
-	roomShaders[4] = zBufferShader;
+	//roomShaders[4] = zBufferShader;
 
-    irr::video::ITexture* textures[7];
-    textures[0] = reflection;//lightPass[0];
-    textures[1] = lightDepth;
-    textures[2] = lightPass[1];
-
-    textures[3] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass0_t",irr::video::ECF_R8G8B8);
-    textures[4] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass1_t",irr::video::ECF_R8G8B8);
-    textures[5] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass0_b",irr::video::ECF_R8G8B8);
-    textures[6] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass1_b",irr::video::ECF_R8G8B8);
+    irr::video::ITexture* roomTextures[2];
+    roomTextures[0] = reflection;
+    roomTextures[1] = fogTexture;
 
 #if 1
 	//LCZ
-	/*RoomStart*/rme = loadRMesh(std::string("GFX/map/173_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomStart::setBase(rme);
-	/*Room2storage*/rme = loadRMesh(std::string("GFX/map/Room2storage_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2storage::setBase(rme);
-	/*Room3storage*/rme = loadRMesh(std::string("GFX/map/Room3storage_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3storage::setBase(rme);
-	/*Room012*/rme = loadRMesh(std::string("GFX/map/Room012_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room012::setBase(rme);
-	/*Room2*/rme = loadRMesh(std::string("GFX/map/Room2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2::setBase(rme);
-	/*Room2_2*/rme = loadRMesh(std::string("GFX/map/Room2_2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2_2::setBase(rme);
-	/*Room2c*/rme = loadRMesh(std::string("GFX/map/Room2C_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2c::setBase(rme);
-	/*Room2closets*/rme = loadRMesh(std::string("GFX/map/Room2closets_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2closets::setBase(rme);
-	/*Room2elevator*/rme = loadRMesh(std::string("GFX/map/Room2elevator_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2elevator::setBase(rme);
-	/*Room2doors*/rme = loadRMesh(std::string("GFX/map/Room2doors_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2doors::setBase(rme);
-	/*Room2scps*/rme = loadRMesh(std::string("GFX/map/Room2scps_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2scps::setBase(rme);
-	/*Room3storage*/rme = loadRMesh(std::string("GFX/map/Room3storage_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3storage::setBase(rme);
-	/*Room2testRoom2*/rme = loadRMesh(std::string("GFX/map/Room2testRoom2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2testRoom2::setBase(rme);
-	/*Room3*/rme = loadRMesh(std::string("GFX/map/Room3_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3::setBase(rme);
-	/*Room3_2*/rme = loadRMesh(std::string("GFX/map/Room3_2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3_2::setBase(rme);
-	/*Room4*/rme = loadRMesh(std::string("GFX/map/Room4_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room4::setBase(rme);
-	/*Roompj*/rme = loadRMesh(std::string("GFX/map/Roompj_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Roompj::setBase(rme);
-	/*Room914*/rme = loadRMesh(std::string("GFX/map/machineRoom_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room914::setBase(rme);
+	/*RoomStart*/rme = loadRMesh(std::string("GFX/map/173_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomStart::setBase(rme);
+	/*Room2storage*/rme = loadRMesh(std::string("GFX/map/Room2storage_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2storage::setBase(rme);
+	/*Room3storage*/rme = loadRMesh(std::string("GFX/map/Room3storage_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3storage::setBase(rme);
+	/*Room012*/rme = loadRMesh(std::string("GFX/map/Room012_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room012::setBase(rme);
+	/*Room2*/rme = loadRMesh(std::string("GFX/map/Room2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2::setBase(rme);
+	/*Room2_2*/rme = loadRMesh(std::string("GFX/map/Room2_2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2_2::setBase(rme);
+	/*Room2c*/rme = loadRMesh(std::string("GFX/map/Room2C_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2c::setBase(rme);
+	/*Room2closets*/rme = loadRMesh(std::string("GFX/map/Room2closets_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2closets::setBase(rme);
+	/*Room2elevator*/rme = loadRMesh(std::string("GFX/map/Room2elevator_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2elevator::setBase(rme);
+	/*Room2doors*/rme = loadRMesh(std::string("GFX/map/Room2doors_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2doors::setBase(rme);
+	/*Room2scps*/rme = loadRMesh(std::string("GFX/map/Room2scps_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2scps::setBase(rme);
+	/*Room3storage*/rme = loadRMesh(std::string("GFX/map/Room3storage_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3storage::setBase(rme);
+	/*Room2testRoom2*/rme = loadRMesh(std::string("GFX/map/Room2testRoom2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2testRoom2::setBase(rme);
+	/*Room3*/rme = loadRMesh(std::string("GFX/map/Room3_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3::setBase(rme);
+	/*Room3_2*/rme = loadRMesh(std::string("GFX/map/Room3_2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3_2::setBase(rme);
+	/*Room4*/rme = loadRMesh(std::string("GFX/map/Room4_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room4::setBase(rme);
+	/*Roompj*/rme = loadRMesh(std::string("GFX/map/Roompj_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Roompj::setBase(rme);
+	/*Room914*/rme = loadRMesh(std::string("GFX/map/machineRoom_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room914::setBase(rme);
 #endif
 #if 0
 	//HCZ
-	/*Room008*/rme = loadRMesh(std::string("GFX/map/008_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room008::setBase(rme);
-	/*RoomCoffin*/rme = loadRMesh(std::string("GFX/map/coffin_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomCoffin::setBase(rme);
-	/*RoomEndroom2*/rme = loadRMesh(std::string("GFX/map/endroom2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomEndroom2::setBase(rme);
-	/*RoomTestroom*/rme = loadRMesh(std::string("GFX/map/testRoom_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomTestroom::setBase(rme);
-	/*RoomTunnel*/rme = loadRMesh(std::string("GFX/map/tunnel_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomTunnel::setBase(rme);
-	/*RoomTunnel2*/rme = loadRMesh(std::string("GFX/map/tunnel2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomTunnel2::setBase(rme);
-	/*Room035*/rme = loadRMesh(std::string("GFX/map/Room035_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room035::setBase(rme);
-	/*Room049*/rme = loadRMesh(std::string("GFX/map/Room049_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room049::setBase(rme);
-	/*Room106*/rme = loadRMesh(std::string("GFX/map/Room106_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room106::setBase(rme);
-	/*Room2ctunnel*/rme = loadRMesh(std::string("GFX/map/Room2Ctunnel_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2ctunnel::setBase(rme);
-	/*Room2nuke*/rme = loadRMesh(std::string("GFX/map/Room2nuke_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2nuke::setBase(rme);
-	/*Room2pipes*/rme = loadRMesh(std::string("GFX/map/Room2pipes_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2pipes::setBase(rme);
-	/*Room2pit*/rme = loadRMesh(std::string("GFX/map/Room2pit_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2pit::setBase(rme);
-	/*Room3pit*/rme = loadRMesh(std::string("GFX/map/Room3pit_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3pit::setBase(rme);
-	/*Room2servers*/rme = loadRMesh(std::string("GFX/map/Room2servers_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2servers::setBase(rme);
-	/*Room2tunnel*/rme = loadRMesh(std::string("GFX/map/Room2tunnel_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2tunnel::setBase(rme);
-	/*Room3tunnel*/rme = loadRMesh(std::string("GFX/map/Room3tunnel_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3tunnel::setBase(rme);
-	/*Room4tunnels*/rme = loadRMesh(std::string("GFX/map/4tunnels_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room4tunnels::setBase(rme);
-	/*Room513*/rme = loadRMesh(std::string("GFX/map/Room513_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room513::setBase(rme);
+	/*Room008*/rme = loadRMesh(std::string("GFX/map/008_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room008::setBase(rme);
+	/*RoomCoffin*/rme = loadRMesh(std::string("GFX/map/coffin_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomCoffin::setBase(rme);
+	/*RoomEndroom2*/rme = loadRMesh(std::string("GFX/map/endroom2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomEndroom2::setBase(rme);
+	/*RoomTestroom*/rme = loadRMesh(std::string("GFX/map/testRoom_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomTestroom::setBase(rme);
+	/*RoomTunnel*/rme = loadRMesh(std::string("GFX/map/tunnel_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomTunnel::setBase(rme);
+	/*RoomTunnel2*/rme = loadRMesh(std::string("GFX/map/tunnel2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomTunnel2::setBase(rme);
+	/*Room035*/rme = loadRMesh(std::string("GFX/map/Room035_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room035::setBase(rme);
+	/*Room049*/rme = loadRMesh(std::string("GFX/map/Room049_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room049::setBase(rme);
+	/*Room106*/rme = loadRMesh(std::string("GFX/map/Room106_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room106::setBase(rme);
+	/*Room2ctunnel*/rme = loadRMesh(std::string("GFX/map/Room2Ctunnel_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2ctunnel::setBase(rme);
+	/*Room2nuke*/rme = loadRMesh(std::string("GFX/map/Room2nuke_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2nuke::setBase(rme);
+	/*Room2pipes*/rme = loadRMesh(std::string("GFX/map/Room2pipes_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2pipes::setBase(rme);
+	/*Room2pit*/rme = loadRMesh(std::string("GFX/map/Room2pit_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2pit::setBase(rme);
+	/*Room3pit*/rme = loadRMesh(std::string("GFX/map/Room3pit_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3pit::setBase(rme);
+	/*Room2servers*/rme = loadRMesh(std::string("GFX/map/Room2servers_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2servers::setBase(rme);
+	/*Room2tunnel*/rme = loadRMesh(std::string("GFX/map/Room2tunnel_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2tunnel::setBase(rme);
+	/*Room3tunnel*/rme = loadRMesh(std::string("GFX/map/Room3tunnel_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3tunnel::setBase(rme);
+	/*Room4tunnels*/rme = loadRMesh(std::string("GFX/map/4tunnels_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room4tunnels::setBase(rme);
+	/*Room513*/rme = loadRMesh(std::string("GFX/map/Room513_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room513::setBase(rme);
 #endif
 #if 0
 	//EZ
-	/*Room860*/rme = loadRMesh(std::string("GFX/map/Room860_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room860::setBase(rme);
-	/*RoomExit1*/rme = loadRMesh(std::string("GFX/map/exit1_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomExit1::setBase(rme);
-	/*RoomGateaentrance*/rme = loadRMesh(std::string("GFX/map/gateaentrance_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomGateaentrance::setBase(rme);
-	/*RoomLockroom2*/rme = loadRMesh(std::string("GFX/map/lockroom2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomLockroom2::setBase(rme);
+	/*Room860*/rme = loadRMesh(std::string("GFX/map/Room860_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room860::setBase(rme);
+	/*RoomExit1*/rme = loadRMesh(std::string("GFX/map/exit1_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomExit1::setBase(rme);
+	/*RoomGateaentrance*/rme = loadRMesh(std::string("GFX/map/gateaentrance_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomGateaentrance::setBase(rme);
+	/*RoomLockroom2*/rme = loadRMesh(std::string("GFX/map/lockroom2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomLockroom2::setBase(rme);
 
-	/*Room2z3*/rme = loadRMesh(std::string("GFX/map/Room2z3_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2z3::setBase(rme);
-	/*Room2cafeteria*/rme = loadRMesh(std::string("GFX/map/Room2cafeteria_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2cafeteria::setBase(rme);
-	/*Room2cz3*/rme = loadRMesh(std::string("GFX/map/Room2Cz3_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2cz3::setBase(rme);
-	/*Room2ccont*/rme = loadRMesh(std::string("GFX/map/Room2ccont_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2ccont::setBase(rme);
-	/*Room2offices*/rme = loadRMesh(std::string("GFX/map/Room2offices_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2offices::setBase(rme);
-	/*Room2offices2*/rme = loadRMesh(std::string("GFX/map/Room2offices2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2offices2::setBase(rme);
-	/*Room2offices3*/rme = loadRMesh(std::string("GFX/map/Room2offices3_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2offices3::setBase(rme);
-	/*Room2poffices*/rme = loadRMesh(std::string("GFX/map/Room2poffices_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2poffices::setBase(rme);
-	/*Room2poffices2*/rme = loadRMesh(std::string("GFX/map/Room2poffices2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2poffices2::setBase(rme);
-	/*Room2sroom*/rme = loadRMesh(std::string("GFX/map/Room2sroom_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2sroom::setBase(rme);
-	/*Room2toilets*/rme = loadRMesh(std::string("GFX/map/Room2toilets_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2toilets::setBase(rme);
-	/*Room2tesla*/rme = loadRMesh(std::string("GFX/map/Room2tesla_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room2tesla::setBase(rme);
-	/*Room3servers*/rme = loadRMesh(std::string("GFX/map/Room3servers_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3servers::setBase(rme);
-	/*Room3servers2*/rme = loadRMesh(std::string("GFX/map/Room3servers2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3servers2::setBase(rme);
-	/*Room3z3*/rme = loadRMesh(std::string("GFX/map/Room3z3_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room3z3::setBase(rme);
-	/*Room4z3*/rme = loadRMesh(std::string("GFX/map/Room4z3_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room4z3::setBase(rme);
+	/*Room2z3*/rme = loadRMesh(std::string("GFX/map/Room2z3_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2z3::setBase(rme);
+	/*Room2cafeteria*/rme = loadRMesh(std::string("GFX/map/Room2cafeteria_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2cafeteria::setBase(rme);
+	/*Room2cz3*/rme = loadRMesh(std::string("GFX/map/Room2Cz3_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2cz3::setBase(rme);
+	/*Room2ccont*/rme = loadRMesh(std::string("GFX/map/Room2ccont_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2ccont::setBase(rme);
+	/*Room2offices*/rme = loadRMesh(std::string("GFX/map/Room2offices_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2offices::setBase(rme);
+	/*Room2offices2*/rme = loadRMesh(std::string("GFX/map/Room2offices2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2offices2::setBase(rme);
+	/*Room2offices3*/rme = loadRMesh(std::string("GFX/map/Room2offices3_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2offices3::setBase(rme);
+	/*Room2poffices*/rme = loadRMesh(std::string("GFX/map/Room2poffices_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2poffices::setBase(rme);
+	/*Room2poffices2*/rme = loadRMesh(std::string("GFX/map/Room2poffices2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2poffices2::setBase(rme);
+	/*Room2sroom*/rme = loadRMesh(std::string("GFX/map/Room2sroom_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2sroom::setBase(rme);
+	/*Room2toilets*/rme = loadRMesh(std::string("GFX/map/Room2toilets_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2toilets::setBase(rme);
+	/*Room2tesla*/rme = loadRMesh(std::string("GFX/map/Room2tesla_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2tesla::setBase(rme);
+	/*Room3servers*/rme = loadRMesh(std::string("GFX/map/Room3servers_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3servers::setBase(rme);
+	/*Room3servers2*/rme = loadRMesh(std::string("GFX/map/Room3servers2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3servers2::setBase(rme);
+	/*Room3z3*/rme = loadRMesh(std::string("GFX/map/Room3z3_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3z3::setBase(rme);
+	/*Room4z3*/rme = loadRMesh(std::string("GFX/map/Room4z3_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room4z3::setBase(rme);
 #endif
 #if 1
 	//Misc
-	/*Room173*/rme = loadRMesh(std::string("GFX/map/173bright_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room173::setBase(rme);
-	/*RoomCheckpoint1*/rme = loadRMesh(std::string("GFX/map/checkpoint1_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomCheckpoint1::setBase(rme);
-	/*RoomCheckpoint2*/rme = loadRMesh(std::string("GFX/map/checkpoint2_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomCheckpoint2::setBase(rme);
-	/*RoomGatea*/rme = loadRMesh(std::string("GFX/map/gatea_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomGatea::setBase(rme);
-	/*RoomPocketdimension*/rme = loadRMesh(std::string("GFX/map/pocketdimension1_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomPocketdimension::setBase(rme);
+	/*Room173*/rme = loadRMesh(std::string("GFX/map/173bright_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room173::setBase(rme);
+	/*RoomCheckpoint1*/rme = loadRMesh(std::string("GFX/map/checkpoint1_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomCheckpoint1::setBase(rme);
+	/*RoomCheckpoint2*/rme = loadRMesh(std::string("GFX/map/checkpoint2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomCheckpoint2::setBase(rme);
+	/*RoomGatea*/rme = loadRMesh(std::string("GFX/map/gatea_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomGatea::setBase(rme);
+	/*RoomPocketdimension*/rme = loadRMesh(std::string("GFX/map/pocketdimension1_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomPocketdimension::setBase(rme);
 #endif
-    /*Room079*/rme = loadRMesh(std::string("GFX/map/room079_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); Room079::setBase(rme);
-	/*RoomLockroom*/rme = loadRMesh(std::string("GFX/map/lockroom_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomLockroom::setBase(rme);
-	/*RoomEndroom*/rme = loadRMesh(std::string("GFX/map/endroom_opt.rm2"),irrFileSystem,irrSmgr,textures,roomShaders,plainLightCallback); RoomEndroom::setBase(rme);
+    /*Room079*/rme = loadRMesh(std::string("GFX/map/room079_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room079::setBase(rme);
+	/*RoomLockroom*/rme = loadRMesh(std::string("GFX/map/lockroom_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomLockroom::setBase(rme);
+	/*RoomEndroom*/rme = loadRMesh(std::string("GFX/map/endroom_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomEndroom::setBase(rme);
 
     NPC::owner = this;
     NPC::dynamics = dynamics;
@@ -435,17 +436,18 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC096::baseNode->getMaterial(1).setTexture(2,irrDriver->getTexture("GFX/NPCs/SCP096_specular.png"));
     NPC096::baseNode->getMaterial(2).MaterialType = plainLightShader;
     NPC096::baseNode->setScale(irr::core::vector3df(4.f*RoomScale,4.f*RoomScale,4.f*RoomScale));
-    NPC096::baseNode->setFrameLoop(1059,1074);
-    NPC096::baseNode->setAnimationSpeed(64.0f);
+    //NPC096::baseNode->setFrameLoop(1059,1074);
+    NPC096::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
 
     NPC::owner = this;
     NPC::dynamics = dynamics;
     NPC178::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/npc178.b3d"));
     setupForHWSkinning(NPC178::baseNode->getMesh());
     NPC178::baseNode->setMaterialType(plainLightShader);
+    NPC178::baseNode->setMaterialTexture(1,fogTexture);
     NPC178::baseNode->setScale(irr::core::vector3df(0.45f*RoomScale,0.45f*RoomScale,0.45f*RoomScale));
-    NPC178::baseNode->setFrameLoop(64,92);
-    NPC178::baseNode->setAnimationSpeed(32.0f);
+    //NPC178::baseNode->setFrameLoop(64,92);
+    NPC178::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
 
     NPC173::baseNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/173_2.b3d"));
 
@@ -468,7 +470,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC173::baseNode->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/173_Spec.jpg"));
 
     for (int i=0;i<15;i++) {
-        testNPC[i] = NPC178::createNPC178();
+        //testNPC[i] = NPC178::createNPC178();
     }
     //static_cast<NPC173*>(testNPC)->boxNode = irrSmgr->addCubeSceneNode();
 
@@ -484,16 +486,20 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     Door::baseDoorNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Door01.x"));
     Door::baseDoorNode[0]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseDoorNode[0]->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.1f));
+    Door::baseDoorNode[0]->setMaterialTexture(1,fogTexture);
     Door::baseFrameNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/DoorFrame.x"));
     Door::baseFrameNode->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseFrameNode->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseFrameNode->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.1f));
+    Door::baseFrameNode->setMaterialTexture(1,fogTexture);
     Door::baseButtonNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Button.x"));
     Door::baseButtonNode[0]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseButtonNode[0]->setScale(irr::core::vector3df(RoomScale*1.f,RoomScale*1.f,RoomScale*1.f));
+    Door::baseButtonNode[0]->setMaterialTexture(1,fogTexture);
     Door::baseButtonNode[1] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/ButtonKeycard.x"));
     Door::baseButtonNode[1]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseButtonNode[1]->setScale(irr::core::vector3df(RoomScale*1.f,RoomScale*1.f,RoomScale*1.f));
+    Door::baseButtonNode[1]->setMaterialTexture(1,fogTexture);
     Door::openSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorOpen1.ogg"),true);
     Door::openSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorOpen2.ogg"),true);
     Door::openSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorOpen3.ogg"),true);
@@ -649,8 +655,8 @@ bool World::run() {
             dynamics->simStep(1.f/60.f,1.f/60.f);
             mainPlayer->resetSpeeds();
             for (int i=0;i<15;i++) {
-                testNPC[i]->update();
-                testNPC[i]->updateModel();
+                //testNPC[i]->update();
+                //testNPC[i]->updateModel();
             }
             irr::core::matrix4 tMat = irrDriver->getTransform(irr::video::ETS_PROJECTION)*irrDriver->getTransform(irr::video::ETS_VIEW);
             for (unsigned int i=0;i<itemList.size();i++) {
@@ -836,6 +842,11 @@ bool World::run() {
             int px,py;
             px = coordToRoomGrid(mainPlayer->getPosition().X);
             py = coordToRoomGrid(mainPlayer->getPosition().Z);
+            if (roomArray[px][py]!=nullptr) {
+                roomArray[px][py]->updateEvent();
+            } else if (roomArray[ppx][ppy]!=nullptr) {
+                roomArray[ppx][ppy]->updateEvent();
+            }
             if (px>=0 && px<20 && py>=0 && py<20) {
                 if (roomArray[px][py]!=nullptr) {
                     if (ppx!=px || ppy!=py) {
@@ -973,77 +984,19 @@ bool World::run() {
 void World::draw3D() {
 	//postProcCallback->fpsFactor = fpsFactor;
 
-    /*irrDriver->setRenderTarget(fogTexture);
+    SharedShaderCallBack::camera = irrSmgr->getActiveCamera();
 
-    //draw a triangle with a different material to make alpha blending for the billboards work properly
-    irr::video::SMaterial mat;
-    mat.MaterialType = VertLightShader;
-    irrDriver->setMaterial(mat);
-    irr::core::vector3df vert1(0.f,0.f,0.f);
-    irr::core::vector3df vert2(0.f,-1.f,0.f);
-    irr::core::vector3df vert3(0.f,-1.f,-1.f);
-    irrDriver->draw3DTriangle(irr::core::triangle3df(vert1,vert2,vert3),irr::video::SColor(255,0,0,0));
+    drawFog();
 
-    for (int i=0;i<50;i++) {
-        irr::core::matrix4 rotMatrix;
-        float dist = mainPlayer->getPosition().getDistanceFrom(fogBillTargetPos[i]);
-        if (dist<200.f*0.1f*RoomScale) {
-            fogBillTargetPos[i]=(fogBillTargetPos[i]+(fogBillTargetPos[i]-mainPlayer->getPosition())/dist*20.f);
-        } else if (dist>1000.f*0.1f*RoomScale) {
-            fogBillTargetPos[i]=(mainPlayer->getPosition()-(fogBillTargetPos[i]-mainPlayer->getPosition())*((990.f*0.1f*RoomScale)/dist));
-            fogBillTargetPos[i].Y = mainPlayer->getPosition().Y-(rand()%100);
-            fogBillboards[i]->setPosition(fogBillTargetPos[i]);
-        } else {
-            rotMatrix.setRotationDegrees(irr::core::vector3df((rand()%100-50)/25.f,(rand()%100-50)/12.f,(rand()%100-50)/150.f)*0.2f);
-            fogBillTargetPos[i]+=irr::core::vector3df(rand()%3-1,rand()%3-1,rand()%3-1)*0.1f;
-            irr::core::vector3df diff = fogBillTargetPos[i]-mainPlayer->getPosition();
-            rotMatrix.transformVect(diff);
-            fogBillTargetPos[i]=mainPlayer->getPosition()+diff;
-        }
-
-        if ((fogBillTargetPos[i].Y-mainPlayer->getPosition().Y)>100.f) {
-            fogBillTargetPos[i].Y-=100.f;
-        }
-        if ((mainPlayer->getPosition().Y-fogBillTargetPos[i].Y)>100.f) {
-            fogBillTargetPos[i].Y+=100.f;
-        }
-
-        for (int j=0;j<50;j++) {
-            if (j!=i) {
-                float dist3 = fogBillTargetPos[i].getDistanceFrom(fogBillTargetPos[j]);
-                if (dist3<50.f*0.1f*RoomScale) {
-                    fogBillTargetPos[i]=(fogBillTargetPos[i]+(fogBillTargetPos[i]-fogBillTargetPos[j])/dist3*40.f*0.1f*RoomScale);
-                }
-            }
-        }
-
-        fogBillboards[i]->updateAbsolutePosition();
-        fogBillboards[i]->setPosition(fogBillboards[i]->getAbsolutePosition()*(1.f-(0.05f))+fogBillTargetPos[i]*0.05f);
-        fogBillboards[i]->updateAbsolutePosition();
-
-        /*float dist2 = mainPlayer->getPosition().getDistanceFrom(fogBillboards[i]->getAbsolutePosition());
-        if (dist2<400.f*0.1f*RoomScale) {
-            unsigned char bcolor = std::max((dist2-(100.f*0.1f*RoomScale))/(300.f*0.1f*RoomScale),0.f)*1;
-            fogBillboards[i]->setColor(irr::video::SColor(255,bcolor,bcolor,bcolor));
-        } else if (dist2>800.f*0.1*RoomScale) {
-            unsigned char bcolor = std::max(((1010.f*0.1f*RoomScale)-dist2)/(210.f*0.1f*RoomScale),0.f)*1;
-            fogBillboards[i]->setColor(irr::video::SColor(255,bcolor,bcolor,bcolor));
-        } else {
-            fogBillboards[i]->setColor(irr::video::SColor(255,1,1,1));
-        }*\/
-
-        fogBillboards[i]->setVisible(true);
-        fogBillboards[i]->render();
-        fogBillboards[i]->setVisible(false);
-    }
-
-    RoomCallback->reflectFactor=0.f;
+    roomCallback->reflectFactor=0.f;
     irrDriver->setRenderTarget(reflection,true,true);
     mainPlayer->reflectNY();
-    irrSmgr->fastDrawAll();
+    irrSmgr->fastDrawAll_init(irrSmgr->getActiveCamera()->getAbsolutePosition());
+    irrSmgr->fastDrawAll(irrSmgr->getActiveCamera()->getProjectionMatrix(),irrSmgr->getActiveCamera()->getViewMatrix());
+    irrSmgr->fastDrawAll_end();
     mainPlayer->resetCam();
-    RoomCallback->reflectFactor=1.f;
-	irrDriver->setRenderTarget(blurImage2); //copy the old render
+    roomCallback->reflectFactor=1.f;
+	/*irrDriver->setRenderTarget(blurImage2); //copy the old render
     irrDriver->draw2DImage(finalImage,irr::core::position2d<irr::s32>(0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight), 0,irr::video::SColor(255,255,255,255), false);
     irrDriver->setRenderTarget(blurImage); //create a new render, using the old one to add a blur effect
 
@@ -1094,6 +1047,7 @@ void World::draw3D() {
     */
     //renderLights();
     irrDriver->setRenderTarget(0);
+    irrDriver->draw2DImage(fogTexture,irr::core::vector2di(0,0));
     irrSmgr->drawAll(1.f+stepsToMake);
     irrDriver->runAllOcclusionQueries(true);
     irrDriver->updateAllOcclusionQueries();
@@ -1483,7 +1437,58 @@ void World::drawHUD() {
 }
 
 void World::drawFog() {
+    irrDriver->setRenderTarget(fogTexture);
 
+    //draw a triangle with a different material to make alpha blending for the billboards work properly
+    irr::video::SMaterial mat;
+    mat.MaterialType = vertLightShader;
+    irrDriver->setMaterial(mat);
+    irr::core::vector3df vert1(0.f,0.f,0.f);
+    irr::core::vector3df vert2(0.f,-1.f,0.f);
+    irr::core::vector3df vert3(0.f,-1.f,-1.f);
+    irrDriver->draw3DTriangle(irr::core::triangle3df(vert1,vert2,vert3),irr::video::SColor(255,0,0,0));
+
+    for (int i=0;i<50;i++) {
+        irr::core::matrix4 rotMatrix;
+        float dist = mainPlayer->getPosition().getDistanceFrom(fogBillTargetPos[i]);
+        if (dist<200.f*0.1f*RoomScale) {
+            fogBillTargetPos[i]=(fogBillTargetPos[i]+(fogBillTargetPos[i]-mainPlayer->getPosition())/dist*20.f);
+        } else if (dist>1000.f*0.1f*RoomScale) {
+            fogBillTargetPos[i]=(mainPlayer->getPosition()-(fogBillTargetPos[i]-mainPlayer->getPosition())*((990.f*0.1f*RoomScale)/dist));
+            fogBillTargetPos[i].Y = mainPlayer->getPosition().Y-(rand()%100);
+            fogBillboards[i]->setPosition(fogBillTargetPos[i]);
+        } else {
+            rotMatrix.setRotationDegrees(irr::core::vector3df((rand()%100-50)/25.f,(rand()%100-50)/12.f,(rand()%100-50)/150.f)*0.2f);
+            fogBillTargetPos[i]+=irr::core::vector3df(rand()%3-1,rand()%3-1,rand()%3-1)*0.1f;
+            irr::core::vector3df diff = fogBillTargetPos[i]-mainPlayer->getPosition();
+            rotMatrix.transformVect(diff);
+            fogBillTargetPos[i]=mainPlayer->getPosition()+diff;
+        }
+
+        if ((fogBillTargetPos[i].Y-mainPlayer->getPosition().Y)>100.f) {
+            fogBillTargetPos[i].Y-=100.f;
+        }
+        if ((mainPlayer->getPosition().Y-fogBillTargetPos[i].Y)>100.f) {
+            fogBillTargetPos[i].Y+=100.f;
+        }
+
+        for (int j=0;j<50;j++) {
+            if (j!=i) {
+                float dist3 = fogBillTargetPos[i].getDistanceFrom(fogBillTargetPos[j]);
+                if (dist3<50.f*0.1f*RoomScale) {
+                    fogBillTargetPos[i]=(fogBillTargetPos[i]+(fogBillTargetPos[i]-fogBillTargetPos[j])/dist3*40.f*0.1f*RoomScale);
+                }
+            }
+        }
+
+        fogBillboards[i]->updateAbsolutePosition();
+        fogBillboards[i]->setPosition(fogBillboards[i]->getAbsolutePosition()*(1.f-(0.05f))+fogBillTargetPos[i]*0.05f);
+        fogBillboards[i]->updateAbsolutePosition();
+
+        fogBillboards[i]->setVisible(true);
+        fogBillboards[i]->render();
+        fogBillboards[i]->setVisible(false);
+    }
 }
 
 void World::shadersSetup() {
@@ -1510,12 +1515,12 @@ void World::shadersSetup() {
     normalsShader = irr::video::EMT_SOLID; // Fallback material type
     normalsCallback= new NormalsShaderCallBack;
     normalsShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/NewNormalVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/NewNormalFrag.frag", "main", irr::video::EPST_PS_1_1,normalsCallback, irr::video::EMT_SOLID);
-    normalsCallback->ambient = irr::video::SColor(255,0,0,0);
+    //normalsCallback->ambient = irr::video::SColor(255,0,0,0);
 
 	plainLightShader = irr::video::EMT_SOLID; // Fallback material type
     plainLightCallback= new PlainLightShaderCallBack;
     plainLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/LightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/LightingFrag.frag", "main", irr::video::EPST_PS_1_1,plainLightCallback, irr::video::EMT_SOLID);
-    plainLightCallback->ambient = irr::video::SColor(255,0,0,0);
+    //plainLightCallback->ambient = irr::video::SColor(255,0,0,0);
 
 	postProcShader = irr::video::EMT_SOLID; // Fallback material type
     postProcCallback= new PostProcShaderCallBack;
@@ -1528,6 +1533,9 @@ void World::shadersSetup() {
     // create new vertex format.
 
     irr::video::IVertexDescriptor* vertexDescriptor = irrDriver->addVertexDescriptor("Skinning");
+
+    SharedShaderCallBack::fogNear = -1.f;
+    SharedShaderCallBack::fogFar = 30.f;
 
     vertexDescriptor->addAttribute("inPosition", 3, irr::video::EVAS_POSITION, irr::video::EVAT_FLOAT, 0);
     vertexDescriptor->addAttribute("inNormal", 3, irr::video::EVAS_NORMAL, irr::video::EVAT_FLOAT, 0);

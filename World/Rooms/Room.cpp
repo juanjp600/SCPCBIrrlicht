@@ -114,16 +114,6 @@ void Room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
         pointLight lght = rme->pointlights[i];
         rotMatrix.transformVect(lght.position);
         lght.position+=inPosition;
-
-        lght.viewMatrix[0].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(0.f,0.f,1.f),irr::core::vector3df(0.f,1.f,0.f));
-        lght.viewMatrix[1].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(1.f,0.f,0.f),irr::core::vector3df(0.f,1.f,0.f));
-        lght.viewMatrix[2].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(0.f,0.f,-1.f),irr::core::vector3df(0.f,1.f,0.f));
-        lght.viewMatrix[3].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(-1.f,0.f,0.f),irr::core::vector3df(0.f,1.f,0.f));
-        lght.viewMatrix[4].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(0.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f));
-        lght.viewMatrix[5].buildCameraLookAtMatrixLH(lght.position,lght.position+irr::core::vector3df(0.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f));
-
-        if (lght.viewMatrix[0].equals(lght.viewMatrix[5])) { std::terminate(); }
-
         pointLights.push_back(lght);
 	}
 

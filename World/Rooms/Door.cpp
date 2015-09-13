@@ -42,6 +42,13 @@ Door* Door::createDoor(unsigned char inDoorType,unsigned char inKeycard,short in
         returnDoor->collider->setAngularFactor(btVector3(0.f,0.f,0.f));
     }
 
+    returnDoor->doorVisible1 = true;
+    returnDoor->doorVisible2 = true;
+    returnDoor->buttonVisible1 = true;
+    returnDoor->buttonVisible2 = true;
+    returnDoor->buttonOffset1 = irr::core::vector3df(-150.f*0.1f*RoomScale,165.f*0.1f*RoomScale,24.f*0.1f*RoomScale);
+    returnDoor->buttonOffset2 = irr::core::vector3df(150.f*0.1f*RoomScale,165.f*0.1f*RoomScale,-24.f*0.1f*RoomScale);
+
     returnDoor->frameNode->updateAbsolutePosition();
 
     return returnDoor;
@@ -56,16 +63,18 @@ void Door::setPosition(irr::core::vector3df newPos) {
     rot.setRotationDegrees(frameNode->getRotation());
     closedShift = irr::core::vector3df(0.f,0.f,8.f*0.1f*RoomScale);
     openShift = irr::core::vector3df(180.f*0.1f*RoomScale,0.f,8.f*0.1f*RoomScale);
-    irr::core::vector3df buttonShiftVec(-150.f*0.1f*RoomScale,0.f,24.f*0.1f*RoomScale);
+    irr::core::vector3df buttonShiftVec1 = buttonOffset1;
+    irr::core::vector3df buttonShiftVec2 = buttonOffset2;
     rot.transformVect(closedShift);
     rot.transformVect(openShift);
-    rot.transformVect(buttonShiftVec);
+    rot.transformVect(buttonShiftVec1);
+    rot.transformVect(buttonShiftVec2);
 
     doorNode1->setPosition(newPos+openShift*openState+closedShift*(1.f-openState));
     doorNode2->setPosition(newPos-openShift*openState-closedShift*(1.f-openState));
 	frameNode->setPosition(newPos);
-	buttonNode1->setPosition(newPos+buttonShiftVec+irr::core::vector3df(0.f,165.f*0.1f*RoomScale,0.f));
-	buttonNode2->setPosition(newPos-buttonShiftVec+irr::core::vector3df(0.f,165.f*0.1f*RoomScale,0.f));
+	buttonNode1->setPosition(newPos+buttonShiftVec1);
+	buttonNode2->setPosition(newPos+buttonShiftVec2);
 	btTransform rTransform = collider->getCenterOfMassTransform();
 	rTransform.setOrigin(irrToBtVec(frameNode->getPosition()));
 	collider->setCenterOfMassTransform(rTransform);
@@ -83,11 +92,44 @@ void Door::setRotation(float newAngle) {
     setPosition(frameNode->getPosition());
 }
 
+void Door::setButtonOffset(unsigned char index,irr::core::vector3df newOffset) {
+    switch (index) {
+        case 0:
+            buttonOffset1 = newOffset;
+        break;
+        case 1:
+            buttonOffset2 = newOffset;
+        break;
+    }
+}
+
+void Door::setButtonVisibility(unsigned char index,bool newVisible) {
+    switch (index) {
+        case 0:
+            buttonVisible1 = newVisible;
+        break;
+        case 1:
+            buttonVisible2 = newVisible;
+        break;
+    }
+}
+
+void Door::setDoorVisibility(unsigned char index,bool newVisible) {
+    switch (index) {
+        case 0:
+            doorVisible1 = newVisible;
+        break;
+        case 1:
+            doorVisible2 = newVisible;
+        break;
+    }
+}
+
 void Door::update() {
-    doorNode1->setVisible(true);
-    doorNode2->setVisible(true);
-    buttonNode1->setVisible(true);
-    buttonNode2->setVisible(true);
+    doorNode1->setVisible(doorVisible1);
+    doorNode2->setVisible(doorVisible2);
+    buttonNode1->setVisible(buttonVisible1);
+    buttonNode2->setVisible(buttonVisible2);
     frameNode->setVisible(true);
     if (openState<1.f && open==true) {
         openState = std::min(1.f,openState+(0.005f*openState)+(0.025f*(1.f-openState)));
@@ -161,6 +203,18 @@ irr::core::vector3df Door::getButtonPosition(unsigned char index) {
         break;
     }
     return irr::core::vector3df();
+}
+
+bool Door::getButtonVisibility(unsigned char index) {
+    switch (index) {
+        case 0:
+            return buttonVisible1;
+        break;
+        case 1:
+            return buttonVisible2;
+        break;
+    }
+    return false;
 }
 
 float Door::getButtonRotation(unsigned char index) {

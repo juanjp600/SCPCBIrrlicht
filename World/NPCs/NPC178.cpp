@@ -285,13 +285,13 @@ void NPC178::update() {
         int prevWalkTimer = walkTimer;
         walkTimer-=1;
         if (prevWalkTimer>=0 && walkTimer<0) {
-            static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(206, 240);
-            static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(8.0f);
+            //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(206, 240);
+            //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(0.f);
         }
         if (walkTimer<minWalkTimer) {
             walkTimer = rand()%300+500;
-            static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(64,92);
-            static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(24.0f);
+            //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(64,92);
+            //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(0.f);
             minWalkTimer = -(rand()%300+500);
             spinTimer = -(rand()%200);
         }

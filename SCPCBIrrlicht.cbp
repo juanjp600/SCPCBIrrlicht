@@ -176,6 +176,7 @@
 		<Unit filename="World/Player.h" />
 		<Unit filename="World/Rooms/Door.cpp" />
 		<Unit filename="World/Rooms/Door.h" />
+		<Unit filename="World/Rooms/EZIncludes.h" />
 		<Unit filename="World/Rooms/EZ/Room079.cpp" />
 		<Unit filename="World/Rooms/EZ/Room079.h" />
 		<Unit filename="World/Rooms/EZ/Room2cafeteria.cpp" />
@@ -218,6 +219,7 @@
 		<Unit filename="World/Rooms/EZ/RoomGateaentrance.h" />
 		<Unit filename="World/Rooms/EZ/RoomLockroom2.cpp" />
 		<Unit filename="World/Rooms/EZ/RoomLockroom2.h" />
+		<Unit filename="World/Rooms/HCZIncludes.h" />
 		<Unit filename="World/Rooms/HCZ/Room008.cpp" />
 		<Unit filename="World/Rooms/HCZ/Room008.h" />
 		<Unit filename="World/Rooms/HCZ/Room035.cpp" />
@@ -256,6 +258,7 @@
 		<Unit filename="World/Rooms/HCZ/RoomTunnel.h" />
 		<Unit filename="World/Rooms/HCZ/RoomTunnel2.cpp" />
 		<Unit filename="World/Rooms/HCZ/RoomTunnel2.h" />
+		<Unit filename="World/Rooms/LCZIncludes.h" />
 		<Unit filename="World/Rooms/LCZ/Room012.cpp" />
 		<Unit filename="World/Rooms/LCZ/Room012.h" />
 		<Unit filename="World/Rooms/LCZ/Room2.cpp" />
@@ -294,6 +297,7 @@
 		<Unit filename="World/Rooms/LCZ/RoomStart.h" />
 		<Unit filename="World/Rooms/LCZ/Roompj.cpp" />
 		<Unit filename="World/Rooms/LCZ/Roompj.h" />
+		<Unit filename="World/Rooms/MiscIncludes.h" />
 		<Unit filename="World/Rooms/Misc/Room173.cpp" />
 		<Unit filename="World/Rooms/Misc/Room173.h" />
 		<Unit filename="World/Rooms/Misc/RoomCheckpoint1.cpp" />

@@ -47,78 +47,10 @@ class Room {
 		static void setSmgr(irr::scene::ISceneManager* inSmgr);
 		virtual void destroy();
 		virtual void findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) =0;
+		virtual void setNPC(unsigned char index,class NPC* npc) { return; };
+		virtual void setIrrNode(unsigned char index,irr::scene::ISceneNode* node) { return; };
+		virtual void setDoor(unsigned char index,class Door* door) { return; };
+		virtual void setEvent(unsigned char event) { return; };
 };
-
-//extern bool CustomMaterialCombinerCallback(btManifoldPoint& cp,const btCollisionObjectWrapper* colObj0,int partId0,int index0,const btCollisionObjectWrapper* colObj1,int partId1,int index1);
-
-//LCZ
-#include "LCZ/RoomLockroom.h"
-#include "LCZ/RoomStart.h"
-#include "LCZ/Room2storage.h"
-#include "LCZ/Room3storage.h"
-#include "LCZ/RoomEndroom.h"
-#include "LCZ/Room012.h"
-#include "LCZ/Room2.h"
-#include "LCZ/Room2_2.h"
-#include "LCZ/Room2c.h"
-#include "LCZ/Room2closets.h"
-#include "LCZ/Room2elevator.h"
-#include "LCZ/Room2doors.h"
-#include "LCZ/Room2scps.h"
-#include "LCZ/Room3storage.h"
-#include "LCZ/Room2testRoom2.h"
-#include "LCZ/Room3.h"
-#include "LCZ/Room3_2.h"
-#include "LCZ/Room4.h"
-#include "LCZ/Roompj.h"
-#include "LCZ/Room914.h"
-//HCZ
-#include "HCZ/Room008.h"
-#include "HCZ/RoomCoffin.h"
-#include "HCZ/RoomEndRoom2.h"
-#include "HCZ/RoomTestRoom.h"
-#include "HCZ/RoomTunnel.h"
-#include "HCZ/RoomTunnel2.h"
-#include "HCZ/Room035.h"
-#include "HCZ/Room049.h"
-#include "HCZ/Room106.h"
-#include "HCZ/Room2ctunnel.h"
-#include "HCZ/Room2nuke.h"
-#include "HCZ/Room2pipes.h"
-#include "HCZ/Room2pit.h"
-#include "HCZ/Room3pit.h"
-#include "HCZ/Room2servers.h"
-#include "HCZ/Room2tunnel.h"
-#include "HCZ/Room3tunnel.h"
-#include "HCZ/Room4tunnels.h"
-#include "HCZ/Room513.h"
-//EZ
-#include "EZ/Room860.h"
-#include "EZ/RoomExit1.h"
-#include "EZ/RoomGateaentrance.h"
-#include "EZ/RoomLockroom2.h"
-#include "EZ/Room079.h"
-#include "EZ/Room2z3.h"
-#include "EZ/Room2cafeteria.h"
-#include "EZ/Room2cz3.h"
-#include "EZ/Room2ccont.h"
-#include "EZ/Room2offices.h"
-#include "EZ/Room2offices2.h"
-#include "EZ/Room2offices3.h"
-#include "EZ/Room2poffices.h"
-#include "EZ/Room2poffices2.h"
-#include "EZ/Room2sroom.h"
-#include "EZ/Room2toilets.h"
-#include "EZ/Room2tesla.h"
-#include "EZ/Room3servers.h"
-#include "EZ/Room3servers2.h"
-#include "EZ/Room3z3.h"
-#include "EZ/Room4z3.h"
-//Misc
-#include "Misc/Room173.h"
-#include "Misc/RoomCheckpoint1.h"
-#include "Misc/RoomCheckpoint2.h"
-#include "Misc/RoomGatea.h"
-#include "Misc/RoomPocketdimension.h"
 
 #endif // ROOM_H_INCLUDED

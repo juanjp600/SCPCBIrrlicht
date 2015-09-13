@@ -1,6 +1,9 @@
-#version 110
+uniform mat4 mWorld;
+uniform vec3 cameraPos;
 
 varying vec4 vertexColor;
+
+varying vec4 distFromCenter;
 
 void main(void)
 {
@@ -9,4 +12,6 @@ void main(void)
 	vertexColor = gl_Color;
 	
 	gl_TexCoord[0] = gl_MultiTexCoord0;
+	
+	distFromCenter = ((mWorld * gl_Vertex)-vec4(cameraPos,1.0));
 }
