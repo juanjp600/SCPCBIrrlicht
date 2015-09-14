@@ -65,12 +65,13 @@ void RoomStart::updateEvent() {
                 sounds[0]->moveSource(sndChannels[0],sceneNodes[1]->getAbsolutePosition());
             }
         }
-        //std::cout<<"RoomStart event state: "<<state<<"\n";
         if (state<700) {
             doors[0]->open = false;
             doors[0]->openState = 0.f;
         } else if (doors[0]->open==false) {
             doors[0]->forceToggle();
+            sceneNodes[0]->setVisible(false);
+            sceneNodes[1]->setVisible(false);
         }
 
         state++;

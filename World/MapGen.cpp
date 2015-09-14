@@ -11,6 +11,9 @@
 Room* World::addRandomRoom(unsigned short x,unsigned short y,RoomTypes type,char angle,int zone) {
 	int choice = 0;
 	Room* retRoom = nullptr;
+
+	Door* tempDoor;
+
 	switch (type) {
 		case RoomTypes::ROOM1:
 			switch (zone) {
@@ -95,6 +98,37 @@ Room* World::addRandomRoom(unsigned short x,unsigned short y,RoomTypes type,char
 					choice = rand()%70;
 					if (choice>=0 && choice<30) {
 						retRoom = RoomLockroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+
+                        irr::core::vector3df roomPos(x*204.8f*RoomScale,0,y*204.8f*RoomScale);
+                        float rotation = angle*90.f;
+                        irr::core::matrix4 rotMat;
+                        rotMat.setRotationDegrees(irr::core::vector3df(0.f,rotation,0.f));
+
+                        irr::core::vector3df door1Pos(8.f*RoomScale,0.f,73.44f*RoomScale);
+                        irr::core::vector3df button1Pos(44.5f*RoomScale,18.f*RoomScale,55.f*RoomScale);
+                        rotMat.transformVect(door1Pos);
+                        door1Pos+=roomPos;
+                        tempDoor = Door::createDoor(0,0,0,0);
+                        tempDoor->setPosition(door1Pos);
+                        tempDoor->setRotation(rotation+90.f);
+                        tempDoor->setButtonVisibility(1,false);
+
+                        tempDoor->setButtonOffset(0,button1Pos);
+
+                        doorList.push_back(tempDoor);
+                        retRoom->setDoor(0,tempDoor);
+
+                        irr::core::vector3df door2Pos(-73.44f*RoomScale,0.f,-8.f*RoomScale);
+                        rotMat.transformVect(door2Pos);
+                        door2Pos+=roomPos;
+                        tempDoor = Door::createDoor(0,0,0,0);
+                        tempDoor->setPosition(door2Pos);
+                        tempDoor->setRotation(rotation);
+                        tempDoor->setButtonVisibility(0,false);
+                        button1Pos.Z=-button1Pos.Z;
+                        tempDoor->setButtonOffset(1,button1Pos);
+                        doorList.push_back(tempDoor);
+                        retRoom->setDoor(1,tempDoor);
 					}
 					if (choice>=30 && choice<70) {
 						retRoom = Room2c::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
@@ -866,6 +900,9 @@ void World::createMap(unsigned char zone) {
 	unsigned short currentRoom1,currentRoom2,currentRoom2c,currentRoom3,currentRoom4;
 	currentRoom1 = currentRoom2 = currentRoom2c = currentRoom3 = currentRoom4 = 0;
 	//short prevZone = getZone(19);
+
+	Door* tempDoor;
+
 	for (y=19;y>=0;y--) {
 		/*if (getZone(y)!=prevZone) {
 			currentRoom1 = currentRoom2 = currentRoom2c = currentRoom3 = currentRoom4 = 0;
@@ -919,7 +956,7 @@ void World::createMap(unsigned char zone) {
                                     ulgrin->setAnimationSpeed(0.f);
                                     ulgrin->setMaterialTexture(1,fogTexture);
                                     setupForHWSkinning(static_cast<irr::scene::IAnimatedMesh*>(ulgrin->getMesh()));
-                                    Door* tempDoor = Door::createDoor(0,0,0,0);
+                                    tempDoor = Door::createDoor(0,0,0,0);
                                     tempDoor->setPosition(roomPos+irr::core::vector3df(128.f*RoomScale,38.25f*RoomScale,31.f*RoomScale));
                                     tempDoor->setRotation(0.f);
                                     tempDoor->setButtonVisibility(0,false);
@@ -1019,6 +1056,37 @@ void World::createMap(unsigned char zone) {
 							case 0: //LCZ
 								if (currentRoom2c==0) {
 									roomArray[x][y] = RoomLockroom::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+
+									irr::core::vector3df roomPos(x*204.8f*RoomScale,0,y*204.8f*RoomScale);
+                                    float rotation = roomTemp[x][y].angle*90.f;
+                                    irr::core::matrix4 rotMat;
+                                    rotMat.setRotationDegrees(irr::core::vector3df(0.f,rotation,0.f));
+
+                                    irr::core::vector3df door1Pos(8.f*RoomScale,0.f,73.44f*RoomScale);
+                                    irr::core::vector3df button1Pos(44.5f*RoomScale,18.f*RoomScale,55.f*RoomScale);
+                                    rotMat.transformVect(door1Pos);
+                                    door1Pos+=roomPos;
+                                    tempDoor = Door::createDoor(0,0,0,0);
+                                    tempDoor->setPosition(door1Pos);
+                                    tempDoor->setRotation(rotation+90.f);
+                                    tempDoor->setButtonVisibility(1,false);
+
+                                    tempDoor->setButtonOffset(0,button1Pos);
+
+                                    doorList.push_back(tempDoor);
+                                    roomArray[x][y]->setDoor(0,tempDoor);
+
+                                    irr::core::vector3df door2Pos(-73.44f*RoomScale,0.f,-8.f*RoomScale);
+                                    rotMat.transformVect(door2Pos);
+                                    door2Pos+=roomPos;
+                                    tempDoor = Door::createDoor(0,0,0,0);
+                                    tempDoor->setPosition(door2Pos);
+                                    tempDoor->setRotation(rotation);
+                                    tempDoor->setButtonVisibility(0,false);
+                                    button1Pos.Z=-button1Pos.Z;
+                                    tempDoor->setButtonOffset(1,button1Pos);
+                                    doorList.push_back(tempDoor);
+                                    roomArray[x][y]->setDoor(1,tempDoor);
 								}
 							break;
 							case 1: //HCZ

@@ -687,37 +687,57 @@ bool World::run() {
             }
             for (unsigned int i=0;i<doorList.size();i++) {
                 if ((mainPlayer->getPosition()-doorList[i]->getPosition()).getLength()<4096.f*RoomScale*RoomScale) {
-                    float rot0 = -doorList[i]->getButtonRotation(0);
-                    float rot1 = -doorList[i]->getButtonRotation(1);
+                    float rot0 = doorList[i]->getButtonRotation(0);
+                    float rot1 = doorList[i]->getButtonRotation(1);
+                    irr::core::matrix4 rotMat;
+                    rotMat.makeIdentity();
+                    rotMat.setRotationDegrees(irr::core::vector3df(0.f,rot0,0.f));
+                    irr::core::vector3df buttonPointing0(0.f,0.f,-1.f);
+                    rotMat.transformVect(buttonPointing0);
+                    rotMat.makeIdentity();
+                    rotMat.setRotationDegrees(irr::core::vector3df(0.f,rot1,0.f));
+                    irr::core::vector3df buttonPointing1(0.f,0.f,-1.f);
+                    rotMat.transformVect(buttonPointing1);
 
                     irr::core::vector3df pos0 = doorList[i]->getButtonPosition(0);
                     irr::core::vector3df pos1 = doorList[i]->getButtonPosition(1);
                     irr::core::vector3df camPos = irrSmgr->getActiveCamera()->getAbsolutePosition();
-                    irr::core::vector3df dir0 = (camPos-pos0).normalize();
+                    irr::core::vector3df dir0 = (camPos-pos0);
+                    dir0.normalize();
+                    irr::core::vector3df dir0NoY = dir0; dir0NoY.Y = 0.f; dir0NoY.normalize();
                     dir0 = dir0.getSphericalCoordinateAngles();
-                    irr::core::vector3df dir1 = (camPos-pos1).normalize();
+                    irr::core::vector3df dir1 = (camPos-pos1);
+                    dir1.normalize();
+                    irr::core::vector3df dir1NoY = dir1; dir1NoY.Y = 0.f; dir1NoY.normalize();
                     dir1 = dir1.getSphericalCoordinateAngles();
-                    irr::core::vector3df camTarget = -(irrSmgr->getActiveCamera()->getTarget()-irrSmgr->getActiveCamera()->getAbsolutePosition());
+                    irr::core::vector3df camTarget = -(irrSmgr->getActiveCamera()->getTarget()-irrSmgr->getActiveCamera()->getAbsolutePosition()).normalize();
                     camTarget = camTarget.getSphericalCoordinateAngles();
 
-                    float angleDiff0 = dir0.Y-rot0;
-                    while (angleDiff0>=180.f) { angleDiff0-=360.f; } while (angleDiff0<-180.f) { angleDiff0+=360.f; }
-                    float angleDiff1 = dir1.Y-rot1;
-                    while (angleDiff1>=180.f) { angleDiff1-=360.f; } while (angleDiff1<-180.f) { angleDiff1+=360.f; }
+                    //float angleDiff0 = dir0.Y-rot0;
+                    //while (angleDiff0>=180.f) { angleDiff0-=360.f; } while (angleDiff0<-180.f) { angleDiff0+=360.f; }
+                    //float angleDiff1 = dir1.Y-rot1;
+                    //while (angleDiff1>=180.f) { angleDiff1-=360.f; } while (angleDiff1<-180.f) { angleDiff1+=360.f; }
 
                     float yawvalue,pitchvalue;
                     bool closetobutton = false;
-                    if (angleDiff0<angleDiff1) {
+                    if (dir0NoY.getDistanceFromSQ(buttonPointing0)<1.f) {
                         if ((mainPlayer->getPosition()-doorList[i]->getButtonPosition(0)).getLengthSQ()<150.f*RoomScale*RoomScale) {
-                            yawvalue = camTarget.Y-dir0.Y;
-                            pitchvalue = camTarget.X-dir0.X;
-                            closetobutton = true;
+                            if (doorList[i]->getButtonVisibility(0)==true) {
+                                yawvalue = camTarget.Y-dir0.Y;
+                                pitchvalue = camTarget.X-dir0.X;
+                                closetobutton = true;
+                                std::cout<<"closeTo0 "<<buttonPointing0.X<<" "<<buttonPointing0.Z<<" "<<buttonPointing1.X<<" "<<buttonPointing1.Z<<" "<<rot0<<" "<<rot1<<" "<<"\n";
+                            }
                         }
-                    } else {
+                    }
+                    if (dir1NoY.getDistanceFromSQ(buttonPointing1)<1.f) {
                         if ((mainPlayer->getPosition()-doorList[i]->getButtonPosition(1)).getLengthSQ()<150.f*RoomScale*RoomScale) {
-                            yawvalue = camTarget.Y-dir1.Y;
-                            pitchvalue = camTarget.X-dir1.X;
-                            closetobutton = true;
+                            if (doorList[i]->getButtonVisibility(1)==true) {
+                                yawvalue = camTarget.Y-dir1.Y;
+                                pitchvalue = camTarget.X-dir1.X;
+                                closetobutton = true;
+                                std::cout<<"closeTo1 "<<buttonPointing0.X<<" "<<buttonPointing0.Z<<" "<<buttonPointing1.X<<" "<<buttonPointing1.Z<<" "<<rot0<<" "<<rot1<<" "<<"\n";
+                            }
                         }
                     }
                     if (closetobutton) {

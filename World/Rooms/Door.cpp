@@ -101,6 +101,7 @@ void Door::setButtonOffset(unsigned char index,irr::core::vector3df newOffset) {
             buttonOffset2 = newOffset;
         break;
     }
+    setPosition(frameNode->getPosition());
 }
 
 void Door::setButtonVisibility(unsigned char index,bool newVisible) {
@@ -196,9 +197,11 @@ float Door::getRotation() {
 irr::core::vector3df Door::getButtonPosition(unsigned char index) {
     switch (index) {
         case 0:
+            buttonNode1->updateAbsolutePosition();
             return buttonNode1->getAbsolutePosition();
         break;
         case 1:
+            buttonNode2->updateAbsolutePosition();
             return buttonNode2->getAbsolutePosition();
         break;
     }
@@ -220,10 +223,10 @@ bool Door::getButtonVisibility(unsigned char index) {
 float Door::getButtonRotation(unsigned char index) {
     switch (index) {
         case 0:
-            return buttonNode1->getAbsoluteTransformation().getRotationDegrees().Y;
+            return buttonNode1->getRotation().Y;
         break;
         case 1:
-            return buttonNode2->getAbsoluteTransformation().getRotationDegrees().Y;
+            return buttonNode2->getRotation().Y;
         break;
     }
     return 0.f;
