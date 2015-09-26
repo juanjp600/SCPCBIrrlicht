@@ -11,7 +11,7 @@ class SharedShaderCallBack : public irr::video::IShaderConstantSetCallBack {
     public:
 		static irr::video::SColorf ambientLight;
 		static irr::video::SColorf addColor;
-		static irr::scene::ICameraSceneNode* camera;
+		static irr::core::vector3df cameraPos;
         static float fogNear;
         static float fogFar;
         //static irr::video::ITexture* fogTexture;
@@ -81,6 +81,8 @@ class LightsShaderCallBack: public SharedShaderCallBack {
 
 		static void sortLights(irr::core::vector3df nodePos);
 
+		static irr::f32 renderSpecularFactor;
+
 		//virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };
 
@@ -98,6 +100,11 @@ class NormalsShaderCallBack: public LightsShaderCallBack {
 		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
 };
 
+class RenderDeferredLightShaderCallBack: public LightsShaderCallBack {
+    public:
+        virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
+        unsigned int lightToRender = 0;
+};
 
 
 #endif // CALLBACKS_H_INCLUDED

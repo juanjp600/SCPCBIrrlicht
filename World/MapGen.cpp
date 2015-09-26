@@ -943,18 +943,20 @@ void World::createMap(unsigned char zone) {
 
                                     irr::scene::IAnimatedMeshSceneNode* franklin = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/classd.b3d"));
                                     franklin->setMaterialType(plainLightShader);
+                                    for (unsigned int i=0;i<franklin->getMaterialCount();i++) {
+                                        franklin->getMaterial(i).Filter = 1;
+                                    }
                                     franklin->setScale(irr::core::vector3df(0.072f,0.072f,0.072f));
                                     franklin->setMaterialTexture(0,irrDriver->getTexture("GFX/NPCs/scientist2.jpg"));
                                     franklin->setRotation(irr::core::vector3df(0.f,180.f,0.f));
                                     franklin->setAnimationSpeed(0.f);
-                                    franklin->setMaterialTexture(1,fogTexture);
+                                    setupForPlainLighting(franklin);
                                     setupForHWSkinning(static_cast<irr::scene::IAnimatedMesh*>(franklin->getMesh()));
                                     irr::scene::IAnimatedMeshSceneNode* ulgrin = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/guard.b3d"));
-                                    ulgrin->setMaterialType(plainLightShader);
                                     ulgrin->setScale(irr::core::vector3df(0.6f,0.6f,0.6f));
                                     ulgrin->setRotation(irr::core::vector3df(-90.f,0.f,0.f));
                                     ulgrin->setAnimationSpeed(0.f);
-                                    ulgrin->setMaterialTexture(1,fogTexture);
+                                    setupForPlainLighting(ulgrin);
                                     setupForHWSkinning(static_cast<irr::scene::IAnimatedMesh*>(ulgrin->getMesh()));
                                     tempDoor = Door::createDoor(0,0,0,0);
                                     tempDoor->setPosition(roomPos+irr::core::vector3df(128.f*RoomScale,38.25f*RoomScale,31.f*RoomScale));

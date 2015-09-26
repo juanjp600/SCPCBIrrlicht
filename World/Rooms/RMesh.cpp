@@ -307,6 +307,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 
 										bufLM->getMaterial().setTexture(0,loadedTextures[textures[1]-1].tex);
 										bufLM->getMaterial().setTexture(1,loadedTextures[textures[0]-1].tex);
+										bufLM->getMaterial().Filter = 1;
 
 										bufLM->getMaterial().MaterialType = irr::video::EMT_LIGHTMAP;
 										if (loadedTextures[textures[1]-1].bump!=nullptr) {
@@ -478,7 +479,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 					newLight.color.g = float(cg)/255.f;
 					newLight.color.b = float(cb)/255.f;
 					newLight.color.a = 1.f;
-					newLight.radius = fu1*0.05f*RoomScale;
+					newLight.radius = fu1*2.5f*0.05f*RoomScale;
 					newLight.position = irr::core::vector3df(fx*0.1f*RoomScale,fy*0.1f*RoomScale,fz*0.1f*RoomScale);
 
 					retRMesh->pointlights.push_back(newLight);

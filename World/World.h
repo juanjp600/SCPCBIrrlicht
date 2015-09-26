@@ -155,19 +155,23 @@ class World {
 
         irr::core::vector2di marked;
 
-        irr::video::ITexture* reflection;
+        irr::video::IRenderTarget reflection = irr::video::IRenderTarget(0);
 
-        irr::video::ITexture* blurImage;
-        irr::video::ITexture* blurImage2;
-        irr::video::ITexture* finalImage;
+        irr::video::IRenderTarget blurImage = irr::video::IRenderTarget(0);
+        irr::video::IRenderTarget blurImage2 = irr::video::IRenderTarget(0);
+        irr::video::IRenderTarget finalImage = irr::video::IRenderTarget(0);
         irr::scene::IMeshSceneNode* screenQuad;
-        irr::video::ITexture* zBuffer;
+        irr::video::IRenderTarget zBuffer = irr::video::IRenderTarget(0);
 
-        irr::video::ITexture* lightPass[2];
+        irr::core::array<irr::video::IRenderTarget> deferredLightData;
+        irr::core::array<irr::video::IRenderTarget> renderedLights;
+        irr::scene::IMeshSceneNode* deferredLightSphere;
 
-        irr::video::ITexture* fogTexture;
+        //irr::video::ITexture* lightPass[2];
 
-        irr::video::ITexture* lightDepth;
+        irr::video::IRenderTarget fogTexture = irr::video::IRenderTarget(0);
+
+        //irr::video::ITexture* lightDepth;
 
         unsigned char blurAlpha = 0;
 
@@ -178,17 +182,19 @@ class World {
         //float fpsFactor = 1;
 
         irr::video::E_MATERIAL_TYPE roomShader, roomShader_noNormals, vertLightShader, vertLightShader_alpha,
-                                    fogBillboardShader, normalsShader, plainLightShader, postProcShader,
-                                    zBufferShader;
+                                    fogBillboardShader, normalsShader, plainLightShader, renderDeferredLightShader,
+                                    postProcShader, zBufferShader;
 
         void shadersSetup();
         void setupForHWSkinning(irr::scene::IAnimatedMesh* mesh);
+        void setupForPlainLighting(irr::scene::ISceneNode* node);
 
         RoomShaderCallBack* roomCallback;
         RoomShaderCallBack_noNormals* roomCallback_noNormals;
         VertLightShaderCallBack* vertLightCallback;
         NormalsShaderCallBack* normalsCallback;
         PlainLightShaderCallBack* plainLightCallback;
+        RenderDeferredLightShaderCallBack* renderDeferredLightCallback;
         PostProcShaderCallBack* postProcCallback;
         ZBufferShaderCallBack* zBufferCallback;
 

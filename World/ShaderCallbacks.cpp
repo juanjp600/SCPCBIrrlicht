@@ -7,9 +7,10 @@ std::vector<LightsShaderCallBack::sortHelper> LightsShaderCallBack::lightList;
 
 irr::video::SColorf SharedShaderCallBack::ambientLight;
 irr::video::SColorf SharedShaderCallBack::addColor;
-irr::scene::ICameraSceneNode* SharedShaderCallBack::camera;
+irr::core::vector3df SharedShaderCallBack::cameraPos;
 float SharedShaderCallBack::fogNear;
 float SharedShaderCallBack::fogFar;
+float LightsShaderCallBack::renderSpecularFactor;
 //irr::video::ITexture* SharedShaderCallBack::fogTexture;
 
 void SharedShaderCallBack::setFogConstants(irr::video::IMaterialRendererServices* services) {
@@ -18,7 +19,7 @@ void SharedShaderCallBack::setFogConstants(irr::video::IMaterialRendererServices
 	worldMat = driver->getTransform(irr::video::ETS_WORLD);
 
     float camPos[3];
-    SharedShaderCallBack::camera->getAbsolutePosition().getAs3Values(camPos);
+    SharedShaderCallBack::cameraPos.getAs3Values(camPos);
 	services->setVertexShaderConstant("mWorld", worldMat.pointer(), 16);
 
     services->setVertexShaderConstant("cameraPos",camPos,3);
@@ -180,6 +181,47 @@ void LightsShaderCallBack::sortLights(irr::core::vector3df nodePos) {
 
 #if 1
 void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+    irr::video::IVideoDriver* driver = services->getVideoDriver();
+
+    if (driver->currentlyRenderedNode->getType()==irr::scene::ESCENE_NODE_TYPE::ESNT_ANIMATED_MESH) {
+        irr::scene::ISkinnedMesh* mesh = (irr::scene::ISkinnedMesh*)(((irr::scene::IAnimatedMeshSceneNode*)(driver->currentlyRenderedNode))->getMesh());
+        irr::f32* JointArray = new irr::f32[mesh->getAllJoints().size() * 16];
+
+        int copyIncrement = 0;
+
+        //std::cout<<"fffff "<<mesh->getAllJoints().size()<<"\n";
+        for(int i = 0;i < mesh->getAllJoints().size();++i)
+        {
+            irr::core::matrix4 JointVertexPull(irr::core::matrix4::EM4CONST_NOTHING);
+            JointVertexPull.setbyproduct(
+                mesh->getAllJoints()[i]->GlobalAnimatedMatrix,
+                mesh->getAllJoints()[i]->GlobalInversedMatrix);
+
+            for(int j = 0;j < 16;++j) {
+                JointArray[copyIncrement+j] = JointVertexPull[j];
+            }
+            copyIncrement += 16;
+        }
+
+        services->setVertexShaderConstant("uBone", JointArray, mesh->getAllJoints().size() * 16);
+
+        delete[] JointArray;
+    }
+
+    SharedShaderCallBack::setFogConstants(services);
+
+	irr::s32 TextureLayerID = 0;
+	services->setPixelShaderConstant("baseMap", &TextureLayerID, 1);
+	irr::s32 TextureLayerID3 = 2;
+	services->setPixelShaderConstant("diffuseLight", &TextureLayerID3, 1);
+	irr::s32 TextureLayerID4 = 3;
+	services->setPixelShaderConstant("specularLight", &TextureLayerID4, 1);
+	services->setPixelShaderConstant("renderSpecularFactor", &LightsShaderCallBack::renderSpecularFactor, 1);
+}
+#endif
+
+#if 0
+void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::video::IVideoDriver* driver = services->getVideoDriver();
 
 	irr::core::matrix4 invWorld = driver->getTransform(irr::video::ETS_WORLD);
@@ -311,3 +353,20 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 	services->setPixelShaderConstant("useTBN", TBN, 3);
 }
 #endif
+
+void RenderDeferredLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+    irr::s32 TextureLayerID = 0;
+	services->setPixelShaderConstant("specularFactor", &TextureLayerID, 0);
+    irr::s32 TextureLayerID2 = 1;
+	services->setPixelShaderConstant("normalInWorld", &TextureLayerID2, 1);
+	irr::s32 TextureLayerID3 = 2;
+	services->setPixelShaderConstant("positionInWorld", &TextureLayerID3, 1);
+
+    std::cout<<LightsShaderCallBack::lightList[lightToRender].pos[3]<<"\n";
+    services->setPixelShaderConstant("lightPos",LightsShaderCallBack::lightList[lightToRender].pos,4);
+    services->setPixelShaderConstant("lightColor",(float*)(&LightsShaderCallBack::lightList[lightToRender].color), 4);
+
+    float camPos[3];
+    SharedShaderCallBack::cameraPos.getAs3Values(camPos);
+    services->setVertexShaderConstant("cameraPos",camPos,3);
+}

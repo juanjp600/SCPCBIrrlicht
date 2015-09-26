@@ -1,11 +1,11 @@
 --- CAnimatedMeshSceneNode.cpp	Sun Jan 04 14:23:44 2015
-+++ CAnimatedMeshSceneNode.cpp	Fri Aug 07 20:14:36 2015
++++ CAnimatedMeshSceneNode.cpp	Mon Sep 21 18:39:57 2015
 @@ -262,7 +262,7 @@
  
  
  //! renders the node.
 -void CAnimatedMeshSceneNode::render()
-+void CAnimatedMeshSceneNode::render(f32 interpolate)
++void CAnimatedMeshSceneNode::render(f32 interpolate,u32 filter)
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  
@@ -29,25 +29,27 @@
  
  				driver->setMaterial(mat);
  				driver->drawMeshBuffer(mb);
-@@ -337,7 +338,7 @@
+@@ -337,15 +338,17 @@
  				if (RenderFromIdentity)
  					driver->setTransform(video::ETS_WORLD, core::IdentityMatrix );
  				else if (Mesh->getMeshType() == EAMT_SKINNED)
 -					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((IMeshBuffer*)mb)->getTransformation());
 +					driver->setTransform(video::ETS_WORLD, matr * ((IMeshBuffer*)mb)->getTransformation());
  
++                if (material.Filter==filter || filter==0) {
  				driver->setMaterial(material);
  				driver->drawMeshBuffer(mb);
-@@ -345,7 +346,7 @@
+ 			}
  		}
  	}
++	}
  
 -	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 +	driver->setTransform(video::ETS_WORLD, matr);
  
  	// for debug purposes only:
  	if (DebugDataVisible && PassCount==1)
-@@ -383,7 +384,7 @@
+@@ -383,7 +386,7 @@
  				const IMeshBuffer* mb = m->getMeshBuffer(g);
  
  				if (Mesh->getMeshType() == EAMT_SKINNED)
@@ -56,7 +58,7 @@
  				driver->draw3DBox(mb->getBoundingBox(), video::SColor(255,190,128,128));
  			}
  		}
-@@ -457,7 +458,7 @@
+@@ -457,7 +460,7 @@
  				if (RenderFromIdentity)
  					driver->setTransform(video::ETS_WORLD, core::IdentityMatrix );
  				else if (Mesh->getMeshType() == EAMT_SKINNED)
@@ -66,40 +68,52 @@
  			}
  		}
 --- CAnimatedMeshSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CAnimatedMeshSceneNode.h	Fri Aug 07 20:15:11 2015
++++ CAnimatedMeshSceneNode.h	Mon Sep 21 16:47:32 2015
 @@ -40,7 +40,7 @@
  		virtual void OnAnimate(u32 timeMs) _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CBillboardSceneNode.cpp	Sun Jan 11 21:13:08 2015
-+++ CBillboardSceneNode.cpp	Fri Aug 07 20:16:10 2015
++++ CBillboardSceneNode.cpp	Mon Sep 21 16:48:18 2015
 @@ -79,7 +79,7 @@
  
  
  //! render
 -void CBillboardSceneNode::render()
-+void CBillboardSceneNode::render(f32 interpolate)
++void CBillboardSceneNode::render(f32 interpolate,u32 filter)
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	ICameraSceneNode* camera = SceneManager->getActiveCamera();
+@@ -144,9 +144,11 @@
+ 
+ 	driver->setTransform(video::ETS_WORLD, core::IdentityMatrix);
+ 
++    if (MeshBuffer->getMaterial().Filter==filter || filter==0) {
+ 	driver->setMaterial(MeshBuffer->getMaterial());
+ 
+ 	driver->drawMeshBuffer(MeshBuffer);
++    }
+ }
+ 
+ 
 --- CBillboardSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CBillboardSceneNode.h	Fri Aug 07 20:16:47 2015
++++ CBillboardSceneNode.h	Mon Sep 21 16:46:04 2015
 @@ -33,7 +33,7 @@
  	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  	//! render
 -	virtual void render() _IRR_OVERRIDE_;
-+	virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++	virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  	//! returns the axis aligned bounding box of this node
  	virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CCameraSceneNode.cpp	Sun Jan 04 14:23:44 2015
-+++ CCameraSceneNode.cpp	Fri Aug 07 23:09:01 2015
++++ CCameraSceneNode.cpp	Mon Sep 21 16:46:54 2015
 @@ -173,6 +173,12 @@
  	return UpVector;
  }
@@ -118,7 +132,7 @@
  
  //! render
 -void CCameraSceneNode::render()
-+void CCameraSceneNode::render(f32 interpolate)
++void CCameraSceneNode::render(f32 interpolate,u32 filter)
  {
 -	updateMatrices();
 +	updateMatrices(interpolate);
@@ -157,7 +171,7 @@
  	recalculateViewArea();
  }
 --- CCameraSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CCameraSceneNode.h	Fri Aug 07 23:09:15 2015
++++ CCameraSceneNode.h	Mon Sep 21 16:47:18 2015
 @@ -79,6 +79,8 @@
  		//! \return Returns the up vector of the camera.
  		virtual const core::vector3df& getUpVector() const _IRR_OVERRIDE_;
@@ -172,7 +186,7 @@
  
  		//! Render
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! Update
 -		virtual void updateMatrices() _IRR_OVERRIDE_;
@@ -191,13 +205,13 @@
  		f32 Fovy;	// Field of view, in radians.
  		f32 Aspect;	// Aspect ratio.
 --- CCubeSceneNode.cpp	Sun Jan 06 02:40:58 2013
-+++ CCubeSceneNode.cpp	Fri Aug 07 20:52:13 2015
++++ CCubeSceneNode.cpp	Mon Sep 21 16:49:23 2015
 @@ -61,10 +61,12 @@
  
  
  //! renders the node.
 -void CCubeSceneNode::render()
-+void CCubeSceneNode::render(f32 interpolate)
++void CCubeSceneNode::render(f32 interpolate,u32 filter)
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
 -	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
@@ -207,62 +221,74 @@
  
  	if (Shadow)
  		Shadow->updateShadowVolumes();
+@@ -75,8 +77,11 @@
+ 	// overwrite half transparency
+ 	if (DebugDataVisible & scene::EDS_HALF_TRANSPARENCY)
+ 		mat.MaterialType = video::EMT_TRANSPARENT_ADD_COLOR;
++
++    if (mat.Filter==filter || filter==0) {
+ 	driver->setMaterial(mat);
+ 	driver->drawMeshBuffer(Mesh->getMeshBuffer(0));
++    }
+ 
+ 	// for debug purposes only:
+ 	if (DebugDataVisible)
 --- CCubeSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CCubeSceneNode.h	Fri Aug 07 20:52:48 2015
++++ CCubeSceneNode.h	Mon Sep 21 16:49:39 2015
 @@ -27,7 +27,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CDummyTransformationSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CDummyTransformationSceneNode.h	Fri Aug 07 20:54:11 2015
++++ CDummyTransformationSceneNode.h	Mon Sep 21 16:49:42 2015
 @@ -31,7 +31,7 @@
  		virtual core::matrix4 getRelativeTransformation() const _IRR_OVERRIDE_;
  
  		//! does nothing.
 -		virtual void render() _IRR_OVERRIDE_ {}
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_ {}
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_ {}
  
  		//! Returns type of the scene node
  		virtual ESCENE_NODE_TYPE getType() const _IRR_OVERRIDE_ { return ESNT_DUMMY_TRANSFORMATION; }
 --- CEmptySceneNode.cpp	Sun Jan 06 02:40:58 2013
-+++ CEmptySceneNode.cpp	Fri Aug 07 20:54:37 2015
++++ CEmptySceneNode.cpp	Mon Sep 21 16:49:57 2015
 @@ -33,7 +33,7 @@
  
  
  //! render
 -void CEmptySceneNode::render()
-+void CEmptySceneNode::render(f32 interpolate)
++void CEmptySceneNode::render(f32 interpolate,u32 filter)
  {
  	// do nothing
  }
 --- CEmptySceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CEmptySceneNode.h	Fri Aug 07 20:55:01 2015
++++ CEmptySceneNode.h	Mon Sep 21 16:50:02 2015
 @@ -26,7 +26,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! does nothing.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! Returns type of the scene node
  		virtual ESCENE_NODE_TYPE getType() const _IRR_OVERRIDE_ { return ESNT_EMPTY; }
 --- CInstancedMeshSceneNode.cpp	Sat Jan 10 21:24:40 2015
-+++ CInstancedMeshSceneNode.cpp	Fri Aug 07 23:11:57 2015
++++ CInstancedMeshSceneNode.cpp	Mon Sep 21 16:51:25 2015
 @@ -156,7 +156,7 @@
  		}
  
  		//! renders the node.
 -		void CInstancedMeshSceneNode::render()
-+		void CInstancedMeshSceneNode::render(f32 interpolate)
++		void CInstancedMeshSceneNode::render(f32 interpolate,u32 filter)
  		{
  			if (!IsVisible || !SceneManager->getActiveCamera())
  				return;
-@@ -164,10 +164,11 @@
+@@ -164,13 +164,16 @@
  			if (!baseMesh || baseMesh->getMeshBuffer(0)->getVertexBuffer(1)->getVertexCount() == 0)
  				return;
  
@@ -272,28 +298,33 @@
  			video::IVideoDriver* driver = SceneManager->getVideoDriver();
 -			driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 +			driver->setTransform(video::ETS_WORLD, matr);
++			if ((readOnlyMaterial ? material : renderBuffer->getMaterial()).Filter==filter || filter==0) {
  			driver->setMaterial(readOnlyMaterial ? material : renderBuffer->getMaterial());
  
  			driver->drawMeshBuffer(renderBuffer);
++            }
+ 
+ 			// for debug purposes only:
+ 			if (DebugDataVisible)
 --- CInstancedMeshSceneNode.h	Sat Jan 10 21:24:40 2015
-+++ CInstancedMeshSceneNode.h	Fri Aug 07 23:11:08 2015
++++ CInstancedMeshSceneNode.h	Mon Sep 21 16:52:48 2015
 @@ -31,7 +31,7 @@
  			virtual void OnRegisterSceneNode();
  
  			//! renders the node.
 -			virtual void render();
-+			virtual void render(f32 interpolate=1.f);
++			virtual void render(f32 interpolate=1.f,u32 filter=0);
  
  			virtual void OnAnimate(u32 timeMs);
  
 --- CLightSceneNode.cpp	Sun Jan 06 02:40:58 2013
-+++ CLightSceneNode.cpp	Fri Aug 07 23:12:14 2015
++++ CLightSceneNode.cpp	Mon Sep 21 16:54:51 2015
 @@ -44,15 +44,17 @@
  
  
  //! render
 -void CLightSceneNode::render()
-+void CLightSceneNode::render(f32 interpolate)
++void CLightSceneNode::render(f32 interpolate,u32 filter)
  {
 +    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
 +
@@ -309,18 +340,18 @@
  		m.Lighting = false;
  		driver->setMaterial(m);
 --- CLightSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CLightSceneNode.h	Fri Aug 07 20:57:16 2015
++++ CLightSceneNode.h	Mon Sep 21 16:55:16 2015
 @@ -26,7 +26,7 @@
  	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  	//! render
 -	virtual void render() _IRR_OVERRIDE_;
-+	virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++	virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  	//! set node light data from light info
  	virtual void setLightData(const video::SLight& light) _IRR_OVERRIDE_;
 --- CMeshSceneNode.cpp	Sun Jan 04 14:23:44 2015
-+++ CMeshSceneNode.cpp	Fri Aug 07 21:02:55 2015
++++ CMeshSceneNode.cpp	Mon Sep 21 16:55:57 2015
 @@ -111,10 +111,16 @@
  	}
  }
@@ -332,7 +363,7 @@
  
  //! renders the node.
 -void CMeshSceneNode::render()
-+void CMeshSceneNode::render(f32 interpolate)
++void CMeshSceneNode::render(f32 interpolate,u32 filter)
  {
 +	core::matrix4 matr = interpolatedAbsoluteTransform(interpolate);
 +
@@ -348,6 +379,15 @@
  	Box = Mesh->getBoundingBox();
  
  	if (Shadow && PassCount==1)
+@@ -166,7 +172,7 @@
+ 
+ 				// only render transparent buffer if this is the transparent render pass
+ 				// and solid only in solid pass
+-				if (transparent == isTransparentPass)
++				if (transparent == isTransparentPass && (material.Filter==filter || filter==0))
+ 				{
+ 					driver->setMaterial(material);
+ 					driver->drawMeshBuffer(mb);
 @@ -175,7 +181,7 @@
  		}
  	}
@@ -398,7 +438,7 @@
  
  
 --- CMeshSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CMeshSceneNode.h	Fri Aug 07 21:23:14 2015
++++ CMeshSceneNode.h	Mon Sep 21 17:20:11 2015
 @@ -29,8 +29,12 @@
  		//! frame
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
@@ -407,20 +447,20 @@
 +
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
 +
 +        virtual void fastRender(const irr::core::vector3df &camWorldPos) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- COctreeSceneNode.cpp	Sun Jan 04 14:23:44 2015
-+++ COctreeSceneNode.cpp	Fri Aug 07 21:26:11 2015
++++ COctreeSceneNode.cpp	Mon Sep 21 17:21:09 2015
 @@ -105,7 +105,7 @@
  
  
  //! renders the node.
 -void COctreeSceneNode::render()
-+void COctreeSceneNode::render(f32 interpolate)
++void COctreeSceneNode::render(f32 interpolate,u32 filter)
  {
  	IRR_PROFILE(CProfileScope psRender(EPID_OC_RENDER);)
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
@@ -434,25 +474,41 @@
  
  	if (Shadow)
  		Shadow->updateShadowVolumes();
+@@ -160,6 +161,7 @@
+ 		// and solid only in solid pass
+ 		if (transparent == isTransparentPass)
+ 		{
++            if (Materials[i].Filter==filter || filter==0) {
+ 			driver->setMaterial(Materials[i]);
+ 
+ 			if (!UseVBOs || (UseVBOs && UseVisibilityAndVBOs))
+@@ -181,6 +183,7 @@
+ 			{
+ 				driver->drawMeshBuffer ( StdMeshes[i] );
+ 			}
++            }
+ 		}
+ 	}
+ 
 --- COctreeSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ COctreeSceneNode.h	Fri Aug 07 21:26:41 2015
++++ COctreeSceneNode.h	Mon Sep 21 17:21:26 2015
 @@ -27,7 +27,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CParticleSystemSceneNode.cpp	Mon Jan 12 17:48:40 2015
-+++ CParticleSystemSceneNode.cpp	Fri Aug 07 21:34:53 2015
++++ CParticleSystemSceneNode.cpp	Mon Sep 21 17:21:37 2015
 @@ -309,7 +309,7 @@
  
  
  //! render
 -void CParticleSystemSceneNode::render()
-+void CParticleSystemSceneNode::render(f32 interpolate)
++void CParticleSystemSceneNode::render(f32 interpolate,u32 filter)
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	ICameraSceneNode* camera = SceneManager->getActiveCamera();
@@ -475,24 +531,24 @@
  		deb_m.Lighting = false;
  		driver->setMaterial(deb_m);
 --- CParticleSystemSceneNode.h	Mon Jan 12 17:48:40 2015
-+++ CParticleSystemSceneNode.h	Fri Aug 07 21:36:02 2015
++++ CParticleSystemSceneNode.h	Mon Sep 21 17:22:00 2015
 @@ -58,7 +58,7 @@
  	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  	//! render
 -	virtual void render() _IRR_OVERRIDE_;
-+	virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++	virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  	//! returns the axis aligned bounding box of this node
  	virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CQuake3ShaderSceneNode.cpp	Sun Jan 04 14:23:44 2015
-+++ CQuake3ShaderSceneNode.cpp	Fri Aug 07 21:39:36 2015
++++ CQuake3ShaderSceneNode.cpp	Mon Sep 21 17:22:08 2015
 @@ -301,8 +301,9 @@
  /*
  	render in multipass technique
  */
 -void CQuake3ShaderSceneNode::render()
-+void CQuake3ShaderSceneNode::render(f32 interpolate)
++void CQuake3ShaderSceneNode::render(f32 interpolate,u32 filter)
  {
 +	core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
@@ -517,24 +573,24 @@
  
  
 --- CQuake3ShaderSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CQuake3ShaderSceneNode.h	Fri Aug 07 21:40:43 2015
++++ CQuake3ShaderSceneNode.h	Mon Sep 21 17:22:37 2015
 @@ -31,7 +31,7 @@
  	virtual ~CQuake3ShaderSceneNode();
  
  	virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
 -	virtual void render() _IRR_OVERRIDE_;
-+	virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++	virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  	virtual void OnAnimate(u32 timeMs) _IRR_OVERRIDE_;
  	virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
  
 --- CSceneManager.cpp	Sat Jan 10 21:24:40 2015
-+++ CSceneManager.cpp	Sat Aug 08 16:23:30 2015
++++ CSceneManager.cpp	Mon Sep 21 17:23:37 2015
 @@ -1163,7 +1163,7 @@
  
  
  //! renders the node.
 -void CSceneManager::render()
-+void CSceneManager::render(f32 interpolate)
++void CSceneManager::render(f32 interpolate,u32 filter)
  {
  }
  
@@ -550,7 +606,7 @@
  //! This method is called just before the rendering process of the whole scene.
  //! draws all scene nodes
 -void CSceneManager::drawAll()
-+void CSceneManager::drawAll(f32 interpolate)
++void CSceneManager::drawAll(f32 interpolate,irr::u32 filter)
  {
  	IRR_PROFILE(CProfileScope psAll(EPID_SM_DRAW_ALL);)
  
@@ -559,7 +615,7 @@
  	if (ActiveCamera)
  	{
 -		ActiveCamera->render();
-+		ActiveCamera->render(interpolate);
++		ActiveCamera->render(interpolate,filter);
  		camWorldPos = ActiveCamera->getAbsolutePosition();
  	}
  	IRR_PROFILE(getProfiler().stop(EPID_SM_RENDER_CAMERAS));
@@ -568,7 +624,7 @@
  
  		for (i=0; i<CameraList.size(); ++i)
 -			CameraList[i]->render();
-+			CameraList[i]->render(interpolate);
++			CameraList[i]->render(interpolate,filter);
  
  		CameraList.set_used(0);
  
@@ -577,7 +633,7 @@
  
  		for (i=0; i< maxLights; ++i)
 -			LightList[i]->render();
-+			LightList[i]->render(interpolate);
++			LightList[i]->render(interpolate,filter);
  
  		if (LightManager)
  			LightManager->OnRenderPassPostRender(CurrentRenderPass);
@@ -586,7 +642,7 @@
  				ISceneNode* node = SkyBoxList[i];
  				LightManager->OnNodePreRender(node);
 -				node->render();
-+				node->render(interpolate);
++				node->render(interpolate,filter);
  				LightManager->OnNodePostRender(node);
  			}
  		}
@@ -594,7 +650,7 @@
  		{
  			for (i=0; i<SkyBoxList.size(); ++i)
 -				SkyBoxList[i]->render();
-+				SkyBoxList[i]->render(interpolate);
++				SkyBoxList[i]->render(interpolate,filter);
  		}
  
  		SkyBoxList.set_used(0);
@@ -604,7 +660,7 @@
  				LightManager->OnNodePreRender(node);
 -				node->render();
 +				Driver->currentlyRenderedNode = SolidNodeList[i].Node;
-+				node->render(interpolate);
++				node->render(interpolate,filter);
  				LightManager->OnNodePostRender(node);
  			}
  		}
@@ -614,7 +670,7 @@
 -				SolidNodeList[i].Node->render();
 +			for (i=0; i<SolidNodeList.size(); ++i) {
 +				Driver->currentlyRenderedNode = SolidNodeList[i].Node;
-+				SolidNodeList[i].Node->render(interpolate);
++				SolidNodeList[i].Node->render(interpolate,filter);
 +			}
  		}
  
@@ -636,7 +692,7 @@
  				ISceneNode* node = ShadowNodeList[i];
  				LightManager->OnNodePreRender(node);
 -				node->render();
-+				node->render(interpolate);
++				node->render(interpolate,filter);
  				LightManager->OnNodePostRender(node);
  			}
  		}
@@ -644,7 +700,7 @@
  		{
  			for (i=0; i<ShadowNodeList.size(); ++i)
 -				ShadowNodeList[i]->render();
-+				ShadowNodeList[i]->render(interpolate);
++				ShadowNodeList[i]->render(interpolate,filter);
  		}
  
  		if (!ShadowNodeList.empty())
@@ -653,7 +709,7 @@
  				ISceneNode* node = TransparentNodeList[i].Node;
  				LightManager->OnNodePreRender(node);
 -				node->render();
-+				node->render(interpolate);
++				node->render(interpolate,filter);
  				LightManager->OnNodePostRender(node);
  			}
  		}
@@ -661,7 +717,7 @@
  		{
  			for (i=0; i<TransparentNodeList.size(); ++i)
 -				TransparentNodeList[i].Node->render();
-+				TransparentNodeList[i].Node->render(interpolate);
++				TransparentNodeList[i].Node->render(interpolate,filter);
  		}
  
  #ifdef _IRR_SCENEMANAGER_DEBUG
@@ -670,7 +726,7 @@
  				ISceneNode* node = TransparentEffectNodeList[i].Node;
  				LightManager->OnNodePreRender(node);
 -				node->render();
-+				node->render(interpolate);
++				node->render(interpolate,filter);
  				LightManager->OnNodePostRender(node);
  			}
  		}
@@ -678,16 +734,14 @@
  		{
  			for (i=0; i<TransparentEffectNodeList.size(); ++i)
 -				TransparentEffectNodeList[i].Node->render();
-+				TransparentEffectNodeList[i].Node->render(interpolate);
++				TransparentEffectNodeList[i].Node->render(interpolate,filter);
  		}
  #ifdef _IRR_SCENEMANAGER_DEBUG
  		Parameters->setAttribute("drawn_transparent_effect", (s32) TransparentEffectNodeList.size());
-@@ -1728,6 +1736,154 @@
- 	clearDeletionList();
- 
+@@ -1730,6 +1738,154 @@
  	CurrentRenderPass = ESNRP_NONE;
-+}
-+
+ }
+ 
 +void CSceneManager::fastDrawAll_init(const core::vector3df &camPos)
 +{
 +    for (u32 i=video::ETS_COUNT-1; i>=video::ETS_TEXTURE_0; --i)
@@ -834,17 +888,36 @@
 + 	LightList.set_used(0);
 + 	clearDeletionList();
 + 	CurrentRenderPass = ESNRP_NONE;
++}
++
+ void CSceneManager::setLightManager(ILightManager* lightManager)
+ {
+ 	if (lightManager)
+@@ -2111,6 +2267,16 @@
+ 		Driver->setMaterial(video::SMaterial());
  }
  
- void CSceneManager::setLightManager(ILightManager* lightManager)
++//! Removes a child from this scene node.
++bool CSceneManager::removeChild(ISceneNode* child)
++{
++    if (Driver) {
++        if (Driver->currentlyRenderedNode==child) {
++            Driver->currentlyRenderedNode=0;
++        }
++    }
++    return ISceneNode::removeChild(child);
++}
+ 
+ //! Clears the whole scene. All scene nodes are removed.
+ void CSceneManager::clear()
 --- CSceneManager.h	Sat Jan 10 21:24:40 2015
-+++ CSceneManager.h	Fri Aug 07 22:30:47 2015
++++ CSceneManager.h	Mon Sep 21 17:23:55 2015
 @@ -112,7 +112,7 @@
  			const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f)) _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
@@ -853,12 +926,22 @@
  
  		//! draws all scene nodes
 -		virtual void drawAll() _IRR_OVERRIDE_;
-+		virtual void drawAll(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void drawAll(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
 +		virtual void captureAll() _IRR_OVERRIDE_;
  
  		//! Adds a camera scene node to the tree and sets it as active camera.
  		//! \param position: Position of the space relative to its parent where the camera will be placed.
-@@ -521,6 +522,10 @@
+@@ -420,6 +421,9 @@
+ 		//! Removes all children of this scene node
+ 		virtual void removeAll() _IRR_OVERRIDE_;
+ 
++		//! Removes a child from this scene node.
++		virtual bool removeChild(ISceneNode* child) _IRR_OVERRIDE_;
++
+ 		//! Returns interface to the parameters set in this scene.
+ 		virtual io::IAttributes* getParameters() _IRR_OVERRIDE_;
+ 
+@@ -521,6 +525,10 @@
  		//! returns if this is culled
  		virtual bool isCulled(core::aabbox3d<f32> tbox, scene::E_CULLING_TYPE type, const core::matrix4& absoluteTransformation) const;
  
@@ -869,7 +952,7 @@
  	protected:
  
  		//! Adds a scene node for rendering using a octree to the scene graph. This a good method for rendering
-@@ -658,6 +663,13 @@
+@@ -658,6 +666,13 @@
  		const core::stringw IRR_XML_FORMAT_NODE_ATTR_TYPE;
  
  		IGeometryCreator* GeometryCreator;
@@ -884,110 +967,117 @@
  
  } // end namespace video
 --- CShadowVolumeSceneNode.cpp	Sat May 10 10:23:34 2014
-+++ CShadowVolumeSceneNode.cpp	Fri Aug 07 22:33:34 2015
++++ CShadowVolumeSceneNode.cpp	Mon Sep 21 17:24:11 2015
 @@ -328,7 +328,7 @@
  }
  
  //! renders the node.
 -void CShadowVolumeSceneNode::render()
-+void CShadowVolumeSceneNode::render(f32 interpolate)
++void CShadowVolumeSceneNode::render(f32 interpolate,u32 filter)
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  
 --- CShadowVolumeSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CShadowVolumeSceneNode.h	Fri Aug 07 22:34:18 2015
++++ CShadowVolumeSceneNode.h	Mon Sep 21 17:24:19 2015
 @@ -37,7 +37,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CSkyBoxSceneNode.cpp	Wed May 14 17:43:08 2014
-+++ CSkyBoxSceneNode.cpp	Fri Aug 07 22:36:33 2015
++++ CSkyBoxSceneNode.cpp	Mon Sep 21 17:37:40 2015
 @@ -199,7 +199,7 @@
  
  
  //! renders the node.
 -void CSkyBoxSceneNode::render()
-+void CSkyBoxSceneNode::render(f32 interpolate)
++void CSkyBoxSceneNode::render(f32 interpolate,u32 filter)
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	scene::ICameraSceneNode* camera = SceneManager->getActiveCamera();
 --- CSkyBoxSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CSkyBoxSceneNode.h	Fri Aug 07 22:37:01 2015
++++ CSkyBoxSceneNode.h	Mon Sep 21 17:37:44 2015
 @@ -30,7 +30,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CSkyDomeSceneNode.cpp	Sat May 10 10:23:34 2014
-+++ CSkyDomeSceneNode.cpp	Fri Aug 07 22:38:56 2015
++++ CSkyDomeSceneNode.cpp	Mon Sep 21 17:39:06 2015
 @@ -131,7 +131,7 @@
  
  
  //! renders the node.
 -void CSkyDomeSceneNode::render()
-+void CSkyDomeSceneNode::render(f32 interpolate)
++void CSkyDomeSceneNode::render(f32 interpolate,u32 filter)
  {
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  	scene::ICameraSceneNode* camera = SceneManager->getActiveCamera();
 --- CSkyDomeSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CSkyDomeSceneNode.h	Fri Aug 07 22:40:32 2015
++++ CSkyDomeSceneNode.h	Mon Sep 21 17:39:11 2015
 @@ -22,7 +22,7 @@
  			ISceneNode* parent, ISceneManager* smgr, s32 id);
  		virtual ~CSkyDomeSceneNode();
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
  		virtual video::SMaterial& getMaterial(u32 i) _IRR_OVERRIDE_;
  		virtual u32 getMaterialCount() const _IRR_OVERRIDE_;
 --- CSphereSceneNode.cpp	Sun Jan 06 02:40:58 2013
-+++ CSphereSceneNode.cpp	Fri Aug 07 22:43:05 2015
-@@ -40,14 +40,15 @@
++++ CSphereSceneNode.cpp	Mon Sep 21 17:40:16 2015
+@@ -40,18 +40,22 @@
  
  
  //! renders the node.
 -void CSphereSceneNode::render()
-+void CSphereSceneNode::render(f32 interpolate)
++void CSphereSceneNode::render(f32 interpolate,u32 filter)
  {
 +    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
  	video::IVideoDriver* driver = SceneManager->getVideoDriver();
  
  	if (Mesh && driver)
  	{
++        if (Mesh->getMeshBuffer(0)->getMaterial().Filter==filter || filter==0) {
  		driver->setMaterial(Mesh->getMeshBuffer(0)->getMaterial());
 -		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-+		driver->setTransform(video::ETS_WORLD, mat);
++            driver->setTransform(video::ETS_WORLD, mat);
++
  		if (Shadow)
  			Shadow->updateShadowVolumes();
  
+ 		driver->drawMeshBuffer(Mesh->getMeshBuffer(0));
++        }
+ 		if ( DebugDataVisible & scene::EDS_BBOX )
+ 		{
+ 			video::SMaterial m;
 --- CSphereSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CSphereSceneNode.h	Fri Aug 07 22:44:18 2015
++++ CSphereSceneNode.h	Mon Sep 21 17:40:30 2015
 @@ -28,7 +28,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CTerrainSceneNode.cpp	Sat May 10 10:23:34 2014
-+++ CTerrainSceneNode.cpp	Fri Aug 07 22:46:11 2015
++++ CTerrainSceneNode.cpp	Mon Sep 21 17:40:42 2015
 @@ -769,8 +769,9 @@
  
  
  	//! Render the scene node
 -	void CTerrainSceneNode::render()
-+	void CTerrainSceneNode::render(f32 interpolate)
++	void CTerrainSceneNode::render(f32 interpolate,u32 filter)
  	{
 +        core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
  		if (!IsVisible || !SceneManager->getActiveCamera())
@@ -1003,24 +1093,24 @@
  			static u32 lastTime = 0;
  
 --- CTerrainSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CTerrainSceneNode.h	Fri Aug 07 22:46:24 2015
++++ CTerrainSceneNode.h	Mon Sep 21 17:40:51 2015
 @@ -119,7 +119,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! Render the scene node
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! Return the bounding box of the entire terrain.
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
 --- CTextSceneNode.cpp	Sun Jan 04 14:23:44 2015
-+++ CTextSceneNode.cpp	Fri Aug 07 22:50:11 2015
++++ CTextSceneNode.cpp	Mon Sep 21 17:41:06 2015
 @@ -52,7 +52,7 @@
  }
  
  //! renders the node.
 -void CTextSceneNode::render()
-+void CTextSceneNode::render(f32 interpolate)
++void CTextSceneNode::render(f32 interpolate,u32 filter)
  {
  	if (!Font || !Coll)
  		return;
@@ -1029,7 +1119,7 @@
  
  //! render
 -void CBillboardTextSceneNode::render()
-+void CBillboardTextSceneNode::render(f32 interpolate)
++void CBillboardTextSceneNode::render(f32 interpolate,u32 filter)
  {
 +    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
  	if ( !Mesh )
@@ -1055,13 +1145,13 @@
  		m.Lighting = false;
  		driver->setMaterial(m);
 --- CTextSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CTextSceneNode.h	Fri Aug 07 22:48:45 2015
++++ CTextSceneNode.h	Mon Sep 21 17:41:12 2015
 @@ -33,7 +33,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
@@ -1070,7 +1160,7 @@
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;
@@ -1085,13 +1175,13 @@
  			tri.pointB = *position1;
  			tri.pointC = *position2;
 --- CVolumeLightSceneNode.cpp	Sun Jan 06 02:40:58 2013
-+++ CVolumeLightSceneNode.cpp	Fri Aug 07 22:57:08 2015
++++ CVolumeLightSceneNode.cpp	Mon Sep 21 17:41:43 2015
 @@ -50,13 +50,14 @@
  
  
  //! renders the node.
 -void CVolumeLightSceneNode::render()
-+void CVolumeLightSceneNode::render(f32 interpolate)
++void CVolumeLightSceneNode::render(f32 interpolate,u32 filter)
  {
 +    core::matrix4 mat = interpolatedAbsoluteTransform(interpolate);
  	if (!Mesh)
@@ -1104,13 +1194,13 @@
  	driver->setMaterial(Mesh->getMeshBuffer(0)->getMaterial());
  	driver->drawMeshBuffer(Mesh->getMeshBuffer(0));
 --- CVolumeLightSceneNode.h	Sun Jan 04 14:23:44 2015
-+++ CVolumeLightSceneNode.h	Fri Aug 07 22:57:34 2015
++++ CVolumeLightSceneNode.h	Mon Sep 21 17:41:47 2015
 @@ -32,7 +32,7 @@
  		virtual void OnRegisterSceneNode() _IRR_OVERRIDE_;
  
  		//! renders the node.
 -		virtual void render() _IRR_OVERRIDE_;
-+		virtual void render(f32 interpolate=1.f) _IRR_OVERRIDE_;
++		virtual void render(f32 interpolate=1.f,u32 filter=0) _IRR_OVERRIDE_;
  
  		//! returns the axis aligned bounding box of this node
  		virtual const core::aabbox3d<f32>& getBoundingBox() const _IRR_OVERRIDE_;

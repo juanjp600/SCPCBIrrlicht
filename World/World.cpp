@@ -157,18 +157,28 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
     //std::terminate();
 
-    blurImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"blurImage",irr::video::ECF_R8G8B8);
-    blurImage2 = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"blurImage2",irr::video::ECF_R8G8B8);
-    zBuffer = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"ZBuffer",irr::video::ECF_R16F);
-    finalImage = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"finalImage",irr::video::ECF_R8G8B8);
+    blurImage = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"blurImage",irr::video::ECF_R8G8B8));
+    blurImage2 = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"blurImage2",irr::video::ECF_R8G8B8));
+    zBuffer = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"ZBuffer",irr::video::ECF_R16F));
+    finalImage = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"finalImage",irr::video::ECF_R8G8B8));
+
+    deferredLightData.reallocate(3);
+    deferredLightData.set_used(3);
+    deferredLightData[0] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"deferredLightData0",irr::video::ECF_R8G8B8));
+    deferredLightData[1] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"deferredLightData1",irr::video::ECF_A16B16G16R16F));
+    deferredLightData[2] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"deferredLightData2",irr::video::ECF_A32B32G32R32F)); //suprisingly enough, 16bit precision isn't acceptable
+    renderedLights.reallocate(2);
+    renderedLights.set_used(2);
+    renderedLights[0] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"renderedDiffuseLights",irr::video::ECF_R8G8B8));
+    renderedLights[1] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"renderedSpecularLights",irr::video::ECF_R8G8B8));
 
     //lightPass[0] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass0",irr::video::ECF_R8G8B8);
     //lightPass[1] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass1",irr::video::ECF_R8G8B8);
     //lightDepth = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightDepth",irr::video::ECF_R16F);
 
-    reflection = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(128,128),"relection",irr::video::ECF_R8G8B8);
+    reflection = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(128,128),"relection",irr::video::ECF_R8G8B8));
 
-    fogTexture = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"fogTexture",irr::video::ECF_A8R8G8B8);
+    fogTexture = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"fogTexture",irr::video::ECF_A8R8G8B8));
 
     irr::video::ITexture* fogBillTex = irrDriver->getTexture("GFX/fogBillboard.png");
 
@@ -200,23 +210,9 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     buf->setVertexBuffer(vertexBuffer, 0);
     buf->setIndexBuffer(indexBuffer);
 
-	/*irr::u16 inds[] {
-		1,0,2,
-		2,3,1
-	};
-	buf->Vertices.reallocate(4);
-	buf->Vertices.set_used(4);
-	for (unsigned int j=0;j<4;j++) {
-		buf->Vertices[j]=verts[j];
-	}
-	buf->Indices.reallocate(6);
-	buf->Indices.set_used(6);
-	for (unsigned int j=0;j<6;j++) {
-		buf->Indices[j]=inds[j];
-	}*/
-	buf->getMaterial().setTexture(0,blurImage);
-	buf->getMaterial().setTexture(1,zBuffer);
-	buf->getMaterial().setTexture(2,fogTexture);
+	buf->getMaterial().setTexture(0,blurImage.RenderTexture);
+	buf->getMaterial().setTexture(1,zBuffer.RenderTexture);
+	//buf->getMaterial().setTexture(2,fogTexture.RenderTexture);
 
 	buf->getMaterial().MaterialType = (irr::video::E_MATERIAL_TYPE)postProcShader;
 
@@ -225,6 +221,15 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	buf->drop();
 	screenQuad = irrSmgr->addMeshSceneNode(quadMesh);
 	screenQuad->setVisible(false);
+	deferredLightSphere = irrSmgr->addSphereSceneNode(1.f);
+	//>addCubeSceneNode(2.f);
+	deferredLightSphere->getMaterial(0).setTexture(0,deferredLightData[0].RenderTexture);
+	deferredLightSphere->getMaterial(0).setTexture(1,deferredLightData[1].RenderTexture);
+	deferredLightSphere->getMaterial(0).setTexture(2,deferredLightData[2].RenderTexture);
+	deferredLightSphere->getMaterial(0).MaterialType = renderDeferredLightShader;
+	deferredLightSphere->getMaterial(0).BackfaceCulling = false;
+	deferredLightSphere->getMaterial(0).FrontfaceCulling = true;
+	deferredLightSphere->setVisible(false);
 
     blinkMeterIMG = irrDriver->getTexture("GFX/BlinkMeter.jpg");
     staminaMeterIMG = irrDriver->getTexture("GFX/staminaMeter.jpg");
@@ -341,8 +346,8 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	//roomShaders[4] = zBufferShader;
 
     irr::video::ITexture* roomTextures[2];
-    roomTextures[0] = reflection;
-    roomTextures[1] = fogTexture;
+    roomTextures[0] = reflection.RenderTexture;
+    roomTextures[1] = fogTexture.RenderTexture;
 
 #if 1
 	//LCZ
@@ -444,7 +449,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC178::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/npc178.b3d"));
     setupForHWSkinning(NPC178::baseNode->getMesh());
     NPC178::baseNode->setMaterialType(plainLightShader);
-    NPC178::baseNode->setMaterialTexture(1,fogTexture);
+    setupForPlainLighting(NPC178::baseNode);
     NPC178::baseNode->setScale(irr::core::vector3df(0.45f*RoomScale,0.45f*RoomScale,0.45f*RoomScale));
     //NPC178::baseNode->setFrameLoop(64,92);
     NPC178::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
@@ -484,22 +489,21 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	mainPlayer->testNode = NPC173::baseNode;
 
     Door::baseDoorNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Door01.x"));
-    Door::baseDoorNode[0]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseDoorNode[0]->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.1f));
-    Door::baseDoorNode[0]->setMaterialTexture(1,fogTexture);
+    setupForPlainLighting(Door::baseDoorNode[0]);
+
     Door::baseFrameNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/DoorFrame.x"));
-    Door::baseFrameNode->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
-    Door::baseFrameNode->getMaterial(1).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseFrameNode->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.1f));
-    Door::baseFrameNode->setMaterialTexture(1,fogTexture);
+    setupForPlainLighting(Door::baseFrameNode);
+
     Door::baseButtonNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Button.x"));
-    Door::baseButtonNode[0]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseButtonNode[0]->setScale(irr::core::vector3df(RoomScale*1.f,RoomScale*1.f,RoomScale*1.f));
-    Door::baseButtonNode[0]->setMaterialTexture(1,fogTexture);
+    setupForPlainLighting(Door::baseButtonNode[0]);
+
     Door::baseButtonNode[1] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/ButtonKeycard.x"));
-    Door::baseButtonNode[1]->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)plainLightShader;
     Door::baseButtonNode[1]->setScale(irr::core::vector3df(RoomScale*1.f,RoomScale*1.f,RoomScale*1.f));
-    Door::baseButtonNode[1]->setMaterialTexture(1,fogTexture);
+    setupForPlainLighting(Door::baseButtonNode[1]);
+
     Door::openSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorOpen1.ogg"),true);
     Door::openSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorOpen2.ogg"),true);
     Door::openSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorOpen3.ogg"),true);
@@ -1004,12 +1008,12 @@ bool World::run() {
 void World::draw3D() {
 	//postProcCallback->fpsFactor = fpsFactor;
 
-    SharedShaderCallBack::camera = irrSmgr->getActiveCamera();
+    SharedShaderCallBack::cameraPos = irrSmgr->getActiveCamera()->interpolatedAbsoluteTransform(1.f+stepsToMake).getTranslation();
 
     drawFog();
 
     roomCallback->reflectFactor=0.f;
-    irrDriver->setRenderTarget(reflection,true,true);
+    irrDriver->setRenderTarget(reflection.RenderTexture,true,true);
     mainPlayer->reflectNY();
     irrSmgr->fastDrawAll_init(irrSmgr->getActiveCamera()->getAbsolutePosition());
     irrSmgr->fastDrawAll(irrSmgr->getActiveCamera()->getProjectionMatrix(),irrSmgr->getActiveCamera()->getViewMatrix());
@@ -1066,11 +1070,44 @@ void World::draw3D() {
 
     */
     //renderLights();
-    irrDriver->setRenderTarget(0);
-    irrDriver->draw2DImage(fogTexture,irr::core::vector2di(0,0));
-    irrSmgr->drawAll(1.f+stepsToMake);
+    irrDriver->setRenderTarget(deferredLightData,true,true,irr::video::SColor(255,0,0,0));
+    //irrDriver->draw2DImage(fogTexture.RenderTexture,irr::core::vector2di(0,0));
+    plainLightCallback->renderSpecularFactor = 1.f;
+    irrSmgr->drawAll(1.f+stepsToMake,1);
+    /*irr::core::list<irr::scene::ISceneNode*> smgrChildren = irrSmgr->getRootSceneNode()->getChildren();
+    for (auto it = smgrChildren.begin(); it != smgrChildren.end(); it++) {
+        irr::scene::ISceneNode* node = *it;
+        if (node->getType()==irr::scene::ESNT_MESH) {
+            irr::scene::IMeshSceneNode* mnode = static_cast<irr::scene::IMeshSceneNode*>(node);
+            for (unsigned int i=0;i<mnode->getMaterialCount();i++) {
+                if (mnode->getMaterial(i).MaterialType==plainLightShader) {
+                    //std::cout<<"PLAIN OL' LIGHT\n";
+                }
+            }
+        }
+    }*/
     irrDriver->runAllOcclusionQueries(true);
     irrDriver->updateAllOcclusionQueries();
+    irrDriver->setRenderTarget(renderedLights,true,true,irr::video::SColor(255,0,0,0));
+    //deferredLightSphere->setPosition(irr::core::vector3df(ppx*204.8f*RoomScale,0,ppy*204.8f*RoomScale));
+    deferredLightSphere->setVisible(true);
+    //LightsShaderCallBack::sortLights(irr::core::vector3df(ppx*204.8f*RoomScale,0,ppy*204.8f*RoomScale));
+    for (unsigned int i=0;i<LightsShaderCallBack::lightList.size();i++) {
+        renderDeferredLightCallback->lightToRender = i;
+        float lightScale = std::sqrt(LightsShaderCallBack::lightList[i].pos[3]);
+        deferredLightSphere->setScale(irr::core::vector3df(lightScale,lightScale,lightScale));
+        irr::core::vector3df lightPos;
+        lightPos.X = LightsShaderCallBack::lightList[i].pos[0];
+        lightPos.Y = LightsShaderCallBack::lightList[i].pos[1];
+        lightPos.Z = LightsShaderCallBack::lightList[i].pos[2];
+        deferredLightSphere->setPosition(lightPos);
+        deferredLightSphere->updateAbsolutePosition();
+        deferredLightSphere->render();
+    }
+    deferredLightSphere->setVisible(false);
+    irrDriver->setRenderTarget(0);
+    plainLightCallback->renderSpecularFactor = 0.f;
+    irrSmgr->drawAll(1.f+stepsToMake,0);
 }
 
 void World::drawHUD() {
@@ -1457,7 +1494,7 @@ void World::drawHUD() {
 }
 
 void World::drawFog() {
-    irrDriver->setRenderTarget(fogTexture);
+    irrDriver->setRenderTarget(fogTexture.RenderTexture);
 
     //draw a triangle with a different material to make alpha blending for the billboards work properly
     irr::video::SMaterial mat;
@@ -1542,6 +1579,10 @@ void World::shadersSetup() {
     plainLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/LightingVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/LightingFrag.frag", "main", irr::video::EPST_PS_1_1,plainLightCallback, irr::video::EMT_SOLID);
     //plainLightCallback->ambient = irr::video::SColor(255,0,0,0);
 
+    renderDeferredLightShader = irr::video::EMT_TRANSPARENT_ADD_COLOR; // Fallback material type
+    renderDeferredLightCallback= new RenderDeferredLightShaderCallBack;
+    renderDeferredLightShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/DeferredLightQuadVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/DeferredLightQuadFrag.frag", "main", irr::video::EPST_PS_1_1,renderDeferredLightCallback, irr::video::EMT_TRANSPARENT_ADD_COLOR);
+
 	postProcShader = irr::video::EMT_SOLID; // Fallback material type
     postProcCallback= new PostProcShaderCallBack;
     postProcShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/PostProcessVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/PostProcessFrag.frag", "main", irr::video::EPST_PS_1_1,postProcCallback, irr::video::EMT_SOLID);
@@ -1595,6 +1636,17 @@ void World::setupForHWSkinning(irr::scene::IAnimatedMesh* mesh) {
                 Vertices[skinMesh->getAllJoints()[i]->Weights[j].vertex_id].BlendIndex[id] = float(i);
             }
         }
+    }
+}
+
+void World::setupForPlainLighting(irr::scene::ISceneNode* node) {
+    for (unsigned int i=0;i<node->getMaterialCount();i++) {
+        irr::video::SMaterial& material = node->getMaterial(i);
+        material.Filter = 1;
+        material.MaterialType = plainLightShader;
+        material.setTexture(1,fogTexture.RenderTexture);
+        material.setTexture(2,renderedLights[0].RenderTexture);
+        material.setTexture(3,renderedLights[1].RenderTexture);
     }
 }
 
