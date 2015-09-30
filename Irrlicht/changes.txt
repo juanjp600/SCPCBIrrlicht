@@ -10,3 +10,4 @@
 	- CTriangleSelector uses the meshBufferIndex member to store the mesh buffer index number ( mesh->getMeshBuffer(triangle.meshBufferIndex) )
 	- Added EMF_MATERIAL_TYPE as material flag ( http://sourceforge.net/p/irrlicht/patches/221/ )
 	- Added scene capturing and interpolation
+	- Added material render filtering

@@ -49,6 +49,32 @@ void RoomShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* s
 
 void ZBufferShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
     irr::video::IVideoDriver* driver = services->getVideoDriver();
+
+    if (driver->currentlyRenderedNode->getType()==irr::scene::ESCENE_NODE_TYPE::ESNT_ANIMATED_MESH) {
+        irr::scene::ISkinnedMesh* mesh = (irr::scene::ISkinnedMesh*)(((irr::scene::IAnimatedMeshSceneNode*)(driver->currentlyRenderedNode))->getMesh());
+        irr::f32* JointArray = new irr::f32[mesh->getAllJoints().size() * 16];
+
+        int copyIncrement = 0;
+
+        //std::cout<<"fffff "<<mesh->getAllJoints().size()<<"\n";
+        for(int i = 0;i < mesh->getAllJoints().size();++i)
+        {
+            irr::core::matrix4 JointVertexPull(irr::core::matrix4::EM4CONST_NOTHING);
+            JointVertexPull.setbyproduct(
+                mesh->getAllJoints()[i]->GlobalAnimatedMatrix,
+                mesh->getAllJoints()[i]->GlobalInversedMatrix);
+
+            for(int j = 0;j < 16;++j) {
+                JointArray[copyIncrement+j] = JointVertexPull[j];
+            }
+            copyIncrement += 16;
+        }
+
+        services->setVertexShaderConstant("uBone", JointArray, mesh->getAllJoints().size() * 16);
+
+        delete[] JointArray; //TODO: should probably be using a container class that doesn't get wiped until the next pass
+    }
+
     irr::core::matrix4 worldViewProj;
 	worldViewProj = driver->getTransform(irr::video::ETS_WORLD);
 
@@ -97,6 +123,54 @@ void PostProcShaderCallBack::OnSetConstants(irr::video::IMaterialRendererService
 	services->setPixelShaderConstant("fogTex", &TextureLayerIDFog, 1);
 }
 
+#if 1
+void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+    irr::video::IVideoDriver* driver = services->getVideoDriver();
+
+    if (driver->currentlyRenderedNode->getType()==irr::scene::ESCENE_NODE_TYPE::ESNT_ANIMATED_MESH) {
+        irr::scene::ISkinnedMesh* mesh = (irr::scene::ISkinnedMesh*)(((irr::scene::IAnimatedMeshSceneNode*)(driver->currentlyRenderedNode))->getMesh());
+        irr::f32* JointArray = new irr::f32[mesh->getAllJoints().size() * 16];
+
+        int copyIncrement = 0;
+
+        //std::cout<<"fffff "<<mesh->getAllJoints().size()<<"\n";
+        for(int i = 0;i < mesh->getAllJoints().size();++i)
+        {
+            irr::core::matrix4 JointVertexPull(irr::core::matrix4::EM4CONST_NOTHING);
+            JointVertexPull.setbyproduct(
+                mesh->getAllJoints()[i]->GlobalAnimatedMatrix,
+                mesh->getAllJoints()[i]->GlobalInversedMatrix);
+
+            for(int j = 0;j < 16;++j) {
+                JointArray[copyIncrement+j] = JointVertexPull[j];
+            }
+            copyIncrement += 16;
+        }
+
+        services->setVertexShaderConstant("uBone", JointArray, mesh->getAllJoints().size() * 16);
+
+        delete[] JointArray; //TODO: should probably be using a container class that doesn't get wiped until the next pass
+    }
+
+    SharedShaderCallBack::setFogConstants(services);
+
+	irr::s32 TextureLayerID = 0;
+	services->setPixelShaderConstant("baseMap", &TextureLayerID, 1);
+	irr::s32 TextureLayerID2 = 1;
+	services->setPixelShaderConstant("normalMap", &TextureLayerID2, 1);
+	irr::s32 TextureLayerID3 = 2;
+	services->setPixelShaderConstant("specularMap", &TextureLayerID3, 1);
+	irr::s32 TextureLayerID4 = 3;
+	services->setPixelShaderConstant("fogTexture", &TextureLayerID4, 1);
+	irr::s32 TextureLayerID5 = 4;
+	services->setPixelShaderConstant("diffuseLight", &TextureLayerID5, 1);
+	irr::s32 TextureLayerID6 = 5;
+	services->setPixelShaderConstant("specularLight", &TextureLayerID6, 1);
+	services->setPixelShaderConstant("renderSpecularFactor", &LightsShaderCallBack::renderSpecularFactor, 1);
+}
+#endif
+
+#if 0
 void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
 	irr::video::IVideoDriver* driver = services->getVideoDriver();
 
@@ -152,6 +226,7 @@ void NormalsShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices
 	services->setPixelShaderConstant("fogNear",&SharedShaderCallBack::fogNear,1);
 	services->setPixelShaderConstant("fogFar",&SharedShaderCallBack::fogFar,1);
 }
+#endif
 
 void LightsShaderCallBack::setLights(const std::vector<pointLight> &inList,unsigned int prioritize) {
 	lightList.resize(inList.size());
@@ -203,7 +278,7 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
             copyIncrement += 16;
         }
 
-        services->setVertexShaderConstant("uBone", JointArray, mesh->getAllJoints().size() * 16);
+        services->setVertexShaderConstant("uBone", JointArray, mesh->getAllJoints().size() * 16); //TODO: should probably be using a container class that doesn't get wiped until the next pass
 
         delete[] JointArray;
     }
@@ -212,6 +287,8 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
 
 	irr::s32 TextureLayerID = 0;
 	services->setPixelShaderConstant("baseMap", &TextureLayerID, 1);
+	irr::s32 TextureLayerID2 = 1;
+	services->setPixelShaderConstant("fogTexture", &TextureLayerID2, 1);
 	irr::s32 TextureLayerID3 = 2;
 	services->setPixelShaderConstant("diffuseLight", &TextureLayerID3, 1);
 	irr::s32 TextureLayerID4 = 3;
@@ -284,7 +361,7 @@ void PlainLightShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServi
             copyIncrement += 16;
         }
 
-        services->setVertexShaderConstant("uBone", JointArray, mesh->getAllJoints().size() * 16);
+        services->setVertexShaderConstant("uBone", JointArray, mesh->getAllJoints().size() * 16); //TODO: should probably be using a container class that doesn't get wiped until the next pass
 
         delete[] JointArray;
     }
@@ -362,7 +439,6 @@ void RenderDeferredLightShaderCallBack::OnSetConstants(irr::video::IMaterialRend
 	irr::s32 TextureLayerID3 = 2;
 	services->setPixelShaderConstant("positionInWorld", &TextureLayerID3, 1);
 
-    std::cout<<LightsShaderCallBack::lightList[lightToRender].pos[3]<<"\n";
     services->setPixelShaderConstant("lightPos",LightsShaderCallBack::lightList[lightToRender].pos,4);
     services->setPixelShaderConstant("lightColor",(float*)(&LightsShaderCallBack::lightList[lightToRender].color), 4);
 

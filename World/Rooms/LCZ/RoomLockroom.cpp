@@ -28,7 +28,7 @@ void RoomLockroom::updateEvent() {
         doors[0]->open = false;
         doors[1]->open = false;
         state=1;
-        sounds[0] = Sound::getSound(std::string("SFX/Caution.ogg"),true,0);
+        sounds[0] = Sound::getSound(std::string("SFX/Caution.ogg"),true,1);
     } else if (state==1) {
         if (doors[0]->open==true) {
             doors[1]->open=true;

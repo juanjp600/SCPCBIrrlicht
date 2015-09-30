@@ -5,9 +5,9 @@
  
          //! Flag for blend factor
 -		EMF_BLEND_FACTOR = 0x160000
-+		EMF_BLEND_FACTOR = 0x160000,
++		EMF_BLEND_FACTOR = 0x100000,
 +
-+		EMF_MATERIAL_TYPE = 0x320000
++		EMF_MATERIAL_TYPE = 0x200000
  	};
  
  } // end namespace video

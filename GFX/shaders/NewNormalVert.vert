@@ -1,41 +1,42 @@
-#version 110
+uniform mat4 uBone[70];
 
-//based on this shader: http://irrlicht.sourceforge.net/forum//viewtopic.php?f=9&t=21186
-
-//pos = xyz; radius ^ 2 = w
-uniform vec4 lightPos1;
-uniform vec4 lightPos2;
-uniform vec4 lightPos3;
-uniform vec4 lightPos4;
+uniform mat4 mWorld;
+uniform vec3 cameraPos;
 
 varying mat3 TNTB;
-varying vec3 v;
-varying mat4 olightPos;
+varying vec3 pos;
+
+varying vec4 distFromCenter;
+
+attribute vec4 inBlendWeight;
+attribute vec4 inBlendIndex;
+
+attribute vec3 inTangent;
+attribute vec3 inBinormal;
 
 void main(void)
 {
 	
-	v = -vec3(gl_ModelViewMatrix * gl_Vertex);       
-	vec3 N = gl_Normal;
+	vec4 Position = vec4(0.0, 0.0, 0.0, 0.0);
+	vec3 N = vec3(0.0,0.0,0.0);
+	vec3 T = vec3(0.0,0.0,0.0);
+	vec3 B = vec3(0.0,0.0,0.0);
+
+	for (int i = 0; i < 4; ++i) {
+		Position += vec4(uBone[int(inBlendIndex[i])] * gl_Vertex * inBlendWeight[i]);
+		N += vec3(mat3(uBone[int(inBlendIndex[i])]) * gl_Normal * inBlendWeight[i]);
+		T += vec3(mat3(uBone[int(inBlendIndex[i])]) * inTangent * inBlendWeight[i]);
+		B += vec3(mat3(uBone[int(inBlendIndex[i])]) * inBinormal * inBlendWeight[i]);
+	}
 	
-	/* Irrlicht doesn't update tangent and bitangent
-	for animated meshes, and it forces the values to
-	gl_TexCoord[1] and [2], so we calculate these in
-	the vertex shader instead. */
-	vec3 T = -vec3(abs(N.y) + abs(N.z), abs(N.x), 0);
-	vec3 B = cross(T,N);
+	pos = (mWorld*Position).xyz;
+	TNTB[0] = mat3(mWorld)*N;
+	TNTB[1] = mat3(mWorld)*T;
+	TNTB[2] = mat3(mWorld)*B;
 	
-	TNTB[0] = gl_NormalMatrix*N;
-	TNTB[1] = gl_NormalMatrix*T;
-	TNTB[2] = gl_NormalMatrix*B;
-	
-	olightPos[0] = vec4(lightPos1.xyz + v,lightPos1.w);
-	olightPos[1] = vec4(lightPos2.xyz + v,lightPos1.w);
-	olightPos[2] = vec4(lightPos3.xyz + v,lightPos1.w);
-	olightPos[3] = vec4(lightPos4.xyz + v,lightPos1.w);
-	
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+	gl_Position = gl_ModelViewProjectionMatrix * Position;
 	
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	
+	distFromCenter = ((mWorld * Position)-vec4(cameraPos,1.0));
 }

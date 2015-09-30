@@ -30,7 +30,7 @@ void RoomStart::updateEvent() {
             sceneNodes[1]->setPosition(node->getAbsolutePosition()+irr::core::vector3df(0.f,0.f,60.f*RoomScale));
             sceneNodes[1]->updateAbsolutePosition();
 
-            sounds[0] = Sound::getSound(std::string("SFX/Intro/173scene1.ogg"),true,0);
+            sounds[0] = Sound::getSound(std::string("SFX/Intro/173scene1.ogg"),true,1);
             sndChannels[0] = sounds[0]->playSound(sceneNodes[1]->getAbsolutePosition(),10.f*RoomScale,250.f*RoomScale,false,0.75f);
 
             sceneNodes[1]->setRotation(irr::core::vector3df(-90.f,180.f,0.f));

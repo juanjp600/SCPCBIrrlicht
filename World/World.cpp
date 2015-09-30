@@ -433,13 +433,20 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC096::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/scp096.b3d"));
     setupForHWSkinning(NPC096::baseNode->getMesh());
 
-    NPC096::baseNode->getMaterial(0).MaterialType = normalsShader;
     NPC096::baseNode->getMaterial(0).setTexture(1,irrDriver->getTexture("GFX/NPCs/normal_flat.png"));
     NPC096::baseNode->getMaterial(0).setTexture(2,irrDriver->getTexture("GFX/NPCs/SCP096_specular.png"));
-    NPC096::baseNode->getMaterial(1).MaterialType = normalsShader;
+
     NPC096::baseNode->getMaterial(1).setTexture(1,irrDriver->getTexture("GFX/NPCs/normal_flat.png"));
     NPC096::baseNode->getMaterial(1).setTexture(2,irrDriver->getTexture("GFX/NPCs/SCP096_specular.png"));
+
+    setupForNormalsLighting(NPC096::baseNode);
+
     NPC096::baseNode->getMaterial(2).MaterialType = plainLightShader;
+    NPC096::baseNode->getMaterial(2).setTexture(1,fogTexture.RenderTexture);
+    NPC096::baseNode->getMaterial(2).setTexture(2,renderedLights[0].RenderTexture);
+    NPC096::baseNode->getMaterial(2).setTexture(3,renderedLights[1].RenderTexture);
+    NPC096::baseNode->getMaterial(2).setTexture(4,nullptr);
+    NPC096::baseNode->getMaterial(2).setTexture(5,nullptr);
     NPC096::baseNode->setScale(irr::core::vector3df(4.f*RoomScale,4.f*RoomScale,4.f*RoomScale));
     //NPC096::baseNode->setFrameLoop(1059,1074);
     NPC096::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
@@ -458,7 +465,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
     NPC173::baseNode->setScale(irr::core::vector3df(1.3*RoomScale));
 
-    NPC173::baseOcclusionNode = irrSmgr->addCubeSceneNode(10.0f,nullptr,-1,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,0),irr::core::vector3df(0.7f, 2.2f, 0.7f));
+    NPC173::baseOcclusionNode = irrSmgr->addCubeSceneNode(10.0f,nullptr,-1,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,0),irr::core::vector3df(0.7f*RoomScale, 2.75f*RoomScale, 0.7f*RoomScale));
     NPC173::baseOcclusionNode->getMaterial(0).MaterialType = irr::video::EMT_TRANSPARENT_ADD_COLOR;
     NPC173::driver = irrDriver;
     //node->setPosition(irr::core::vector3df(x*204.8f*RoomScale,10.f*RoomScale,y*204.8f*RoomScale));
@@ -466,7 +473,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     //node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
     //node->getMaterial(0).Lighting = true;
-    NPC173::baseNode->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)normalsShader;
+    setupForNormalsLighting(NPC173::baseNode,true);
 
     //rbody = dynamics->addTriMesh_moving(node,16000.f,20,1,1);
     //rbody->setAngularFactor(btVector3(0,0,0));
@@ -474,8 +481,8 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC173::baseNode->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/NPCs/173_norm.jpg"));
     NPC173::baseNode->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/173_Spec.jpg"));
 
-    for (int i=0;i<15;i++) {
-        //testNPC[i] = NPC178::createNPC178();
+    for (int i=0;i<1;i++) {
+        testNPC[i] = NPC173::createNPC173();
     }
     //static_cast<NPC173*>(testNPC)->boxNode = irrSmgr->addCubeSceneNode();
 
@@ -504,12 +511,12 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     Door::baseButtonNode[1]->setScale(irr::core::vector3df(RoomScale*1.f,RoomScale*1.f,RoomScale*1.f));
     setupForPlainLighting(Door::baseButtonNode[1]);
 
-    Door::openSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorOpen1.ogg"),true);
-    Door::openSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorOpen2.ogg"),true);
-    Door::openSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorOpen3.ogg"),true);
-    Door::closeSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorClose1.ogg"),true);
-    Door::closeSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorClose2.ogg"),true);
-    Door::closeSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorClose3.ogg"),true);
+    Door::openSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorOpen1.ogg"),true,1);
+    Door::openSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorOpen2.ogg"),true,1);
+    Door::openSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorOpen3.ogg"),true,1);
+    Door::closeSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorClose1.ogg"),true,1);
+    Door::closeSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorClose2.ogg"),true,1);
+    Door::closeSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorClose3.ogg"),true,1);
     Door::dynamics = dynamics;
     //rbody = dynamics->addBoxObject(Door::baseFrameNode,1000.f);
     //rbody->setLinearFactor(btVector3(0.f,0.f,0.f));
@@ -658,9 +665,9 @@ bool World::run() {
             mainPlayer->update();
             dynamics->simStep(1.f/60.f,1.f/60.f);
             mainPlayer->resetSpeeds();
-            for (int i=0;i<15;i++) {
-                //testNPC[i]->update();
-                //testNPC[i]->updateModel();
+            for (int i=0;i<1;i++) {
+                testNPC[i]->update();
+                testNPC[i]->updateModel();
             }
             irr::core::matrix4 tMat = irrDriver->getTransform(irr::video::ETS_PROJECTION)*irrDriver->getTransform(irr::video::ETS_VIEW);
             for (unsigned int i=0;i<itemList.size();i++) {
@@ -1086,8 +1093,6 @@ void World::draw3D() {
             }
         }
     }*/
-    irrDriver->runAllOcclusionQueries(true);
-    irrDriver->updateAllOcclusionQueries();
     irrDriver->setRenderTarget(renderedLights,true,true,irr::video::SColor(255,0,0,0));
     //deferredLightSphere->setPosition(irr::core::vector3df(ppx*204.8f*RoomScale,0,ppy*204.8f*RoomScale));
     deferredLightSphere->setVisible(true);
@@ -1107,7 +1112,14 @@ void World::draw3D() {
     deferredLightSphere->setVisible(false);
     irrDriver->setRenderTarget(0);
     plainLightCallback->renderSpecularFactor = 0.f;
+
+    /*irrDriver->getOverrideMaterial().EnableFlags = irr::video::EMF_MATERIAL_TYPE;
+    irrDriver->getOverrideMaterial().EnablePasses = irr::scene::ESNRP_SOLID;
+    irrDriver->getOverrideMaterial().Material.MaterialType = (irr::video::E_MATERIAL_TYPE)zBufferShader;*/
+
     irrSmgr->drawAll(1.f+stepsToMake,0);
+    irrDriver->runAllOcclusionQueries(true);
+    irrDriver->updateAllOcclusionQueries();
 }
 
 void World::drawHUD() {
@@ -1248,9 +1260,9 @@ void World::drawHUD() {
 		if (menusOpen==menus::PAUSEOPEN) {
 			font2->draw("PAUSED",irr::core::recti(mainWidth/2-180*scale2D,mainHeight/2-300*scale2D,mainWidth/2+300*scale2D,mainHeight/2-205*scale2D),irr::video::SColor(255,255,255,255),true,true);
 
-			if (button(std::string("Resume"),mainWidth/2-180*scale2D,mainHeight/2,455*scale2D,70*scale2D)) { menusOpen = menus::NONE; }
-			if (button(std::string("Options"),mainWidth/2-180*scale2D,mainHeight/2+80*scale2D,455*scale2D,70*scale2D)) { menusOpen = menus::OPTIONSOPEN; }
-			if (button(std::string("Quit"),mainWidth/2-180*scale2D,mainHeight/2+160*scale2D,455*scale2D,70*scale2D)) { irrDevice->closeDevice(); }//TODO: add main menu
+			if (button(std::string("Resume"),mainWidth/2-180*scale2D,mainHeight/2-20*scale2D,455*scale2D,70*scale2D)) { menusOpen = menus::NONE; }
+			if (button(std::string("Options"),mainWidth/2-180*scale2D,mainHeight/2+60*scale2D,455*scale2D,70*scale2D)) { menusOpen = menus::OPTIONSOPEN; }
+			if (button(std::string("Quit"),mainWidth/2-180*scale2D,mainHeight/2+140*scale2D,455*scale2D,70*scale2D)) { irrDevice->closeDevice(); }//TODO: add main menu
 
 			if (irrReceiver->IsPrevKeyDown(irr::KEY_ESCAPE)==true && irrReceiver->IsKeyDown(irr::KEY_ESCAPE)==false) menusOpen = menus::NONE;
 		} else {
@@ -1600,6 +1612,8 @@ void World::shadersSetup() {
 
     vertexDescriptor->addAttribute("inPosition", 3, irr::video::EVAS_POSITION, irr::video::EVAT_FLOAT, 0);
     vertexDescriptor->addAttribute("inNormal", 3, irr::video::EVAS_NORMAL, irr::video::EVAT_FLOAT, 0);
+    vertexDescriptor->addAttribute("inTangent", 3, irr::video::EVAS_TANGENT, irr::video::EVAT_FLOAT, 0);
+    vertexDescriptor->addAttribute("inBinormal", 3, irr::video::EVAS_BINORMAL, irr::video::EVAT_FLOAT, 0);
     vertexDescriptor->addAttribute("inTexCoord0", 2, irr::video::EVAS_TEXCOORD0, irr::video::EVAT_FLOAT, 0);
     vertexDescriptor->addAttribute("inBlendWeight", 4, irr::video::EVAS_BLEND_WEIGHTS, irr::video::EVAT_FLOAT, 0);
     vertexDescriptor->addAttribute("inBlendIndex", 4, irr::video::EVAS_BLEND_INDICES, irr::video::EVAT_FLOAT, 0);
@@ -1613,6 +1627,7 @@ void World::setupForHWSkinning(irr::scene::IAnimatedMesh* mesh) {
     for (irr::u32 i = 0; i < skinMesh->getMeshBufferCount(); ++i) {
         irrSmgr->getMeshManipulator()->convertVertices<SSkinningVertex>(skinMesh->getMeshBuffer(i), irrDriver->getVertexDescriptor("Skinning"), false);
     }
+    irrSmgr->getMeshManipulator()->recalculateTangents(mesh,true,true,true);
 
     skinMesh->setHardwareSkinning(true);
 
@@ -1647,6 +1662,35 @@ void World::setupForPlainLighting(irr::scene::ISceneNode* node) {
         material.setTexture(1,fogTexture.RenderTexture);
         material.setTexture(2,renderedLights[0].RenderTexture);
         material.setTexture(3,renderedLights[1].RenderTexture);
+    }
+}
+
+void World::setupForNormalsLighting(irr::scene::ISceneNode* node,bool convertVerts) {
+    if (convertVerts) {
+        irr::scene::IMesh* mesh = static_cast<irr::scene::IMeshSceneNode*>(node)->getMesh();
+        for (irr::u32 i = 0; i <mesh->getMeshBufferCount(); ++i) {
+            irrSmgr->getMeshManipulator()->convertVertices<SSkinningVertex>(mesh->getMeshBuffer(i), irrDriver->getVertexDescriptor("Skinning"), false);
+            SSkinningVertex* Vertices = static_cast<SSkinningVertex*>(mesh->getMeshBuffer(i)->getVertexBuffer(0)->getVertices());
+            for (irr::u32 j=0;j<mesh->getMeshBuffer(i)->getVertexBuffer(0)->getVertexCount();++j) {
+                Vertices[j].BlendIndex[0] = 0.f;
+                Vertices[j].BlendWeight[0] = 1.f;
+                Vertices[j].BlendIndex[1] = 0.f;
+                Vertices[j].BlendWeight[1] = 0.f;
+                Vertices[j].BlendIndex[2] = 0.f;
+                Vertices[j].BlendWeight[2] = 0.f;
+                Vertices[j].BlendIndex[3] = 0.f;
+                Vertices[j].BlendWeight[3] = 0.f;
+            }
+        }
+        irrSmgr->getMeshManipulator()->recalculateTangents(mesh,true,true,true);
+    }
+    for (unsigned int i=0;i<node->getMaterialCount();i++) {
+        irr::video::SMaterial& material = node->getMaterial(i);
+        material.Filter = 1;
+        material.MaterialType = normalsShader;
+        material.setTexture(3,fogTexture.RenderTexture);
+        material.setTexture(4,renderedLights[0].RenderTexture);
+        material.setTexture(5,renderedLights[1].RenderTexture);
     }
 }
 

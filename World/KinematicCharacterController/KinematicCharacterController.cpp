@@ -14,6 +14,8 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
+//TODO: ORGANIZE THIS CODE
+
 #include "KinematicCharacterController.h"
 
 #include <LinearMath/btIDebugDraw.h>
@@ -446,6 +448,75 @@ void CharacterController::stepDown ( btCollisionWorld* collisionWorld, btScalar 
 {
    btTransform start, end;
 
+   start.setIdentity ();
+   end.setIdentity ();
+
+   start.setOrigin (m_currentPosition);
+   end.setOrigin (m_currentPosition-btVector3(0.f,0.2f,0.f));
+
+   btKinematicClosestNotMeConvexResultCallback callback (m_ghostObject, getUpAxisDirections()[m_upAxis], m_maxSlopeCosine);
+   callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
+   callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
+
+   if (m_useGhostObjectSweepTest)
+   {
+      m_ghostObject->convexSweepTest (m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+   } else
+   {
+      collisionWorld->convexSweepTest (m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+   }
+
+   if (callback.hasHit())
+   {
+     m_verticalVelocity = 0.0;
+     m_verticalOffset = 0.0;
+     m_wasJumping = false;
+   } else {
+        btScalar downVelocity = (m_verticalVelocity<0.f?-m_verticalVelocity:0.f) * dt;
+        if(downVelocity > 0.0// && downVelocity < m_stepHeight //TEST
+          && (m_wasOnGround || !m_wasJumping))
+        {
+          //if (downVelocity < m_stepHeight) //TODO to jak do ziemi <m_stepHeight
+          //   downVelocity = m_stepHeight;
+          ////TEST for better falling
+             if(downVelocity > m_fallSpeed)
+                downVelocity = m_fallSpeed;
+          ////TEST END
+
+          //downVelocity = m_stepHeight;
+        }
+
+     btVector3 step_drop = getUpAxisDirections()[m_upAxis] * (m_currentStepOffset + downVelocity);
+       m_targetPosition -= step_drop;
+
+       start.setIdentity ();
+       end.setIdentity ();
+
+       start.setOrigin (m_currentPosition);
+       end.setOrigin (m_targetPosition);
+
+     if (m_useGhostObjectSweepTest)
+     {
+       m_ghostObject->convexSweepTest (m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+     } else
+     {
+       collisionWorld->convexSweepTest (m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+     }
+     if (callback.hasHit())
+       {
+          // we dropped a fraction of the height -> hit floor
+          m_currentPosition.setInterpolate3 (m_currentPosition, m_targetPosition, callback.m_closestHitFraction);
+          m_verticalVelocity = 0.0;
+          m_verticalOffset = 0.0;
+          m_wasJumping = false;
+       } else {
+          // we dropped the full height
+
+          m_currentPosition = m_targetPosition;
+       }
+   }
+#if 0
+
    // phase 3: down
    /*btScalar additionalDownStep = (m_wasOnGround && !onGround()) ? m_stepHeight : 0.0;
    btVector3 step_drop = getUpAxisDirections()[m_upAxis] * (m_currentStepOffset + additionalDownStep);
@@ -500,6 +571,7 @@ void CharacterController::stepDown ( btCollisionWorld* collisionWorld, btScalar 
 
       m_currentPosition = m_targetPosition;
    }
+#endif
 }
 //---------------------------------------------------------------------------------------
 void CharacterController::setWalkDirection(const btVector3& walkDirection)
@@ -581,7 +653,7 @@ void CharacterController::playerStep (  btCollisionWorld* collisionWorld, btScal
 //   printf("walkDirection(%f,%f,%f)\n",walkDirection[0],walkDirection[1],walkDirection[2]);
 //   printf("walkSpeed=%f\n",walkSpeed);
     float y0 = m_currentPosition[1];
-   stepUp (collisionWorld);
+   //stepUp (collisionWorld);
    if (m_useWalkDirection) {
       stepForwardAndStrafe (collisionWorld, m_walkDirection);
    } else {

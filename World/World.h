@@ -187,7 +187,7 @@ class World {
 
         void shadersSetup();
         void setupForHWSkinning(irr::scene::IAnimatedMesh* mesh);
-        void setupForPlainLighting(irr::scene::ISceneNode* node);
+        void setupForPlainLighting(irr::scene::ISceneNode* node); void setupForNormalsLighting(irr::scene::ISceneNode* node,bool convertVerts=false);
 
         RoomShaderCallBack* roomCallback;
         RoomShaderCallBack_noNormals* roomCallback_noNormals;
@@ -286,6 +286,8 @@ struct SSkinningVertex
 	{
 		Pos = other.Pos;
 		Normal = other.Normal;
+		Tangent = other.Tangent;
+		Binormal = other.Binormal;
 		TCoords = other.TCoords;
 
 		memcpy(BlendWeight, other.BlendWeight, sizeof(irr::f32) * 4);
@@ -296,6 +298,8 @@ struct SSkinningVertex
 	{
 		Pos = other.Pos;
 		Normal = other.Normal;
+		Tangent = other.Tangent;
+		Binormal = other.Binormal;
 		TCoords = other.TCoords;
 
 		memcpy(BlendWeight, other.BlendWeight, sizeof(irr::f32) * 4);
@@ -307,13 +311,15 @@ struct SSkinningVertex
 	bool operator==(const SSkinningVertex& other) const
 	{
 
-		return ((Pos == other.Pos) && (Normal == other.Normal) && (TCoords == other.TCoords) &&
+		return ((Pos == other.Pos) && (Normal == other.Normal) && (Tangent == other.Tangent) && (Binormal == other.Binormal) && (TCoords == other.TCoords) &&
 				memcmp(&BlendWeight, other.BlendWeight, sizeof(irr::f32) * 4) == 0 &&
 				memcmp(&BlendIndex, other.BlendIndex, sizeof(irr::f32) * 4) == 0);
 	}
 
 	irr::core::vector3df Pos;
 	irr::core::vector3df Normal;
+	irr::core::vector3df Tangent;
+	irr::core::vector3df Binormal;
 	irr::core::vector2d<irr::f32> TCoords;
 	irr::f32 BlendWeight[4];
 	irr::f32 BlendIndex[4];

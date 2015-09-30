@@ -931,9 +931,9 @@ void World::createMap(unsigned char zone) {
 							case 0: //LCZ
 								if (currentRoom1==0) {
 									roomArray[x][y] = RoomStart::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,50.f*RoomScale,y*204.8f*RoomScale));
-									for (int i=0;i<15;i++) {
-                                        //testNPC[i]->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
+									for (int i=0;i<1;i++) {
+                                        testNPC[i]->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
                                     }
 
 									for (unsigned int i=0;i<itemList.size();i++) {

@@ -17,15 +17,15 @@ NPC173::NPC173() {
     occlusionNode->getMaterial(0).BackfaceCulling = false;
     occlusionNode->getMaterial(0).DiffuseColor = irr::video::SColor(0,0,0,0);
     driver->addOcclusionQuery(occlusionNode,NPC173::baseOcclusionNode->getMesh());
-    collider = NPC::dynamics->addPlayerColliderObject(node,12.f,3.f,64000.f);//CapsuleObject(node,12.f,3.f,16000.f);
+    collider = NPC::dynamics->addPlayerColliderObject(node,12.f*RoomScale,4.f*RoomScale,64000.f);//CapsuleObject(node,12.f,3.f,16000.f);
     NPC::dynamics->unregisterRBody(collider);
-    NPC::dynamics->registerNewRBody(node,collider,-1,-1,~0,irr::core::vector3df(0.f,5.8f,0.f));
+    NPC::dynamics->registerNewRBody(node,collider,-1,-1,~0,irr::core::vector3df(0.f,5.8f*RoomScale,0.f));
     collider->setLinearFactor(btVector3(1.f,1.f,1.f));
     collider->setAngularFactor(btVector3(0.f,0.f,0.f));
-    collider->setGravity(btVector3(0.f,-4000.f,0.f));
+    collider->setGravity(btVector3(0.f,-4000.f*RoomScale,0.f));
     memDir = irr::core::vector3df(0.f,0.f,0.f);
-    collider->setCcdMotionThreshold(3.f);
-	collider->setCcdSweptSphereRadius(1.5f);
+    collider->setCcdMotionThreshold(3.f*RoomScale);
+	collider->setCcdSweptSphereRadius(1.5f*RoomScale);
 	collider->setLinearVelocity(btVector3(0.f,0.f,0.f));
 	/*prevPos[0] = irr::core::vector3df(-100.f);
     prevPos[1] = irr::core::vector3df(100.f);*/
@@ -41,7 +41,7 @@ void NPC173::update() {
     //std::cout<<"173update"<<prevPos[0].X<<"___"<<prevPos[1].X<<"\n";
 
     bool seesPlayer = false;
-    if (NPC::dynamics->rayTestPoint(irrToBtVec(NPC::player->getPosition()),collider->getCenterOfMassPosition()).equals(btToIrrVec(collider->getCenterOfMassPosition()),3.f)) {
+    if (NPC::dynamics->rayTestPoint(irrToBtVec(NPC::player->getPosition()),collider->getCenterOfMassPosition()).equals(btToIrrVec(collider->getCenterOfMassPosition()),4.f*RoomScale)) {
         seesPlayer = true;
         irr::core::vector3df dirToPlayer = (NPC::player->getPosition()-node->getPosition());
         dirToPlayer.Y = 0.f;
@@ -49,10 +49,9 @@ void NPC173::update() {
     } else {
         //boxNode->setPosition(NPC::dynamics->rayTestPoint(irrToBtVec(NPC::player->getPosition()),collider->getCenterOfMassPosition()));
     }
-    std::cout<<"asdasd "<<driver->getOcclusionQueryResult(occlusionNode)<<"\n";
     if (!NPC::player->seesMeshNode(static_cast<irr::scene::IMeshSceneNode*>(node)) || (NPC::player->blinkTimer<=-0.25f && NPC::player->blinkTimer>=-0.75f) || !(driver->getOcclusionQueryResult(occlusionNode)>0)) {
         collider->setLinearFactor(btVector3(1.f,1.f,1.f));
-        moveDir = memDir*450.f;
+        moveDir = memDir*450.f*RoomScale;
         moveDir.Y = collider->getLinearVelocity()[1];
         collider->setLinearVelocity(irrToBtVec(moveDir));
         collider->setFriction(0.f);
@@ -60,7 +59,7 @@ void NPC173::update() {
         collider->setRestitution(0.f);
         collider->forceActivationState(ACTIVE_TAG); collider->activate();
         if (!seesPlayer) { //doesn't see player
-            if (NPC::dynamics->rayTest(collider->getCenterOfMassPosition(),collider->getCenterOfMassPosition()+irrToBtVec(memDir*5.5f))) { //ran into a wall, change direction randomly
+            if (NPC::dynamics->rayTest(collider->getCenterOfMassPosition(),collider->getCenterOfMassPosition()+irrToBtVec(memDir*5.5f*RoomScale))) { //ran into a wall, change direction randomly
                 memDir.X = rand()%500-250;
                 memDir.Z = rand()%500-250;
                 memDir = memDir.normalize();
@@ -82,7 +81,7 @@ void NPC173::updateModel() {
     pointAt = -moveDir;
     rot.Y = (std::atan2(pointAt.X,pointAt.Z)*irr::core::RADTODEG);
     node->setRotation(rot);
-    occlusionNode->setPosition(node->getPosition()+irr::core::vector3df(0.f,11.f,0.f));
+    occlusionNode->setPosition(node->getPosition()+irr::core::vector3df(0.f,14.f*RoomScale,0.f));
 }
 
 void NPC173::teleport(irr::core::vector3df newPos) {

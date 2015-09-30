@@ -52,6 +52,7 @@ Player::Player(World* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
 	ghostObject = new btPairCachingGhostObject();
 	ghostObject->setWorldTransform(capsule->getCenterOfMassTransform());
 	ghostObject->setCollisionShape(capsule->getCollisionShape());
+	capsule->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f,1.f));
 	ghostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 	dynamics->getCollisionWorld()->addCollisionObject(ghostObject,btBroadphaseProxy::CharacterFilter,btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter);
 
@@ -304,6 +305,50 @@ void Player::update() {
     linearVelocity = (linearVelocity*0.8f)+irrToBtVec(d*0.2f);
     controller->setWalkDirection(linearVelocity);
     controller->updateAction(dynamics->getCollisionWorld(),1.f/60.f);
+
+    if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
+        crouched = true;
+    } else {
+        btVector3 start = capsule->getCenterOfMassPosition();
+        btVector3 finish = start + btVector3(0,height*0.85f,0);
+        start += btVector3(0,(height * 0.25f),0);
+        if (!dynamics->rayTest(start,finish)) {
+            if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,radius*1.15f),finish+btVector3(radius*1.15f,0,radius*1.15f))) {
+                if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,radius*1.15f),finish+btVector3(-radius*1.15f,0,radius*1.15f))) {
+                    if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,-radius*1.15f),finish+btVector3(radius*1.15f,0,-radius*1.15f))) {
+                        if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,-radius*1.15f),finish+btVector3(-radius*1.15f,0,-radius*1.15f))) {
+                            crouched = false; //don't stand up if there's something above your head
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bool changed = false;
+    if (crouched) {
+        if (crouchState<0.5f) changed = true;
+
+        float prevState = crouchState;
+        crouchState=std::min(0.5f,crouchState+(0.5f-crouchState)*0.2f);
+        if (crouchState>0.4998f) crouchState = 0.5f;
+
+        if (changed) {
+            controller->getGhostObject()->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
+            controller->teleport(controller->getPosition()+btVector3(0.f,(prevState-crouchState)*height*0.49f,0.f));
+        }
+    } else {
+        if (crouchState>0.0f) changed = true;
+
+        float prevState = crouchState;
+        crouchState=std::max(0.f,crouchState+(-crouchState)*0.1f);
+        if (crouchState<0.002f) crouchState = 0.f;
+
+        if (changed) {
+            controller->getGhostObject()->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
+            controller->teleport(controller->getPosition()+btVector3(0.f,(prevState-crouchState)*height*0.49f,0.f));
+        }
+    }
 
     if (wearingGasMask<inventory_size) {
         if (inventory[wearingGasMask]!=nullptr) {
