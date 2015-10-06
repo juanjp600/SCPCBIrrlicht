@@ -284,16 +284,33 @@ void NPC178::update() {
         }
         int prevWalkTimer = walkTimer;
         walkTimer-=1;
+
+        irr::scene::IAnimatedMeshSceneNode* animNode = static_cast<irr::scene::IAnimatedMeshSceneNode*>(node);
+
         if (prevWalkTimer>=0 && walkTimer<0) {
-            //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(206, 240);
-            //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(0.f);
+            animNode->setCurrentFrame(206);
         }
         if (walkTimer<minWalkTimer) {
+            animNode->setCurrentFrame(64);
             walkTimer = rand()%300+500;
-            //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setFrameLoop(64,92);
-            //static_cast<irr::scene::IAnimatedMeshSceneNode*>(node)->setAnimationSpeed(0.f);
             minWalkTimer = -(rand()%300+500);
             spinTimer = -(rand()%200);
+        }
+
+        if (walkTimer>0) {
+            float currFrame = animNode->getFrameNr();
+
+            if (currFrame<64.f) { currFrame=64.f; }
+            currFrame+=0.55f;
+            while (currFrame>92.f) { currFrame-=28.f; }
+            animNode->setCurrentFrame(currFrame);
+        } else {
+            float currFrame = animNode->getFrameNr();
+
+            if (currFrame<206.f) { currFrame=206.f; }
+            currFrame+=0.1f;
+            while (currFrame>240.f) { currFrame-=34.f; }
+            animNode->setCurrentFrame(currFrame);
         }
     }
     prevPos = getPosition();

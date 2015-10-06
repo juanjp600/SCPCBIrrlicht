@@ -16,7 +16,7 @@ NPC173::NPC173() {
     occlusionNode->getMaterial(0).FrontfaceCulling = true;
     occlusionNode->getMaterial(0).BackfaceCulling = false;
     occlusionNode->getMaterial(0).DiffuseColor = irr::video::SColor(0,0,0,0);
-    driver->addOcclusionQuery(occlusionNode,NPC173::baseOcclusionNode->getMesh());
+    //driver->addOcclusionQuery(occlusionNode,NPC173::baseOcclusionNode->getMesh());
     collider = NPC::dynamics->addPlayerColliderObject(node,12.f*RoomScale,4.f*RoomScale,64000.f);//CapsuleObject(node,12.f,3.f,16000.f);
     NPC::dynamics->unregisterRBody(collider);
     NPC::dynamics->registerNewRBody(node,collider,-1,-1,~0,irr::core::vector3df(0.f,5.8f*RoomScale,0.f));
@@ -49,7 +49,8 @@ void NPC173::update() {
     } else {
         //boxNode->setPosition(NPC::dynamics->rayTestPoint(irrToBtVec(NPC::player->getPosition()),collider->getCenterOfMassPosition()));
     }
-    if (!NPC::player->seesMeshNode(static_cast<irr::scene::IMeshSceneNode*>(node)) || (NPC::player->blinkTimer<=-0.25f && NPC::player->blinkTimer>=-0.75f) || !(driver->getOcclusionQueryResult(occlusionNode)>0)) {
+
+    if (!NPC::player->seesMeshNode(static_cast<irr::scene::IMeshSceneNode*>(node)) || (NPC::player->blinkTimer<=-0.25f && NPC::player->blinkTimer>=-0.75f)/* || !(driver->getOcclusionQueryResult(occlusionNode)>0)*/) {
         collider->setLinearFactor(btVector3(1.f,1.f,1.f));
         moveDir = memDir*450.f*RoomScale;
         moveDir.Y = collider->getLinearVelocity()[1];

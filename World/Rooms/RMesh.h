@@ -27,6 +27,8 @@ struct pointLight {
 struct RMesh {
     std::string path;
     irr::scene::IMesh* mesh;
+    std::vector<irr::scene::IMesh*> transparentSurfaces; //these need to be separate so Irrlicht can sort them
+    std::vector<irr::core::vector3df> transparentOffset;
     btBvhTriangleMeshShape* shape;
     std::vector<pointLight> pointlights;
 

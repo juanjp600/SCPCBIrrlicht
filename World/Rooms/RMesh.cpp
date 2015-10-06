@@ -27,6 +27,14 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 		unsigned char id;
     };
 
+    struct transparentMesh {
+        irr::scene::SMesh* mesh;
+        irr::core::vector3df normal;
+        irr::core::vector3df minXYZ;
+        irr::core::vector3df maxXYZ;
+        irr::core::vector3df center;
+    };
+
 	std::vector<tempWaypoint> tempWaypoints;
 	tempWaypoints.clear();
 	tempWaypoint newWP;
@@ -65,6 +73,8 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
         irr::scene::SMesh* mesh = new irr::scene::SMesh();
         irr::scene::CMeshBuffer<irr::video::S3DVertex2TCoords>* bufLM = nullptr;
         irr::scene::CMeshBuffer<irr::video::S3DVertex>* buf = nullptr;
+
+        std::vector<transparentMesh> transparentMeshes; //transparent meshes need to be sorted
 
         btTriangleMesh *pTriMesh = new btTriangleMesh();
 		//pTriMesh->m_weldingThreshold = 3.f;
@@ -359,39 +369,192 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 									}
 								break;
 								case 1: //alpha
-									buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(driver->getVertexDescriptor(0));
-                                    irr::scene::CVertexBuffer<irr::video::S3DVertex>* VertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
-                                    irr::scene::CIndexBuffer* IndexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
-									buf->getMaterial().MaterialType = roomShaders[3];
+									//buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(driver->getVertexDescriptor(0));
+                                    irr::scene::CVertexBuffer<irr::video::S3DVertex>* VertexBuffer;// = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
+                                    irr::scene::CIndexBuffer* IndexBuffer;// = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
+									//buf->getMaterial().MaterialType = roomShaders[3];
 
-									mesh->addMeshBuffer(buf);
+									//mesh->addMeshBuffer(buf);
 
-									buf->drop();
+									//buf->drop();
 
-									for (unsigned int j = 0; j<vertices.size(); ++j) {
-                                        VertexBuffer->addVertex(vertices[j]);
-                                    }
+									//for (unsigned int j = 0; j<vertices.size(); ++j) {
+                                        //VertexBuffer->addVertex(vertices[j]);
+                                    //}
                                     for (unsigned int j = 0; j<indices.size(); ++j) {
-                                        IndexBuffer->addIndex(indices[j].X);
+                                        float ax1 = vertices[indices[j].X].Pos.X; float ay1 = vertices[indices[j].X].Pos.Y; float az1 = vertices[indices[j].X].Pos.Z;
+                                        float ax2 = vertices[indices[j].Y].Pos.X; float ay2 = vertices[indices[j].Y].Pos.Y; float az2 = vertices[indices[j].Y].Pos.Z;
+                                        float ax3 = vertices[indices[j].Z].Pos.X; float ay3 = vertices[indices[j].Z].Pos.Y; float az3 = vertices[indices[j].Z].Pos.Z;
+
+                                        irr::core::vector3df triangleCenter(ax1,ay1,az1);
+                                        triangleCenter+=irr::core::vector3df(ax2,ay2,az2);
+                                        triangleCenter+=irr::core::vector3df(ax3,ay3,az3);
+                                        triangleCenter*=1.f/3.f;
+
+                                        irr::core::vector3df v1(ax1,ay1,az1);
+                                        irr::core::vector3df v2(ax2,ay2,az2);
+                                        irr::core::vector3df v3(ax3,ay3,az3);
+
+                                        float x1 = v1.X; float y1 = v1.Y; float z1 = v1.Z;
+                                        float x2 = v2.X; float y2 = v2.Y; float z2 = v2.Z;
+                                        float x3 = v3.X; float y3 = v3.Y; float z3 = v3.Z;
+
+                                        float nx1 = (y3-y1)*(z2-z1)-(y2-y1)*(z3-z1);
+                                        float ny1 = (z3-z1)*(x2-x1)-(z2-z1)*(x3-x1);
+                                        float nz1 = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1);
+                                        float fac1=sqrt((nx1*nx1)+(ny1*ny1)+(nz1*nz1));
+                                        nx1 = -nx1/fac1;
+                                        ny1 = -ny1/fac1;
+                                        nz1 = -nz1/fac1;
+                                        irr::core::vector3df normal(nx1,ny1,nz1);
+
+                                        bool addNewMesh = true;
+                                        for (unsigned int k=0;k<transparentMeshes.size();k++) {
+                                            if (normal.equals(transparentMeshes[k].normal,0.1f) || normal.equals(-transparentMeshes[k].normal,0.1f)) { //normals are parallel
+                                                if (std::abs(normal.dotProduct((triangleCenter-transparentMeshes[k].center).normalize()))<0.2f) { //normal is perpendicular to distance vector between new triangle and mesh center
+                                                    irr::scene::IMeshBuffer* buf2 = transparentMeshes[k].mesh->getMeshBuffer(0);
+                                                    irr::core::aabbox3df aabb = buf2->getBoundingBox();
+                                                    if (aabb.isPointInside(vertices[indices[j].X].Pos) || aabb.isPointInside(vertices[indices[j].Y].Pos) || aabb.isPointInside(vertices[indices[j].Z].Pos)) { //new triangle is within mesh bounding box
+                                                        VertexBuffer = static_cast<irr::scene::CVertexBuffer<irr::video::S3DVertex>*>(buf->getVertexBuffer(0));
+                                                        IndexBuffer = static_cast<irr::scene::CIndexBuffer*>(buf->getIndexBuffer());
+                                                        VertexBuffer->addVertex(vertices[indices[j].X]);
+                                                        VertexBuffer->addVertex(vertices[indices[j].Y]);
+                                                        VertexBuffer->addVertex(vertices[indices[j].Z]);
+                                                        IndexBuffer->addIndex(VertexBuffer->getVertexCount()-3);
+                                                        IndexBuffer->addIndex(VertexBuffer->getVertexCount()-2);
+                                                        IndexBuffer->addIndex(VertexBuffer->getVertexCount()-1);
+
+                                                        transparentMeshes[k].maxXYZ.X = std::max(vertices[indices[j].X].Pos.X,transparentMeshes[k].maxXYZ.X);
+                                                        transparentMeshes[k].maxXYZ.X = std::max(vertices[indices[j].Y].Pos.X,transparentMeshes[k].maxXYZ.X);
+                                                        transparentMeshes[k].maxXYZ.X = std::max(vertices[indices[j].Z].Pos.X,transparentMeshes[k].maxXYZ.X);
+
+                                                        transparentMeshes[k].maxXYZ.Y = std::max(vertices[indices[j].X].Pos.Y,transparentMeshes[k].maxXYZ.Y);
+                                                        transparentMeshes[k].maxXYZ.Y = std::max(vertices[indices[j].Y].Pos.Y,transparentMeshes[k].maxXYZ.Y);
+                                                        transparentMeshes[k].maxXYZ.Y = std::max(vertices[indices[j].Z].Pos.Y,transparentMeshes[k].maxXYZ.Y);
+
+                                                        transparentMeshes[k].maxXYZ.Z = std::max(vertices[indices[j].X].Pos.Z,transparentMeshes[k].maxXYZ.Z);
+                                                        transparentMeshes[k].maxXYZ.Z = std::max(vertices[indices[j].Y].Pos.Z,transparentMeshes[k].maxXYZ.Z);
+                                                        transparentMeshes[k].maxXYZ.Z = std::max(vertices[indices[j].Z].Pos.Z,transparentMeshes[k].maxXYZ.Z);
+
+                                                        transparentMeshes[k].minXYZ.X = std::min(vertices[indices[j].X].Pos.X,transparentMeshes[k].minXYZ.X);
+                                                        transparentMeshes[k].minXYZ.X = std::min(vertices[indices[j].Y].Pos.X,transparentMeshes[k].minXYZ.X);
+                                                        transparentMeshes[k].minXYZ.X = std::min(vertices[indices[j].Z].Pos.X,transparentMeshes[k].minXYZ.X);
+
+                                                        transparentMeshes[k].minXYZ.Y = std::min(vertices[indices[j].X].Pos.Y,transparentMeshes[k].minXYZ.Y);
+                                                        transparentMeshes[k].minXYZ.Y = std::min(vertices[indices[j].Y].Pos.Y,transparentMeshes[k].minXYZ.Y);
+                                                        transparentMeshes[k].minXYZ.Y = std::min(vertices[indices[j].Z].Pos.Y,transparentMeshes[k].minXYZ.Y);
+
+                                                        transparentMeshes[k].minXYZ.Z = std::min(vertices[indices[j].X].Pos.Z,transparentMeshes[k].minXYZ.Z);
+                                                        transparentMeshes[k].minXYZ.Z = std::min(vertices[indices[j].Y].Pos.Z,transparentMeshes[k].minXYZ.Z);
+                                                        transparentMeshes[k].minXYZ.Z = std::min(vertices[indices[j].Z].Pos.Z,transparentMeshes[k].minXYZ.Z);
+
+                                                        transparentMeshes[k].center = (transparentMeshes[k].minXYZ+transparentMeshes[k].maxXYZ)*0.5f;
+
+                                                        buf->recalculateBoundingBox();
+
+                                                        addNewMesh = false;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (addNewMesh) {
+                                            std::cout<<"NEWMESH\n";
+                                            buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(driver->getVertexDescriptor(0));
+                                            VertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
+                                            IndexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
+
+                                            VertexBuffer->addVertex(vertices[indices[j].X]);
+                                            VertexBuffer->addVertex(vertices[indices[j].Y]);
+                                            VertexBuffer->addVertex(vertices[indices[j].Z]);
+                                            IndexBuffer->addIndex(VertexBuffer->getVertexCount()-3);
+                                            IndexBuffer->addIndex(VertexBuffer->getVertexCount()-2);
+                                            IndexBuffer->addIndex(VertexBuffer->getVertexCount()-1);
+
+                                            transparentMesh newTPMesh;
+                                            newTPMesh.mesh = new irr::scene::SMesh();
+                                            newTPMesh.normal = normal;
+                                            newTPMesh.maxXYZ = vertices[indices[j].X].Pos;
+                                            newTPMesh.minXYZ = vertices[indices[j].X].Pos;
+
+                                            newTPMesh.maxXYZ.X = std::max(vertices[indices[j].X].Pos.X,newTPMesh.maxXYZ.X);
+                                            newTPMesh.maxXYZ.X = std::max(vertices[indices[j].Y].Pos.X,newTPMesh.maxXYZ.X);
+                                            newTPMesh.maxXYZ.X = std::max(vertices[indices[j].Z].Pos.X,newTPMesh.maxXYZ.X);
+
+                                            newTPMesh.maxXYZ.Y = std::max(vertices[indices[j].X].Pos.Y,newTPMesh.maxXYZ.Y);
+                                            newTPMesh.maxXYZ.Y = std::max(vertices[indices[j].Y].Pos.Y,newTPMesh.maxXYZ.Y);
+                                            newTPMesh.maxXYZ.Y = std::max(vertices[indices[j].Z].Pos.Y,newTPMesh.maxXYZ.Y);
+
+                                            newTPMesh.maxXYZ.Z = std::max(vertices[indices[j].X].Pos.Z,newTPMesh.maxXYZ.Z);
+                                            newTPMesh.maxXYZ.Z = std::max(vertices[indices[j].Y].Pos.Z,newTPMesh.maxXYZ.Z);
+                                            newTPMesh.maxXYZ.Z = std::max(vertices[indices[j].Z].Pos.Z,newTPMesh.maxXYZ.Z);
+
+                                            newTPMesh.minXYZ.X = std::min(vertices[indices[j].X].Pos.X,newTPMesh.minXYZ.X);
+                                            newTPMesh.minXYZ.X = std::min(vertices[indices[j].Y].Pos.X,newTPMesh.minXYZ.X);
+                                            newTPMesh.minXYZ.X = std::min(vertices[indices[j].Z].Pos.X,newTPMesh.minXYZ.X);
+
+                                            newTPMesh.minXYZ.Y = std::min(vertices[indices[j].X].Pos.Y,newTPMesh.minXYZ.Y);
+                                            newTPMesh.minXYZ.Y = std::min(vertices[indices[j].Y].Pos.Y,newTPMesh.minXYZ.Y);
+                                            newTPMesh.minXYZ.Y = std::min(vertices[indices[j].Z].Pos.Y,newTPMesh.minXYZ.Y);
+
+                                            newTPMesh.minXYZ.Z = std::min(vertices[indices[j].X].Pos.Z,newTPMesh.minXYZ.Z);
+                                            newTPMesh.minXYZ.Z = std::min(vertices[indices[j].Y].Pos.Z,newTPMesh.minXYZ.Z);
+                                            newTPMesh.minXYZ.Z = std::min(vertices[indices[j].Z].Pos.Z,newTPMesh.minXYZ.Z);
+
+                                            newTPMesh.center = (newTPMesh.minXYZ+newTPMesh.maxXYZ)*0.5f;
+
+                                            buf->setVertexBuffer(VertexBuffer, 0);
+                                            buf->setIndexBuffer(IndexBuffer);
+
+                                            buf->getMaterial().MaterialType = roomShaders[3];
+
+                                            newTPMesh.mesh->addMeshBuffer(buf);
+
+                                            if (textures[1]!=0) {
+                                                buf->getMaterial().setTexture(0,loadedTextures[textures[1]-1].tex);
+                                            } else {
+                                                buf->getMaterial().setTexture(0,loadedTextures[textures[0]-1].tex);
+                                            }
+                                            buf->getMaterial().setTexture(1,roomTextures[1]); //fog texture
+                                            //buf->getMaterial().setFlag(irr::video::EMF_ZWRITE_ENABLE, true);
+
+                                            buf->getMaterial().Lighting = false;
+
+                                            buf->getMaterial().BackfaceCulling = false;
+
+                                            buf->recalculateBoundingBox();
+
+                                            buf->drop();
+
+                                            newTPMesh.mesh->recalculateBoundingBox();
+                                            newTPMesh.mesh->setHardwareMappingHint(irr::scene::EHM_STATIC);
+
+                                            transparentMeshes.push_back(newTPMesh);
+                                        }
+                                        /*IndexBuffer->addIndex(indices[j].X);
                                         IndexBuffer->addIndex(indices[j].Y);
-                                        IndexBuffer->addIndex(indices[j].Z);
+                                        IndexBuffer->addIndex(indices[j].Z);*/
                                     }
 
-                                    buf->setVertexBuffer(VertexBuffer, 0);
-                                    buf->setIndexBuffer(IndexBuffer);
+                                    for (unsigned int k=0;k<transparentMeshes.size();k++) {
+                                        transparentMesh& TPMesh = transparentMeshes[k];
 
-									if (textures[1]!=0) {
-										buf->getMaterial().setTexture(0,loadedTextures[textures[1]-1].tex);
-									} else {
-										buf->getMaterial().setTexture(0,loadedTextures[textures[0]-1].tex);
-									}
-									buf->getMaterial().setTexture(1,roomTextures[1]); //fog texture
+                                        retRMesh->transparentSurfaces.push_back(TPMesh.mesh);
+                                        retRMesh->transparentOffset.push_back(TPMesh.center);
 
-									buf->getMaterial().Lighting = false;
+                                        irr::scene::IVertexBuffer* vbuf = TPMesh.mesh->getMeshBuffer(0)->getVertexBuffer(0);
+                                        irr::video::S3DVertex* vbufverts = static_cast<irr::video::S3DVertex*>(vbuf->getVertices());
+                                        std::cout<<TPMesh.center.X<<" "<<TPMesh.center.Y<<" "<<TPMesh.center.Z<<"\n";
+                                        for (unsigned int l=0;l<vbuf->getVertexCount();l++) {
+                                            vbufverts[l].Pos-=TPMesh.center;
+                                        }
 
-									buf->getMaterial().BackfaceCulling = false;
+                                        TPMesh.mesh->getMeshBuffer(0)->recalculateBoundingBox();
+                                        TPMesh.mesh->recalculateBoundingBox();
+                                    }
 
-									buf->recalculateBoundingBox();
+                                    transparentMeshes.clear();
+
 								break;
 							}
 						}

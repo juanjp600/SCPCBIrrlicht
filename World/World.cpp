@@ -146,7 +146,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	smCamera->setAspectRatio(1.f);
 	smCamera->setNearValue(1.f);
     smCamera->setFarValue(200.0*RoomScale);
-	//smCamera->setVisible(false);
 
 	int seed = time;
 	std::cout<<"Seed: "<<seed<<"\n";
@@ -154,8 +153,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     srand(seed);
 
     shadersSetup();
-
-    //std::terminate();
 
     blurImage = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"blurImage",irr::video::ECF_R8G8B8));
     blurImage2 = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"blurImage2",irr::video::ECF_R8G8B8));
@@ -171,6 +168,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     renderedLights.set_used(2);
     renderedLights[0] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"renderedDiffuseLights",irr::video::ECF_R8G8B8));
     renderedLights[1] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"renderedSpecularLights",irr::video::ECF_R8G8B8));
+    irrDriver->setRenderTarget(renderedLights[0].RenderTexture,true,true); irrDriver->setRenderTarget(renderedLights[1].RenderTexture,true,true); irrDriver->setRenderTarget(nullptr);
 
     //lightPass[0] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass0",irr::video::ECF_R8G8B8);
     //lightPass[1] = irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(1024,1024),"lightPass1",irr::video::ECF_R8G8B8);
@@ -212,7 +210,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
 	buf->getMaterial().setTexture(0,blurImage.RenderTexture);
 	buf->getMaterial().setTexture(1,zBuffer.RenderTexture);
-	//buf->getMaterial().setTexture(2,fogTexture.RenderTexture);
 
 	buf->getMaterial().MaterialType = (irr::video::E_MATERIAL_TYPE)postProcShader;
 
@@ -222,7 +219,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	screenQuad = irrSmgr->addMeshSceneNode(quadMesh);
 	screenQuad->setVisible(false);
 	deferredLightSphere = irrSmgr->addSphereSceneNode(1.f);
-	//>addCubeSceneNode(2.f);
 	deferredLightSphere->getMaterial(0).setTexture(0,deferredLightData[0].RenderTexture);
 	deferredLightSphere->getMaterial(0).setTexture(1,deferredLightData[1].RenderTexture);
 	deferredLightSphere->getMaterial(0).setTexture(2,deferredLightData[2].RenderTexture);
@@ -237,11 +233,9 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	//Add test model
 
     dynamics = new irrDynamics();
-    //gContactAddedCallback = CustomMaterialCombinerCallback;
     dynamics->setGravity(-100*RoomScale);
 
 	irr::scene::IMeshSceneNode* node = nullptr;
-    //dynRegister* ItemDyn = new dynRegister(dynamics);
 	Item::setDynamics(dynamics);
 	Item::setDriver(irrDriver);
 	Item::setDimensions(mainWidth,mainHeight);
@@ -294,8 +288,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	ItemScp513::setMeshNode(genItemNode(std::string("GFX/Items/513.x"),std::string(""),3.0f*RoomScale));
 
 	for (irr::u32 ui=0;ui<1;ui++) {
-        /*Item* it = ItemEyedrops::createItemEyedrops();
-        itemList.push_back(it);*/
 
 		Item* it = ItemSupergasmask::createItemSupergasmask();
         itemList.push_back(it);
@@ -306,14 +298,8 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
         it = ItemKey2::createItemKey2();
         itemList.push_back(it);
 
-        /*it = ItemNav::createItemNav();
-        itemList.push_back(it);
-        it = ItemMisc::createItemMisc();
-        itemList.push_back(it);*/
         it = ItemScp714::createItemScp714();
         itemList.push_back(it);
-        /*it = ItemPaper::createItemPaper();
-        itemList.push_back(it);*/
 
         it = ItemKey3::createItemKey3();
         itemList.push_back(it);
@@ -343,7 +329,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	roomShaders[1] = roomShader_noNormals;
 	roomShaders[2] = vertLightShader;
 	roomShaders[3] = vertLightShader_alpha;
-	//roomShaders[4] = zBufferShader;
 
     irr::video::ITexture* roomTextures[2];
     roomTextures[0] = reflection.RenderTexture;
@@ -448,7 +433,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC096::baseNode->getMaterial(2).setTexture(4,nullptr);
     NPC096::baseNode->getMaterial(2).setTexture(5,nullptr);
     NPC096::baseNode->setScale(irr::core::vector3df(4.f*RoomScale,4.f*RoomScale,4.f*RoomScale));
-    //NPC096::baseNode->setFrameLoop(1059,1074);
     NPC096::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
 
     NPC::owner = this;
@@ -458,7 +442,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC178::baseNode->setMaterialType(plainLightShader);
     setupForPlainLighting(NPC178::baseNode);
     NPC178::baseNode->setScale(irr::core::vector3df(0.45f*RoomScale,0.45f*RoomScale,0.45f*RoomScale));
-    //NPC178::baseNode->setFrameLoop(64,92);
     NPC178::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
 
     NPC173::baseNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/173_2.b3d"));
@@ -468,27 +451,13 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC173::baseOcclusionNode = irrSmgr->addCubeSceneNode(10.0f,nullptr,-1,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,0),irr::core::vector3df(0.7f*RoomScale, 2.75f*RoomScale, 0.7f*RoomScale));
     NPC173::baseOcclusionNode->getMaterial(0).MaterialType = irr::video::EMT_TRANSPARENT_ADD_COLOR;
     NPC173::driver = irrDriver;
-    //node->setPosition(irr::core::vector3df(x*204.8f*RoomScale,10.f*RoomScale,y*204.8f*RoomScale));
-    //node->setMaterialFlag(irr::video::EMF_LIGHTING, true);
-    //node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
-    //node->getMaterial(0).Lighting = true;
     setupForNormalsLighting(NPC173::baseNode,true);
-
-    //rbody = dynamics->addTriMesh_moving(node,16000.f,20,1,1);
-    //rbody->setAngularFactor(btVector3(0,0,0));
 
     NPC173::baseNode->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/NPCs/173_norm.jpg"));
     NPC173::baseNode->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/173_Spec.jpg"));
 
-    for (int i=0;i<1;i++) {
-        testNPC[i] = NPC173::createNPC173();
-    }
-    //static_cast<NPC173*>(testNPC)->boxNode = irrSmgr->addCubeSceneNode();
-
 	mainPlayer = new Player(this,irrSmgr,dynamics,irrReceiver);
-
-	//mainPlayer->update();
 
 	Item::setPlayer(mainPlayer);
 	NPC::player = mainPlayer; //add setplayer?
@@ -518,19 +487,8 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     Door::closeSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorClose2.ogg"),true,1);
     Door::closeSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorClose3.ogg"),true,1);
     Door::dynamics = dynamics;
-    //rbody = dynamics->addBoxObject(Door::baseFrameNode,1000.f);
-    //rbody->setLinearFactor(btVector3(0.f,0.f,0.f));
 
 	createMap(0);
-	//testNPC->update();
-	//mainPlayer->teleport(testNPC->getPosition()+irr::core::vector3df(0.f,30.f,0.f));
-	/*Door::baseDoorNode[0]->setPosition(mainPlayer->getPosition()-irr::core::vector3df(0.f,mainPlayer->getPosition().Y,1018.f*0.1f*RoomScale));
-	Door::baseFrameNode->setPosition(mainPlayer->getPosition()-irr::core::vector3df(0.f,mainPlayer->getPosition().Y,1024.f*0.1f*RoomScale));
-	Door::baseButtonNode[0]->setPosition(mainPlayer->getPosition()-irr::core::vector3df(150.f*0.1f*RoomScale,mainPlayer->getPosition().Y-165.f*0.1f*RoomScale,1000.f*0.1f*RoomScale));
-	Door::baseButtonNode[0]->setRotation(irr::core::vector3df(0.f,180.f,0.f));
-	btTransform rTransform = rbody->getCenterOfMassTransform();
-	rTransform.setOrigin(irrToBtVec(Door::baseFrameNode->getPosition()));
-	rbody->setCenterOfMassTransform(rTransform);*/
 
 	for (int i=0;i<50;i++) {
         fogBillboards[i]=irrSmgr->addBillboardSceneNode(nullptr,irr::core::dimension2df(500.f*0.1f*RoomScale,500.f*0.1f*RoomScale));
@@ -539,13 +497,25 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
         fogBillboards[i]->setMaterialType(fogBillboardShader);
         fogBillboards[i]->getMaterial(0).ZBuffer = 0;
         fogBillboards[i]->setPosition(mainPlayer->getPosition()+irr::core::vector3df((rand()%1024-512)*0.1f*RoomScale,-(rand()%100)*0.1f*RoomScale,(rand()%1024-512)*0.1f*RoomScale));
-        //fogBillAlpha[i]=(rand()%256)/255.f;
         fogBillTargetPos[i]=fogBillboards[i]->getPosition();
         fogBillboards[i]->setVisible(false);
     }
 
 	irrDevice->getCursorControl()->setVisible(false);
 	irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);
+
+    irr::scene::IMesh* mesh1 = irrSmgr->getMesh("GFX/NPCs/scp-066.b3d");
+
+    testNode = irrSmgr->addMeshSceneNode(mesh1);
+
+    testNode->setScale(irr::core::vector3df(2.1*RoomScale));
+
+    testNode->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/NPCs/scp-066_normal.png"));
+    testNode->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/scp-066_specular.png"));
+    testNode->getMaterial(1).setTexture(1, irrDriver->getTexture("GFX/NPCs/scp-066_normal.png"));
+    testNode->getMaterial(1).setTexture(2, irrDriver->getTexture("GFX/NPCs/scp-066_specular.png"));
+    setupForNormalsLighting(testNode,true);
+    testNode->setVisible(false);
 
 	for (int y=19;y>=0;y--) {
 		for (int x=19;x>=0;x--) {
@@ -665,10 +635,40 @@ bool World::run() {
             mainPlayer->update();
             dynamics->simStep(1.f/60.f,1.f/60.f);
             mainPlayer->resetSpeeds();
-            for (int i=0;i<1;i++) {
-                testNPC[i]->update();
-                testNPC[i]->updateModel();
+            for (int i=0;i<npcList.size();i++) {
+                npcList[i]->update();
+                npcList[i]->updateModel();
             }
+            if (irrReceiver->IsKeyDown(irr::KEY_KEY_1) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_1)) {
+                irr::core::vector3df pickPos = mainPlayer->camera->getTarget();
+                NPC* newNPC = NPC173::createNPC173();
+                newNPC->teleport(pickPos);
+                npcList.push_back(newNPC);
+            }
+
+            if (irrReceiver->IsKeyDown(irr::KEY_KEY_2) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_2)) {
+                irr::core::vector3df pickPos = mainPlayer->camera->getTarget();
+                NPC* newNPC = NPC178::createNPC178();
+                newNPC->teleport(pickPos);
+                npcList.push_back(newNPC);
+            }
+
+            if (irrReceiver->IsKeyDown(irr::KEY_KEY_3) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_3)) {
+                irr::scene::IMeshSceneNode* node = static_cast<irr::scene::IMeshSceneNode*>(testNode->clone());
+                irr::core::vector3df pickPos = mainPlayer->camera->getTarget();
+                node->setPosition(pickPos);
+                node->setVisible(true);
+                btRigidBody* rbody = dynamics->addTriMesh_moving(node,0.1f,5,1,1);
+				rbody->setFriction(0.1f);
+				rbody->setRollingFriction(0.1f);
+				rbody->setDamping(0,0);
+				rbody->setSleepingThresholds(0.1f,0.1f);
+				btTransform oTrans = rbody->getCenterOfMassTransform();
+                oTrans.setOrigin(btVector3(pickPos.X,pickPos.Y,pickPos.Z));
+                rbody->setCenterOfMassTransform(oTrans);
+                rbody->setLinearVelocity(irrToBtVec(mainPlayer->camera->getTarget()-mainPlayer->camera->getAbsolutePosition()));
+            }
+
             irr::core::matrix4 tMat = irrDriver->getTransform(irr::video::ETS_PROJECTION)*irrDriver->getTransform(irr::video::ETS_VIEW);
             for (unsigned int i=0;i<itemList.size();i++) {
                 if ((mainPlayer->getPosition()-itemList[i]->getPosition()).getLengthSQ()<500.f*RoomScale*RoomScale) {
@@ -988,6 +988,14 @@ bool World::run() {
 
 	drawHUD();
 
+	irrDriver->setRenderTarget(nullptr,false,false);
+	screenQuad->setMaterialTexture(0,finalImage.RenderTexture);
+	screenQuad->setMaterialType(gammaShader);
+	screenQuad->render();
+	screenQuad->setMaterialTexture(0,blurImage.RenderTexture);
+	screenQuad->setMaterialType(postProcShader);
+    //irrDriver->draw2DImage(finalImage.RenderTexture,irr::core::vector2di(0,0));
+
 	if (menusOpen!=menus::NONE) {
         irrReceiver->perLoopUpdate();
         prevMenusOpen = menusOpen;
@@ -1020,11 +1028,11 @@ void World::draw3D() {
     drawFog();
 
     roomCallback->reflectFactor=0.f;
-    irrDriver->setRenderTarget(reflection.RenderTexture,true,true);
-    mainPlayer->reflectNY();
+    irrDriver->setRenderTarget(reflection.RenderTexture,false,true);
+    /*mainPlayer->reflectNY();
     irrSmgr->fastDrawAll_init(irrSmgr->getActiveCamera()->getAbsolutePosition());
     irrSmgr->fastDrawAll(irrSmgr->getActiveCamera()->getProjectionMatrix(),irrSmgr->getActiveCamera()->getViewMatrix());
-    irrSmgr->fastDrawAll_end();
+    irrSmgr->fastDrawAll_end();*/
     mainPlayer->resetCam();
     roomCallback->reflectFactor=1.f;
 	/*irrDriver->setRenderTarget(blurImage2); //copy the old render
@@ -1077,7 +1085,7 @@ void World::draw3D() {
 
     */
     //renderLights();
-    irrDriver->setRenderTarget(deferredLightData,true,true,irr::video::SColor(255,0,0,0));
+    irrDriver->setRenderTarget(deferredLightData,false,true,irr::video::SColor(255,0,0,0));
     //irrDriver->draw2DImage(fogTexture.RenderTexture,irr::core::vector2di(0,0));
     plainLightCallback->renderSpecularFactor = 1.f;
     irrSmgr->drawAll(1.f+stepsToMake,1);
@@ -1110,16 +1118,51 @@ void World::draw3D() {
         deferredLightSphere->render();
     }
     deferredLightSphere->setVisible(false);
-    irrDriver->setRenderTarget(0);
+
+    irrDriver->setRenderTarget(blurImage.RenderTexture,false,true);
+    irrDriver->draw2DImage(fogTexture.RenderTexture,irr::core::vector2di(0,0));
     plainLightCallback->renderSpecularFactor = 0.f;
-
-    /*irrDriver->getOverrideMaterial().EnableFlags = irr::video::EMF_MATERIAL_TYPE;
-    irrDriver->getOverrideMaterial().EnablePasses = irr::scene::ESNRP_SOLID;
-    irrDriver->getOverrideMaterial().Material.MaterialType = (irr::video::E_MATERIAL_TYPE)zBufferShader;*/
-
     irrSmgr->drawAll(1.f+stepsToMake,0);
-    irrDriver->runAllOcclusionQueries(true);
-    irrDriver->updateAllOcclusionQueries();
+
+    float blinkTimer = mainPlayer->blinkTimer;
+    if (blinkTimer<0) {
+        float darkA = 0.f;
+        if (mainPlayer->blinkTimer>=-0.5f) {
+			darkA = std::max(0.f,std::min(-mainPlayer->blinkTimer*2.f,1.f));
+        } else if (mainPlayer->blinkTimer>=-1.0f) {
+            darkA = std::max(0.f,std::min(1.f+(mainPlayer->blinkTimer+0.5f)*2.f,1.f));
+        }
+        darkA = 1.f-darkA;
+        darkA *= darkA;
+        darkA = 1.f-darkA;
+        irrDriver->draw2DRectangle(irr::video::SColor(std::min(255.f,darkA*255.f),0,0,0),irr::core::rect<irr::s32>(0,0,mainWidth,mainHeight));
+        postProcCallback->minBlur = darkA*6.f;
+    } else {
+		if (itemSelected==true) {
+            postProcCallback->minBlur=2.f;
+        } else {
+            postProcCallback->minBlur=0.f;
+        }
+		if (menusOpen!=menus::NONE) postProcCallback->minBlur = 2.f;
+    }
+
+    irrDriver->setRenderTarget(zBuffer.RenderTexture,true,true,irr::video::SColor(255,255,0,0));
+
+    irrDriver->getOverrideMaterial().EnableFlags = irr::video::EMF_MATERIAL_TYPE;
+    irrDriver->getOverrideMaterial().EnablePasses = irr::scene::ESNRP_SOLID;
+    irrDriver->getOverrideMaterial().Material.MaterialType = (irr::video::E_MATERIAL_TYPE)zBufferShader;
+    irrSmgr->drawAll(1.f+stepsToMake,0);
+    irrDriver->getOverrideMaterial().EnablePasses = 0;
+
+    /*irrDriver->runAllOcclusionQueries(true); //OCCLUSION QUERIES ARE REALLY SLOW
+    irrDriver->updateAllOcclusionQueries();*/
+
+    irrDriver->setRenderTarget(finalImage.RenderTexture,false,true);
+    screenQuad->render();
+    irrDriver->draw2DImage(blurImage2.RenderTexture,irr::core::vector2di(0,0),irr::core::recti(0,0,mainWidth,mainHeight),nullptr,irr::video::SColor(10,255,255,255));
+    irrDriver->setRenderTarget(blurImage2.RenderTexture,false,false);
+    irrDriver->draw2DImage(finalImage.RenderTexture,irr::core::vector2di(0,0));
+    irrDriver->setRenderTarget(finalImage.RenderTexture,false,false);
 }
 
 void World::drawHUD() {
@@ -1285,7 +1328,7 @@ void World::drawHUD() {
 					irrDriver->draw2DImage(pauseImgs[1],irr::core::recti(mainWidth/2-173*scale2D,mainHeight/2-170*scale2D,mainWidth/2-39*scale2D,mainHeight/2-147*scale2D),irr::core::recti(mainWidth/2-172*scale2D,mainHeight/2-170*scale2D,mainWidth/2-33*scale2D,mainHeight/2-147*scale2D));
 
 					ss << "Gamma: ";
-					ss << postProcCallback->gammaFactor;
+					ss << 1.0/gammaCallback->invGamma;
 					s = ss.str();
 
 					font1->draw(s.c_str(),irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-125*scale2D,mainWidth/2+100*scale2D,mainHeight/2-110*scale2D),irr::video::SColor(255,255,255,255),false,false);
@@ -1296,23 +1339,23 @@ void World::drawHUD() {
 					if (irrReceiver->IsMouseDown(0)) {
 						if (irrReceiver->getMousePos().X>outline.UpperLeftCorner.X && irrReceiver->getMousePos().Y>outline.UpperLeftCorner.Y &&
 							irrReceiver->getMousePos().X<outline.LowerRightCorner.X && irrReceiver->getMousePos().Y<outline.LowerRightCorner.Y) {
-							postProcCallback->gammaFactor = ((irrReceiver->getMousePos().X-outline.UpperLeftCorner.X)/(float)(outline.LowerRightCorner.X-outline.UpperLeftCorner.X))*1.5f+0.5f;
-							postProcCallback->gammaFactor = ((int)(postProcCallback->gammaFactor*100.f))*0.01f;
-							postProcCallback->invGammaFactor = 1.f/postProcCallback->gammaFactor;
+							gammaCallback->invGamma = ((irrReceiver->getMousePos().X-outline.UpperLeftCorner.X)/(float)(outline.LowerRightCorner.X-outline.UpperLeftCorner.X))*1.5f+0.5f;
+							gammaCallback->invGamma = ((int)(gammaCallback->invGamma*100.f))*0.01f;
+							gammaCallback->invGamma = 1.f/gammaCallback->invGamma;
 						}
 					}
 
 					irrDriver->draw2DImage(blinkMeterIMG,irr::core::recti(
-						mainWidth/2-150*scale2D+(postProcCallback->gammaFactor-0.5f)/1.5f*406*scale2D,
+						mainWidth/2-150*scale2D+((1.f/gammaCallback->invGamma)-0.5f)/1.5f*406*scale2D,
 						mainHeight/2-100*scale2D,
-						mainWidth/2-142*scale2D+(postProcCallback->gammaFactor-0.5f)/1.5f*406*scale2D,mainHeight/2-86*scale2D),
+						mainWidth/2-142*scale2D+((1.f/gammaCallback->invGamma)-0.5f)/1.5f*406*scale2D,mainHeight/2-86*scale2D),
 						irr::core::recti(0,0,8,14));
 
 					irrDriver->draw2DRectangle(irr::video::SColor(255,0,0,0),irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2-65*scale2D,mainWidth/2+250*scale2D,mainHeight/2+100*scale2D));
 
-					color = std::pow(2.5f/255.f,postProcCallback->invGammaFactor)*255;
+					color = 7;
 					irrDriver->draw2DRectangle(irr::video::SColor(255,color,color,color),irr::core::recti(mainWidth/2-100*scale2D,mainHeight/2-20*scale2D,mainWidth/2-32*scale2D,mainHeight/2+48*scale2D));
-					color = std::pow(1.25f/255.f,postProcCallback->invGammaFactor)*255;
+					color = 4;
 					irrDriver->draw2DRectangle(irr::video::SColor(255,color,color,color),irr::core::recti(mainWidth/2+132*scale2D,mainHeight/2-20*scale2D,mainWidth/2+200*scale2D,mainHeight/2+48*scale2D));
 					font1->draw("Drag the slider so that the left square",irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2+105*scale2D,mainWidth/2+100*scale2D,mainHeight/2+120*scale2D),irr::video::SColor(255,255,255,255),false,false);
 					font1->draw("is visible but the right square isn't",irr::core::recti(mainWidth/2-150*scale2D,mainHeight/2+120*scale2D,mainWidth/2+100*scale2D,mainHeight/2+135*scale2D),irr::video::SColor(255,255,255,255),false,false);
@@ -1377,155 +1420,35 @@ void World::drawHUD() {
     }
 
     blurAlpha = 100;
-
-    for (int y=19;y>=0;y--) {
-        for (int x=19;x>=0;x--) {
-            if (roomArray[x][y]!=nullptr) {
-                irrDriver->draw2DRectangle(irr::video::SColor(255,100,100,100),irr::core::recti((19-x)*10,y*10,(19-x)*10+8,y*10+8));
-            }
-        }
-    }
-    //irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,0),irr::core::recti((19-coordToRoomGrid(testNPC->getPosition().X))*10,coordToRoomGrid(testNPC->getPosition().Z)*10,(19-coordToRoomGrid(testNPC->getPosition().X))*10+8,coordToRoomGrid(testNPC->getPosition().Z)*10+8));
-    irrDriver->draw2DRectangle(irr::video::SColor(255,0,255,0),irr::core::recti((19-coordToRoomGrid(mainPlayer->getPosition().X))*10,coordToRoomGrid(mainPlayer->getPosition().Z)*10,(19-coordToRoomGrid(mainPlayer->getPosition().X))*10+8,coordToRoomGrid(mainPlayer->getPosition().Z)*10+8));
-
-#if 0
-    //{ startPathCode
-    irr::core::vector2di startPos;
-    irr::core::vector2di endPos;
-
-    /*for (int y=19;y>=0;y--) {
-        for (int x=19;x>=0;x--) {
-            if (roomArray[x][y]!=nullptr) {
-                startPos.X = x; startPos.Y = y;
-                y=-1;
-                break;
-            }
-        }
-    }*/
-
-    for (int y=0;y<20;y++) {
-        for (int x=0;x<20;x++) {
-            if (roomArray[x][y]!=nullptr) {
-                startPos.X = x; startPos.Y = y;
-                y=20;
-                break;
-            }
-        }
-    }
-    endPos.X = coordToRoomGrid(mainPlayer->getPosition().X); endPos.Y = coordToRoomGrid(mainPlayer->getPosition().Z);
-
-    std::vector<irr::core::vector2di> rPath;
-
-    getRoomList(startPos,endPos,rPath);
-
-    for (int y=19;y>=0;y--) {
-        for (int x=19;x>=0;x--) {
-            if (roomArray[x][y]!=nullptr) {
-                irrDriver->draw2DRectangle(irr::video::SColor(255,100,100,100),irr::core::recti((19-x)*10,y*10,(19-x)*10+8,y*10+8));
-            }
-        }
-    }
-
-    if (rPath.size()>0) {
-        if (rPath[0].X==startPos.X) {
-            if (rPath[0].Y<startPos.Y) {
-                for (int y=rPath[0].Y;y<=startPos.Y;y++) {
-                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-startPos.X)*10,y*10,(19-startPos.X)*10+8,y*10+8));
-                }
-            } else {
-                for (int y=startPos.Y;y<=rPath[0].Y;y++) {
-                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-startPos.X)*10,y*10,(19-startPos.X)*10+8,y*10+8));
-                }
-            }
-        } else {
-            if (rPath[0].X<startPos.X) {
-                for (int x=rPath[0].X;x<=startPos.X;x++) {
-                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-x)*10,startPos.Y*10,(19-x)*10+8,startPos.Y*10+8));
-                }
-            } else {
-                for (int x=startPos.X;x<=rPath[0].X;x++) {
-                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-x)*10,startPos.Y*10,(19-x)*10+8,startPos.Y*10+8));
-                }
-            }
-        }
-
-        for (unsigned int i=1;i<rPath.size();i++) {
-            if (rPath[i-1].X==rPath[i].X) {
-                if (rPath[i-1].Y<rPath[i].Y) {
-                    for (int y=rPath[i-1].Y;y<rPath[i].Y;y++) {
-                        irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-rPath[i].X)*10,y*10,(19-rPath[i].X)*10+8,y*10+8));
-                    }
-                } else {
-                    for (int y=rPath[i].Y;y<rPath[i-1].Y;y++) {
-                        irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-rPath[i].X)*10,y*10,(19-rPath[i].X)*10+8,y*10+8));
-                    }
-                }
-            } else {
-                if (rPath[i-1].X<rPath[i].X) {
-                    for (int x=rPath[i-1].X;x<rPath[i].X;x++) {
-                        irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-x)*10,rPath[i].Y*10,(19-x)*10+8,rPath[i].Y*10+8));
-                    }
-                } else {
-                    for (int x=rPath[i].X;x<rPath[i-1].X;x++) {
-                        irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-x)*10,rPath[i].Y*10,(19-x)*10+8,rPath[i].Y*10+8));
-                    }
-                }
-            }
-            irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-rPath[i].X)*10,rPath[i].Y*10,(19-rPath[i].X)*10+8,rPath[i].Y*10+8));
-            //std::cout<<"drawingline"<<i<<": "<<rPath[i].X<<" "<<rPath[i].Y<<"\n";
-            //irrDriver->draw3DBox(irr::core::aabbox3df(irr::core::vector3df(rPath[i].X-0.5f,2.f*RoomScale,rPath[i].Y-0.5f),irr::core::vector3df(rPath[i].X+0.5f,22.f*RoomScale,rPath[i].Y+0.5f)));//Line(irr::core::vector3df(rPath[i-1].X,2.f*RoomScale,rPath[i-1].Y),irr::core::vector3df(rPath[i].X,2.f*RoomScale,rPath[i].Y),irr::video::SColor(255,255,0,0));
-        }
-
-        if (rPath[rPath.size()-1].X==endPos.X) {
-            if (rPath[rPath.size()-1].Y<endPos.Y) {
-                for (int y=rPath[rPath.size()-1].Y;y<=endPos.Y;y++) {
-                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-endPos.X)*10,y*10,(19-endPos.X)*10+8,y*10+8));
-                }
-            } else {
-                for (int y=endPos.Y;y<=rPath[rPath.size()-1].Y;y++) {
-                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-endPos.X)*10,y*10,(19-endPos.X)*10+8,y*10+8));
-                }
-            }
-        } else {
-            if (rPath[rPath.size()-1].X<endPos.X) {
-                for (int x=rPath[rPath.size()-1].X;x<=endPos.X;x++) {
-                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-x)*10,endPos.Y*10,(19-x)*10+8,endPos.Y*10+8));
-                }
-            } else {
-                for (int x=endPos.X;x<=rPath[rPath.size()-1].X;x++) {
-                    irrDriver->draw2DRectangle(irr::video::SColor(255,255,255,0),irr::core::recti((19-x)*10,endPos.Y*10,(19-x)*10+8,endPos.Y*10+8));
-                }
-            }
-        }
-    }
-
-    irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,255),irr::core::recti((19-startPos.X)*10,startPos.Y*10,(19-startPos.X)*10+8,startPos.Y*10+8));
-    irrDriver->draw2DRectangle(irr::video::SColor(255,0,255,0),irr::core::recti((19-endPos.X)*10,endPos.Y*10,(19-endPos.X)*10+8,endPos.Y*10+8));
-    //} endPathCode
-#endif
 }
 
 void World::drawFog() {
-    irrDriver->setRenderTarget(fogTexture.RenderTexture);
+    irrDriver->setRenderTarget(fogTexture.RenderTexture,true,false);
 
     //draw a triangle with a different material to make alpha blending for the billboards work properly
     irr::video::SMaterial mat;
     mat.MaterialType = vertLightShader;
+    mat.FrontfaceCulling = true;
     irrDriver->setMaterial(mat);
-    irr::core::vector3df vert1(0.f,0.f,0.f);
-    irr::core::vector3df vert2(0.f,-1.f,0.f);
-    irr::core::vector3df vert3(0.f,-1.f,-1.f);
+    irr::core::vector3df vert1(-1000.f,0.f,1.f);
+    irr::core::vector3df vert2(-1000.f,-1.f,0.f);
+    irr::core::vector3df vert3(-1000.f,-1.f,1.f);
     irrDriver->draw3DTriangle(irr::core::triangle3df(vert1,vert2,vert3),irr::video::SColor(255,0,0,0));
 
     for (int i=0;i<50;i++) {
         irr::core::matrix4 rotMatrix;
-        float dist = mainPlayer->getPosition().getDistanceFrom(fogBillTargetPos[i]);
+        irr::core::vector3df dist2d = fogBillTargetPos[i]-mainPlayer->getPosition();
+        dist2d.Y = 0.f;
+        float dist = dist2d.getLength();
         if (dist<200.f*0.1f*RoomScale) {
-            fogBillTargetPos[i]=(fogBillTargetPos[i]+(fogBillTargetPos[i]-mainPlayer->getPosition())/dist*20.f);
+            fogBillTargetPos[i]=(fogBillTargetPos[i]+(dist2d.normalize()*0.01f));
         } else if (dist>1000.f*0.1f*RoomScale) {
-            fogBillTargetPos[i]=(mainPlayer->getPosition()-(fogBillTargetPos[i]-mainPlayer->getPosition())*((990.f*0.1f*RoomScale)/dist));
-            fogBillTargetPos[i].Y = mainPlayer->getPosition().Y-(rand()%100);
+            irr::core::vector3df diff2d = (mainPlayer->getPosition()-fogBillTargetPos[i]);
+            diff2d.Y = 0.f;
+            fogBillTargetPos[i]+=diff2d.normalize()*(dist+(900.f*0.1f*RoomScale));
+            fogBillTargetPos[i].Y = mainPlayer->getPosition().Y-(rand()%20)+10.f;
             fogBillboards[i]->setPosition(fogBillTargetPos[i]);
+            std::cout<<"fogbillboard teleport\n";
         } else {
             rotMatrix.setRotationDegrees(irr::core::vector3df((rand()%100-50)/25.f,(rand()%100-50)/12.f,(rand()%100-50)/150.f)*0.2f);
             fogBillTargetPos[i]+=irr::core::vector3df(rand()%3-1,rand()%3-1,rand()%3-1)*0.1f;
@@ -1534,11 +1457,11 @@ void World::drawFog() {
             fogBillTargetPos[i]=mainPlayer->getPosition()+diff;
         }
 
-        if ((fogBillTargetPos[i].Y-mainPlayer->getPosition().Y)>100.f) {
-            fogBillTargetPos[i].Y-=100.f;
+        if ((fogBillTargetPos[i].Y-mainPlayer->getPosition().Y)>25.f) {
+            fogBillTargetPos[i].Y-=40.f;
         }
-        if ((mainPlayer->getPosition().Y-fogBillTargetPos[i].Y)>100.f) {
-            fogBillTargetPos[i].Y+=100.f;
+        if ((mainPlayer->getPosition().Y-fogBillTargetPos[i].Y)>25.f) {
+            fogBillTargetPos[i].Y+=40.f;
         }
 
         for (int j=0;j<50;j++) {
@@ -1599,6 +1522,11 @@ void World::shadersSetup() {
     postProcCallback= new PostProcShaderCallBack;
     postProcShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/PostProcessVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/PostProcessFrag.frag", "main", irr::video::EPST_PS_1_1,postProcCallback, irr::video::EMT_SOLID);
 
+    gammaShader = irr::video::EMT_SOLID; // Fallback material type
+    gammaCallback= new GammaShaderCallBack;
+    gammaShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/PostProcessVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/GammaFragShader.frag", "main", irr::video::EPST_PS_1_1,gammaCallback, irr::video::EMT_SOLID);
+    gammaCallback->invGamma = 1.f;
+
 	zBufferShader = irr::video::EMT_SOLID; // Fallback material type
     zBufferCallback= new ZBufferShaderCallBack;
     zBufferShader = (irr::video::E_MATERIAL_TYPE)irrGpu->addHighLevelShaderMaterialFromFiles("GFX/shaders/ZBufferVert.vert", "main", irr::video::EVST_VS_1_1,"GFX/shaders/ZBufferFrag.frag", "main", irr::video::EPST_PS_1_1,zBufferCallback, irr::video::EMT_SOLID);
@@ -1617,7 +1545,6 @@ void World::shadersSetup() {
     vertexDescriptor->addAttribute("inTexCoord0", 2, irr::video::EVAS_TEXCOORD0, irr::video::EVAT_FLOAT, 0);
     vertexDescriptor->addAttribute("inBlendWeight", 4, irr::video::EVAS_BLEND_WEIGHTS, irr::video::EVAT_FLOAT, 0);
     vertexDescriptor->addAttribute("inBlendIndex", 4, irr::video::EVAS_BLEND_INDICES, irr::video::EVAT_FLOAT, 0);
-
 }
 
 void World::setupForHWSkinning(irr::scene::IAnimatedMesh* mesh) {

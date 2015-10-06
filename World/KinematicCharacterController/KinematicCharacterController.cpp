@@ -458,6 +458,7 @@ void CharacterController::stepDown ( btCollisionWorld* collisionWorld, btScalar 
    callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
    callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
 
+    if (btFabs(m_verticalVelocity)<5.0) {
    if (m_useGhostObjectSweepTest)
    {
       m_ghostObject->convexSweepTest (m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
@@ -465,6 +466,7 @@ void CharacterController::stepDown ( btCollisionWorld* collisionWorld, btScalar 
    {
       collisionWorld->convexSweepTest (m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
    }
+    }
 
    if (callback.hasHit())
    {

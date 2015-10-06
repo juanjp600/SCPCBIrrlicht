@@ -9,8 +9,8 @@ class Door {
         ~Door();
         irr::scene::ISceneNode* doorNode1; bool doorVisible1;
         irr::scene::ISceneNode* doorNode2; bool doorVisible2;
-        irr::scene::ISceneNode* buttonNode1; bool buttonVisible1; irr::core::vector3df buttonOffset1;
-        irr::scene::ISceneNode* buttonNode2; bool buttonVisible2; irr::core::vector3df buttonOffset2;
+        irr::scene::ISceneNode* buttonNode1; bool buttonVisible1; irr::core::vector3df buttonOffset1; float buttonAngle1;
+        irr::scene::ISceneNode* buttonNode2; bool buttonVisible2; irr::core::vector3df buttonOffset2; float buttonAngle2;
         irr::scene::ISceneNode* frameNode;
         class btRigidBody* collider;
         //static class World* owner;
@@ -43,7 +43,7 @@ class Door {
         virtual void setRotation(float newAngle);
         virtual void setButtonVisibility(unsigned char index,bool newVisible);
         virtual void setDoorVisibility(unsigned char index,bool newVisible);
-        virtual void setButtonOffset(unsigned char index,irr::core::vector3df newOffset);
+        virtual void setButtonOffset(unsigned char index,irr::core::vector3df newOffset,float newAngle=-1.f);
         static class World* owner;
         static class irrDynamics* dynamics;
         static class Player* player;

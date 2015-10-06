@@ -86,6 +86,17 @@ void Room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 	node->setPosition(inPosition);
 	node->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
 
+    rotMatrix.setRotationDegrees(irr::core::vector3df(0,inAngle*90.f,0));
+
+	for (unsigned int i=0;i<rme->transparentSurfaces.size();i++) {
+        irr::core::vector3df mPos = rme->transparentOffset[i];
+        rotMatrix.transformVect(mPos);
+        irr::scene::ISceneNode* childnode = Room::getNewNode(rme->transparentSurfaces[i]); childnode->setVisible(true);
+        childnode->setPosition(inPosition+mPos);
+        childnode->setRotation(irr::core::vector3df(0,inAngle*90.f,0));
+        //childnode->setParent(node);
+	}
+
 	angle = inAngle;
 
 	//Add the Bullet rigid body
@@ -107,8 +118,6 @@ void Room::loadAssets(RMesh* rme,irr::core::vector3df inPosition,float inAngle) 
 
 	rbody = new btRigidBody(0.0, MotionState, rme->shape, localInertia);
 	Room::dynamics->registerNewRBody(node,rbody,-1,~0,~0,irr::core::vector3df(0,0.f,0));
-
-	rotMatrix.setRotationDegrees(irr::core::vector3df(0,inAngle*90.f,0));
 
 	for (unsigned int i=0;i<rme->pointlights.size();i++) {
         pointLight lght = rme->pointlights[i];

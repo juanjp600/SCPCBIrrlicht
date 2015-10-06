@@ -109,18 +109,20 @@ void PostProcShaderCallBack::OnSetConstants(irr::video::IMaterialRendererService
 	currmBlur += (minBlur-currmBlur) * 0.1f;
 	currMBlur += (maxBlur-currMBlur) * 0.1f;
 
-	services->setVertexShaderConstant("minBlur", &currmBlur, 1);
-	services->setVertexShaderConstant("maxBlur", &currMBlur, 1);
-
-	services->setVertexShaderConstant("gammaFactor", &invGammaFactor, 1);
-
 	irr::s32 TextureLayerID = 0;
 	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
 	irr::s32 TextureLayerID2 = 1;
 	services->setPixelShaderConstant("Texture1", &TextureLayerID2, 1);
 
-	irr::s32 TextureLayerIDFog = 2;
-	services->setPixelShaderConstant("fogTex", &TextureLayerIDFog, 1);
+	services->setPixelShaderConstant("minBlur", &currmBlur, 1);
+	services->setPixelShaderConstant("maxBlur", &currMBlur, 1);
+}
+
+void GammaShaderCallBack::OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData) {
+	irr::s32 TextureLayerID = 0;
+	services->setPixelShaderConstant("Texture0", &TextureLayerID, 1);
+
+	services->setPixelShaderConstant("invGamma", &invGamma, 1);
 }
 
 #if 1

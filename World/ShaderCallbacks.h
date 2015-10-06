@@ -46,9 +46,13 @@ class PostProcShaderCallBack : public SharedShaderCallBack {
 		//irr::f32 fpsFactor = 1.f;
 		irr::f32 currmBlur = 0.f;
 		irr::f32 currMBlur = 15.f;
+};
 
-		irr::f32 gammaFactor = 1.f;
-		irr::f32 invGammaFactor = 1.f;
+class GammaShaderCallBack : public SharedShaderCallBack {
+    public:
+		virtual void OnSetConstants(irr::video::IMaterialRendererServices* services,irr::s32 userData);
+
+		irr::f32 invGamma;
 };
 
 class ZBufferShaderCallBack : public SharedShaderCallBack {

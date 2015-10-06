@@ -48,6 +48,8 @@ Door* Door::createDoor(unsigned char inDoorType,unsigned char inKeycard,short in
     returnDoor->buttonVisible2 = true;
     returnDoor->buttonOffset1 = irr::core::vector3df(-150.f*0.1f*RoomScale,165.f*0.1f*RoomScale,24.f*0.1f*RoomScale);
     returnDoor->buttonOffset2 = irr::core::vector3df(150.f*0.1f*RoomScale,165.f*0.1f*RoomScale,-24.f*0.1f*RoomScale);
+    returnDoor->buttonAngle1 = 0.f;
+    returnDoor->buttonAngle2 = 0.f;
 
     returnDoor->frameNode->updateAbsolutePosition();
 
@@ -84,21 +86,23 @@ void Door::setRotation(float newAngle) {
     frameNode->setRotation(irr::core::vector3df(0.f,newAngle,0.f));
     doorNode1->setRotation(irr::core::vector3df(0.f,newAngle,0.f));
     doorNode2->setRotation(irr::core::vector3df(0.f,180.f+newAngle,0.f));
-    buttonNode1->setRotation(irr::core::vector3df(0.f,180.f+newAngle,0.f));
-    buttonNode2->setRotation(irr::core::vector3df(0.f,newAngle,0.f));
+    buttonNode1->setRotation(irr::core::vector3df(0.f,180.f+newAngle+buttonAngle1,0.f));
+    buttonNode2->setRotation(irr::core::vector3df(0.f,newAngle+buttonAngle2,0.f));
     btTransform rTransform = collider->getCenterOfMassTransform();
 	rTransform.setRotation(btQuaternion(newAngle*irr::core::DEGTORAD,0.f,0.f));
 	collider->setCenterOfMassTransform(rTransform);
     setPosition(frameNode->getPosition());
 }
 
-void Door::setButtonOffset(unsigned char index,irr::core::vector3df newOffset) {
+void Door::setButtonOffset(unsigned char index,irr::core::vector3df newOffset,float newAngle) {
     switch (index) {
         case 0:
             buttonOffset1 = newOffset;
+            if (newAngle>=0.f) { buttonAngle1 = newAngle; setRotation(frameNode->getRotation().Y); }
         break;
         case 1:
             buttonOffset2 = newOffset;
+            if (newAngle>=0.f) { buttonAngle2 = newAngle; setRotation(frameNode->getRotation().Y); }
         break;
     }
     setPosition(frameNode->getPosition());

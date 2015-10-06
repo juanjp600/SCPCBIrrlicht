@@ -1,16 +1,10 @@
-#version 110
-
 varying vec4 tcoords;
-varying float iminBlur;
-varying float imaxBlur;
+
+uniform float minBlur;
+uniform float maxBlur;
 
 uniform sampler2D Texture0;
 uniform sampler2D Texture1;
-
-uniform sampler2D fogTex;
-
-uniform float gammaFactor;
-//uniform float blurStrength;
 
 float getDepth(in vec2 coords) {
 	vec3 zbuff = texture2D(Texture1, clamp(coords,0.0,1.0)).xyz;
@@ -20,15 +14,11 @@ float getDepth(in vec2 coords) {
 void main(void) {
 	vec2 ntcoords = tcoords.xy;
 	
-	vec4 fogColor = texture2D(fogTex,ntcoords.xy);
-	fogColor.a = 1.0;
-	
 	float dx = ntcoords.x-0.5;
 	float dy = ntcoords.y-0.5;
-	//float dist = max(abs(dx),abs(dy));
 	float dist = sqrt(dx*dx+dy*dy);
-	dist *= dist * dist * (imaxBlur-iminBlur);
-	dist += iminBlur;
+	dist *= dist * dist * (maxBlur-minBlur);
+	dist += minBlur;
 	
 	float zdist = getDepth(ntcoords);
 	float centerzdist1 = getDepth(vec2(0.5));
@@ -39,30 +29,17 @@ void main(void) {
 	
 	float centerzdist = min(centerzdist1,min(centerzdist2,min(centerzdist3,min(centerzdist4,centerzdist5))));
 	
-	dist += abs(zdist-centerzdist)*2.0;
+	dist += abs(zdist-centerzdist)*0.05;
 	
 	float fzdist = zdist;
-	//zdist *= zdist;
-	vec4 color = ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords,0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.1);
-	
-	//dist+=noise1((color.r+color.g-color.b)*100000.0)*10.0;
+	vec4 color = texture2D(Texture0, clamp(ntcoords,0.0,1.0)) * vec4(0.1);
 	
 	dist*=0.001;
 	
-	zdist = getDepth(ntcoords+vec2(dist));
-	//zdist *= zdist;
-	color += ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords+vec2(dist),0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.225);
-	zdist = getDepth(ntcoords-vec2(dist));
-	//zdist *= zdist;
-	color += ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords-vec2(dist),0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.225);
-	zdist = getDepth(ntcoords+vec2(dist,-dist));
-	//zdist *= zdist;
-	color += ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords+vec2(dist,-dist),0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.225);
-	zdist = getDepth(ntcoords-vec2(dist,-dist));
-	//zdist *= zdist;
-	color += ((fogColor*zdist)+(texture2D(Texture0, clamp(ntcoords-vec2(dist,-dist),0.0,1.0)) * vec4(1.0-zdist))) * vec4(0.225);
-	
-	color = pow(color,vec4(gammaFactor));
+	color += texture2D(Texture0, clamp(ntcoords+vec2(dist),0.0,1.0)) * vec4(0.225);
+	color += texture2D(Texture0, clamp(ntcoords-vec2(dist),0.0,1.0)) * vec4(0.225);
+	color += texture2D(Texture0, clamp(ntcoords+vec2(dist,-dist),0.0,1.0)) * vec4(0.225);
+	color += texture2D(Texture0, clamp(ntcoords-vec2(dist,-dist),0.0,1.0)) * vec4(0.225);
 	
 	gl_FragColor = vec4(color.xyz,1.0);
 	

@@ -18,6 +18,8 @@ class Player {
 //#if 0
         btRigidBody* capsule;
 //#endif
+        btCollisionShape* standingShape;
+        btCollisionShape* crouchingShape;
 //#if defined(PLAYER_PENETRATION_RECOVER)
         btPairCachingGhostObject* ghostObject;
         CharacterController* controller;

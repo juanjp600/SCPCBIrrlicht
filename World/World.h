@@ -151,7 +151,8 @@ class World {
         irrDynamics* dynamics;
 
         class Player* mainPlayer;
-        class NPC* testNPC[15];
+        std::vector<class NPC*> npcList;
+        irr::scene::IMeshSceneNode* testNode;
 
         irr::core::vector2di marked;
 
@@ -183,7 +184,7 @@ class World {
 
         irr::video::E_MATERIAL_TYPE roomShader, roomShader_noNormals, vertLightShader, vertLightShader_alpha,
                                     fogBillboardShader, normalsShader, plainLightShader, renderDeferredLightShader,
-                                    postProcShader, zBufferShader;
+                                    postProcShader, gammaShader, zBufferShader;
 
         void shadersSetup();
         void setupForHWSkinning(irr::scene::IAnimatedMesh* mesh);
@@ -196,6 +197,7 @@ class World {
         PlainLightShaderCallBack* plainLightCallback;
         RenderDeferredLightShaderCallBack* renderDeferredLightCallback;
         PostProcShaderCallBack* postProcCallback;
+        GammaShaderCallBack* gammaCallback;
         ZBufferShaderCallBack* zBufferCallback;
 
         std::vector<Item*> itemList;

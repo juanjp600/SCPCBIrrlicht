@@ -21,10 +21,10 @@ void main(void)
 	light*=light;
 	vec4 specular = vec4(pow(max(dot(reflect(lightDir,normInWorld.xyz),normalize(posInWorld.xyz-cameraPos)),0.0),20.0));
 	specular*=texture2D(specularFactor,gl_FragCoord.xy/vec2(1280.0,720.0));
-	vec4 distFactor=vec4(max(1.0-(getLengthSQR(lightPos.xyz-posInWorld.xyz)/lightPos.w),0.0));
+	float distFactor=max(1.0-(getLengthSQR(lightPos.xyz-posInWorld.xyz)/lightPos.w),0.0);
 	distFactor*=distFactor;
-	light*=distFactor;
-	specular*=distFactor;
+	light*=vec4(distFactor);
+	specular*=vec4(distFactor);
 	gl_FragData[0] = light*lightColor;
 	gl_FragData[1] = specular*lightColor;
 }

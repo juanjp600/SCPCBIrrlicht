@@ -48,15 +48,32 @@ Player::Player(World* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
 	capsule->setActivationState(DISABLE_DEACTIVATION);
 //#endif
 
+    // Create the shape
+    btConvexHullShape *mShape = new btConvexHullShape();
+
+	irr::f32 oRadius = radius;
+	irr::f32 oheight = height-oRadius*0.1f;
+	irr::f32 oradius = radius-oRadius*0.1f;
+	for (int i=0;i<50;i++) {
+		irr::f32 fi = (irr::f32)i*7.2f*irr::core::DEGTORAD;
+		mShape->addPoint(btVector3(std::cos(fi)*0.1f*oradius,-oheight*0.5f,std::sin(fi)*0.1f*oradius));
+		mShape->addPoint(btVector3(std::cos(fi)*oradius,-oheight*0.5f+oradius*1.1f,std::sin(fi)*oradius));
+		mShape->addPoint(btVector3(std::cos(fi)*oradius,0.f,std::sin(fi)*oradius));
+	}
+	mShape->setMargin(oRadius*0.02f);
+
+	standingShape = capsule->getCollisionShape();
+	crouchingShape = mShape;
+
 //#ifdef PLAYER_PENETRATION_RECOVER
 	ghostObject = new btPairCachingGhostObject();
 	ghostObject->setWorldTransform(capsule->getCenterOfMassTransform());
-	ghostObject->setCollisionShape(capsule->getCollisionShape());
+	ghostObject->setCollisionShape(standingShape);
 	capsule->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f,1.f));
 	ghostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 	dynamics->getCollisionWorld()->addCollisionObject(ghostObject,btBroadphaseProxy::CharacterFilter,btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter);
 
-	controller = new CharacterController(ghostObject,static_cast<btConvexShape*>(capsule->getCollisionShape()),500.f,1);
+	controller = new CharacterController(ghostObject,static_cast<btConvexShape*>(standingShape),500.f,1);
 
 	linearVelocity.setValue(0,0,0);
 //#endif
@@ -228,151 +245,201 @@ void Player::update() {
     while (shake>720.f) shake-=720.f;
     while (shake<0.f) shake+=720.f;
 
-    bool isWalking = false;
-    if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
-        isWalking = true;
-        dir = 0.f;
-        if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
-            dir -= 45;
-        } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
-            dir += 45;
-        }
-    } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) {
-        isWalking = true;
-        dir = 180;
-        if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
-            dir += 45;
-        } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
-            dir -= 45;
-        }
-    } else {
-        if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
-            isWalking = true;
-            dir = -90;
-        } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
-            isWalking = true;
-            dir = 90;
-        }
-    }
+    if (!noclip) {
+        if (irrReceiver->IsKeyDown(irr::KEY_KEY_N) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_N)) {
+			noclip = true;
+			irrReceiver->perLoopUpdate();
+		}
 
-    irr::core::vector3df d(0.f,0.f,0.f);// = (tTarget-camera->getPosition());
-    shakeFactor = 0.f;
-    if (isWalking) {
-        float walkSpeed = 13.f;
-        if (crouchState<0.015f) {
-            if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
-                if (sprintTimer>0.f && sprintTimer<10.f) stamina-=5.f;
-                sprintTimer = 20.f;
-                if (stamina>0) walkSpeed=40.f-((100.f-stamina)*(100.f-stamina)*0.001);
-                stamina-=0.2;
-                if (stamina<0) stamina = -10.f;
-
-                if (stamina<5.f) {
-                    if (!breathSound[currBreathSound][0]->isPlaying()) {
-                        currBreathSound = 0;
-                        breathSound[currBreathSound][0]->playSound(false);
-                    }
-                } else if (stamina<50.f) {
-                    if (!breathSound[currBreathSound][0]->isPlaying()) {
-                        currBreathSound = (rand()%3)+1;
-                        breathSound[currBreathSound][0]->playSound(false,(50.f-stamina)/50.f);
-                    }
-                    //stamina = 100.f;
-                }
-            } else {
-                stamina=std::min(stamina+0.15f,100.f);
+        bool isWalking = false;
+        if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
+            isWalking = true;
+            dir = 0.f;
+            if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+                dir -= 45;
+            } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+                dir += 45;
+            }
+        } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) {
+            isWalking = true;
+            dir = 180;
+            if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+                dir += 45;
+            } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+                dir -= 45;
             }
         } else {
-            if (crouchState>0.5f) walkSpeed = 10.f; else walkSpeed = 13.f;
+            if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+                isWalking = true;
+                dir = -90;
+            } else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+                isWalking = true;
+                dir = 90;
+            }
+        }
+
+        irr::core::vector3df d(0.f,0.f,0.f);// = (tTarget-camera->getPosition());
+        shakeFactor = 0.f;
+        if (isWalking) {
+            float walkSpeed = 13.f;
+            if (crouchState<0.015f) {
+                if (irrReceiver->IsKeyDown(irr::KEY_LSHIFT)) {
+                    if (sprintTimer>0.f && sprintTimer<10.f) stamina-=5.f;
+                    sprintTimer = 20.f;
+                    if (stamina>0) walkSpeed=40.f-((100.f-stamina)*(100.f-stamina)*0.001);
+                    stamina-=0.2;
+                    if (stamina<0) stamina = -10.f;
+
+                    if (stamina<5.f) {
+                        if (!breathSound[currBreathSound][0]->isPlaying()) {
+                            currBreathSound = 0;
+                            breathSound[currBreathSound][0]->playSound(false);
+                        }
+                    } else if (stamina<50.f) {
+                        if (!breathSound[currBreathSound][0]->isPlaying()) {
+                            currBreathSound = (rand()%3)+1;
+                            breathSound[currBreathSound][0]->playSound(false,(50.f-stamina)/50.f);
+                        }
+                        //stamina = 100.f;
+                    }
+                } else {
+                    stamina=std::min(stamina+0.15f,100.f);
+                }
+            } else {
+                if (crouchState>0.4f) walkSpeed = 9.f; else walkSpeed = 13.f;
+                stamina=std::min(stamina+0.15f,100.f);
+            }
+
+            d.X = std::cos((dir+yaw-90.f)*irr::core::DEGTORAD);
+            d.Y = 0.f;
+            d.Z = -std::sin((dir+yaw-90.f)*irr::core::DEGTORAD);
+            d = d.normalize();
+            d *= walkSpeed*0.025f*RoomScale/0.75f;
+            shakeFactor = sqrt(walkSpeed/13.f)*7.f;
+            //std::cout<<"::: "<<shakeFactor<<"\n";
+            if ((prevShake<=270.f && shake>270.f) || (prevShake<=630.f && shake>630.f)) {
+                unsigned char chosen = rand()%4;
+                stepSound[owner->pickPlayerTriangle()][walkSpeed>13.f][chosen]->playSound(false,std::min(walkSpeed/13.f,1.f));
+            }
+        } else {
+            d = -btToIrrVec(linearVelocity);
             stamina=std::min(stamina+0.15f,100.f);
         }
+        linearVelocity = (linearVelocity*0.8f)+irrToBtVec(d*0.2f);
+        controller->setWalkDirection(linearVelocity);
+        controller->updateAction(dynamics->getCollisionWorld(),1.f/60.f);
 
-        d.X = std::cos((dir+yaw-90.f)*irr::core::DEGTORAD);
-        d.Y = 0.f;
-        d.Z = -std::sin((dir+yaw-90.f)*irr::core::DEGTORAD);
-        d = d.normalize();
-        d *= walkSpeed*0.025f*RoomScale/0.75f;
-        shakeFactor = sqrt(walkSpeed/13.f)*7.f;
-        //std::cout<<"::: "<<shakeFactor<<"\n";
-        if ((prevShake<=270.f && shake>270.f) || (prevShake<=630.f && shake>630.f)) {
-            unsigned char chosen = rand()%4;
-            stepSound[owner->pickPlayerTriangle()][walkSpeed>13.f][chosen]->playSound(false,std::min(walkSpeed/13.f,1.f));
-        }
-    } else {
-        d = -btToIrrVec(linearVelocity);
-        stamina=std::min(stamina+0.15f,100.f);
-    }
-    linearVelocity = (linearVelocity*0.8f)+irrToBtVec(d*0.2f);
-    controller->setWalkDirection(linearVelocity);
-    controller->updateAction(dynamics->getCollisionWorld(),1.f/60.f);
-
-    if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
-        crouched = true;
-    } else {
-        btVector3 start = capsule->getCenterOfMassPosition();
-        btVector3 finish = start + btVector3(0,height*0.85f,0);
-        start += btVector3(0,(height * 0.25f),0);
-        if (!dynamics->rayTest(start,finish)) {
-            if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,radius*1.15f),finish+btVector3(radius*1.15f,0,radius*1.15f))) {
-                if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,radius*1.15f),finish+btVector3(-radius*1.15f,0,radius*1.15f))) {
-                    if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,-radius*1.15f),finish+btVector3(radius*1.15f,0,-radius*1.15f))) {
-                        if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,-radius*1.15f),finish+btVector3(-radius*1.15f,0,-radius*1.15f))) {
-                            crouched = false; //don't stand up if there's something above your head
+        if (irrReceiver->IsKeyDown(irr::KEY_LCONTROL)) {
+            crouched = true;
+        } else if (crouched) {
+            btVector3 start = capsule->getCenterOfMassPosition();
+            btVector3 finish = start + btVector3(0,height*0.85f,0);
+            start += btVector3(0,(height * 0.25f),0);
+            if (!dynamics->rayTest(start,finish)) {
+                if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,radius*1.15f),finish+btVector3(radius*1.15f,0,radius*1.15f))) {
+                    if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,radius*1.15f),finish+btVector3(-radius*1.15f,0,radius*1.15f))) {
+                        if (!dynamics->rayTest(start+btVector3(radius*1.15f,0,-radius*1.15f),finish+btVector3(radius*1.15f,0,-radius*1.15f))) {
+                            if (!dynamics->rayTest(start+btVector3(-radius*1.15f,0,-radius*1.15f),finish+btVector3(-radius*1.15f,0,-radius*1.15f))) {
+                                crouched = false; //don't stand up if there's something above your head
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    bool changed = false;
-    if (crouched) {
-        if (crouchState<0.5f) changed = true;
+        bool changed = false;
+        if (crouched) {
+            float prevState = crouchState;
+            crouchState=std::min(0.5f,crouchState+(0.5f-crouchState)*0.2f);
+            if (crouchState>0.4998f) crouchState = 0.5f;
 
-        float prevState = crouchState;
-        crouchState=std::min(0.5f,crouchState+(0.5f-crouchState)*0.2f);
-        if (crouchState>0.4998f) crouchState = 0.5f;
+            if (prevState<0.5f && crouchState>=0.5f) { changed = true; }
 
-        if (changed) {
-            controller->getGhostObject()->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
-            controller->teleport(controller->getPosition()+btVector3(0.f,(prevState-crouchState)*height*0.49f,0.f));
+            if (changed) {
+                controller->m_convexShape = static_cast<btConvexShape*>(crouchingShape);
+                controller->getGhostObject()->setCollisionShape(crouchingShape);
+            }
+        } else {
+            float prevState = crouchState;
+            crouchState=std::max(0.f,crouchState+(-crouchState)*0.1f);
+            if (crouchState<0.002f) crouchState = 0.f;
+
+            if (prevState>0.f && crouchState<=0.f) { changed = true; }
+
+            if (changed) {
+                controller->m_convexShape = static_cast<btConvexShape*>(standingShape);
+                controller->getGhostObject()->setCollisionShape(standingShape);
+            }
+        }
+
+        if (wearingGasMask<inventory_size) {
+            if (inventory[wearingGasMask]!=nullptr) {
+                inventory[wearingGasMask]->updateWearing();
+            } else {
+                wearingGasMask = inventory_size;
+            }
+        }
+
+        if (wearing714<inventory_size) {
+            if (inventory[wearing714]!=nullptr) {
+                inventory[wearing714]->updateWearing();
+            } else {
+                wearing714 = inventory_size;
+            }
+        }
+
+        if (selectedItem<inventory_size) {
+            if (inventory[selectedItem]==nullptr) {
+                selectedItem = inventory_size;
+            } else if (inventory[selectedItem]->updateItem()==false) {
+                selectedItem = inventory_size;
+            }
         }
     } else {
-        if (crouchState>0.0f) changed = true;
 
-        float prevState = crouchState;
-        crouchState=std::max(0.f,crouchState+(-crouchState)*0.1f);
-        if (crouchState<0.002f) crouchState = 0.f;
+		if (irrReceiver->IsKeyDown(irr::KEY_KEY_W)) {
+			dir = 0.f;
+			if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+				dir -= 45;
+			} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+				dir += 45;
+			}
+		} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) {
+			dir = 180;
+			if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+				dir += 45;
+			} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+				dir -= 45;
+			}
+		} else {
+			if (irrReceiver->IsKeyDown(irr::KEY_KEY_A)) {
+				dir = -90;
+			} else if (irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+				dir = 90;
+			}
+		}
+		dir+=yaw;
+		dir-=90;
+		dir *= irr::core::DEGTORAD;
+		shake = 0.f;
+		if (irrReceiver->IsKeyDown(irr::KEY_KEY_W) || irrReceiver->IsKeyDown(irr::KEY_KEY_A) || irrReceiver->IsKeyDown(irr::KEY_KEY_S) || irrReceiver->IsKeyDown(irr::KEY_KEY_D)) {
+            float yMult = 1.f;
+            if (!irrReceiver->IsKeyDown(irr::KEY_KEY_W)) { yMult = 0.f; }
+            if (irrReceiver->IsKeyDown(irr::KEY_KEY_S)) { yMult=-1.f; }
+            camera->setPosition(camera->getAbsolutePosition()+irr::core::vector3df(std::cos(dir)*std::cos(pitch*irr::core::DEGTORAD)*RoomScale,-std::sin(pitch*irr::core::DEGTORAD)*RoomScale*yMult,-std::sin(dir)*std::cos(pitch*irr::core::DEGTORAD)*RoomScale));
+            camera->updateAbsolutePosition();
+            controller->teleport(irrToBtVec(camera->getAbsolutePosition()-irr::core::vector3df(0.f,height*0.5f,0.f)));
 
-        if (changed) {
-            controller->getGhostObject()->getCollisionShape()->setLocalScaling(btVector3(1.f,1.f-crouchState,1.f));
-            controller->teleport(controller->getPosition()+btVector3(0.f,(prevState-crouchState)*height*0.49f,0.f));
         }
-    }
 
-    if (wearingGasMask<inventory_size) {
-        if (inventory[wearingGasMask]!=nullptr) {
-            inventory[wearingGasMask]->updateWearing();
-        } else {
-            wearingGasMask = inventory_size;
-        }
-    }
-
-    if (wearing714<inventory_size) {
-        if (inventory[wearing714]!=nullptr) {
-            inventory[wearing714]->updateWearing();
-        } else {
-            wearing714 = inventory_size;
-        }
-    }
-
-    if (selectedItem<inventory_size) {
-        if (inventory[selectedItem]==nullptr) {
-            selectedItem = inventory_size;
-        } else if (inventory[selectedItem]->updateItem()==false) {
-            selectedItem = inventory_size;
-        }
-    }
+		if (irrReceiver->IsKeyDown(irr::KEY_KEY_N) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_N)) {
+			noclip = false;
+			camera->updateAbsolutePosition();
+			teleport(camera->getAbsolutePosition()-irr::core::vector3df(0.f,height*0.5f,0.f));
+			irrReceiver->perLoopUpdate();
+		}
+	}
 }
 
 #if 0
@@ -798,9 +865,13 @@ void Player::updateHead() {
 			camera->setPosition(irr::core::vector3df(Point[0],Point[1]+(height/2.f)-(radius/1.5f),Point[2]));
 		}
 #endif
-        camera->setPosition(btToIrrVec(controller->getPosition())+irr::core::vector3df(0.f,(height*0.55f)-(radius*0.666f),0.f));
-		camera->updateAbsolutePosition();
-		camera->setPosition(camera->getAbsolutePosition()+irr::core::vector3df(0.f,std::sin(shake*irr::core::DEGTORAD)*RoomScale/0.75f*(0.4f-(crouchState*0.4f)),0.f));
+        if (!noclip) {
+            camera->setPosition(btToIrrVec(controller->getPosition())+irr::core::vector3df(0.f,((height*0.55f)*(1.f-crouchState))-(radius*0.666f),0.f));
+        } else {
+            camera->setPosition(btToIrrVec(controller->getPosition())+irr::core::vector3df(0.f,height*0.5f,0.f));
+        }
+        camera->updateAbsolutePosition();
+        camera->setPosition(camera->getAbsolutePosition()+irr::core::vector3df(0.f,std::sin(shake*irr::core::DEGTORAD)*RoomScale/0.75f*(0.4f-(crouchState*0.4f)),0.f));
 	}
 	//std::cout<<camera->getAbsolutePosition().X<<" "<<camera->getAbsolutePosition().Y<<" "<<camera->getAbsolutePosition().Z<<"\n";
 
@@ -853,6 +924,7 @@ bool Player::addToInventory(Item* it) {
     }
     return false;
 }
+
 Item* Player::takeFromInventory(unsigned char slot,bool rmove) {
 	slot%=inventory_size;
 	if (inventory[slot]!=nullptr) {

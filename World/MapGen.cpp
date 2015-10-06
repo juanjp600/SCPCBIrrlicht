@@ -52,6 +52,37 @@ Room* World::addRandomRoom(unsigned short x,unsigned short y,RoomTypes type,char
 					}
 					if (choice>=120 && choice<150) {
 						retRoom = Room2doors::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),angle);
+						//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
+						irr::core::vector3df roomPos = irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale);
+
+                        float rotation = angle*90.f;
+						irr::core::matrix4 rotMat;
+                        rotMat.setRotationDegrees(irr::core::vector3df(0.f,rotation,0.f));
+
+                        irr::core::vector3df door1Pos(0.f,0.f,53.f*RoomScale);
+                        rotMat.transformVect(door1Pos);
+                        door1Pos+=roomPos;
+						tempDoor = Door::createDoor(0,0,0,0);
+                        tempDoor->setPosition(door1Pos);
+                        tempDoor->setRotation(rotation);
+                        tempDoor->setButtonVisibility(1,false);
+                        tempDoor->setButtonOffset(0,irr::core::vector3df(-150.f*0.1f*RoomScale,165.f*0.1f*RoomScale,6.f*0.1f*RoomScale));
+
+                        doorList.push_back(tempDoor);
+                        retRoom->setDoor(0,tempDoor);
+
+                        irr::core::vector3df door2Pos(0.f,0.f,-53.f*RoomScale);
+                        rotMat.transformVect(door2Pos);
+                        door2Pos+=roomPos;
+						tempDoor = Door::createDoor(0,0,0,0);
+                        tempDoor->setPosition(door2Pos);
+                        tempDoor->setRotation(rotation+180.f);
+                        tempDoor->setButtonOffset(0,irr::core::vector3df(-150.f*0.1f*RoomScale,165.f*0.1f*RoomScale,6.f*0.1f*RoomScale));
+                        tempDoor->setButtonOffset(1,irr::core::vector3df(80.f*RoomScale,165.f*0.1f*RoomScale,-69.85f*RoomScale),180.f);
+                        tempDoor->open = false;
+
+                        doorList.push_back(tempDoor);
+                        retRoom->setDoor(1,tempDoor);
 					}
 				break;
 				case 1: //HCZ
@@ -931,10 +962,7 @@ void World::createMap(unsigned char zone) {
 							case 0: //LCZ
 								if (currentRoom1==0) {
 									roomArray[x][y] = RoomStart::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
-									for (int i=0;i<1;i++) {
-                                        testNPC[i]->teleport(irr::core::vector3df(x*204.8f*RoomScale,20.f*RoomScale,y*204.8f*RoomScale));
-                                    }
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,50.f*RoomScale,y*204.8f*RoomScale));
 
 									for (unsigned int i=0;i<itemList.size();i++) {
 										itemList[i]->unpick(irr::core::vector3df(x*204.8f*RoomScale,50.f*RoomScale,y*204.8f*RoomScale));
@@ -1017,7 +1045,6 @@ void World::createMap(unsigned char zone) {
 									roomArray[x][y] = Room2storage::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom2==(int)(0.9f*(float)Room2amount)) {
 									roomArray[x][y] = Room012::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									//testNPC->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
 								}
 							break;
 							case 1: //HCZ

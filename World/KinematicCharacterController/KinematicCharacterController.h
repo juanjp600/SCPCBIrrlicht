@@ -40,7 +40,6 @@ protected:
    btScalar m_halfHeight;
 
    btPairCachingGhostObject* m_ghostObject;
-   btConvexShape*   m_convexShape;//is also in m_ghostObject, but it needs to be convex, so we store it here to avoid upcast
 
    btScalar m_verticalVelocity;
    btScalar m_verticalOffset;
@@ -97,6 +96,8 @@ protected:
 public:
    CharacterController(btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight, int upAxis = 1);
    ~CharacterController();
+
+    btConvexShape*   m_convexShape;//is also in m_ghostObject, but it needs to be convex, so we store it here to avoid upcast
 
    ///btActionInterface interface
    virtual void updateAction( btCollisionWorld* collisionWorld,btScalar deltaTime)
