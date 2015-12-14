@@ -20,6 +20,8 @@
 
 #include "ShaderCallbacks.h"
 
+#include "GameObject.h"
+
 const float RoomScale = 0.2f;
 
 //extern ContactAddedCallback gContactAddedCallback;
@@ -35,6 +37,7 @@ class MainEventReceiver : public irr::IEventReceiver {
 
         bool MouseDoubleClick[2];
         irr::core::position2di MousePosition;
+        irr::core::position2di PrevMousePosition;
 
         irr::u32 lastMouseClick;
 
@@ -104,11 +107,15 @@ class MainEventReceiver : public irr::IEventReceiver {
         virtual irr::core::position2di getMousePos() const {
             return MousePosition;
         }
+        virtual irr::core::position2di getPrevMousePos() const {
+            return PrevMousePosition;
+        }
 
 		void perLoopUpdate() {
 			MouseDoubleClick[0]=MouseDoubleClick[1]=false;
 			memcpy(PrevKeyIsDown,KeyIsDown,sizeof(PrevKeyIsDown));
             memcpy(PrevMouseIsDown,MouseIsDown,sizeof(PrevMouseIsDown));
+            PrevMousePosition = MousePosition;
 		}
 
         MainEventReceiver() {
@@ -132,25 +139,28 @@ struct TempWPPathList {
     TempWPPathList* next = nullptr;
 };
 
-class World {
+class World : public GameObject {
     private:
         irr::video::E_DRIVER_TYPE irrDriverType;
         irr::IrrlichtDevice* irrDevice;
-        irr::video::IVideoDriver* irrDriver;
-        irr::scene::ISceneManager* irrSmgr;
-		irr::scene::ISceneCollisionManager* irrColl;
+        irr::scene::ISceneCollisionManager* irrColl;
         irr::gui::IGUIEnvironment* irrEnv;
         irr::io::IFileSystem* irrFileSystem;
         irr::ITimer* irrTimer;
         irr::u32 time;
+        /*irr::video::IVideoDriver* irrDriver;
+        irr::scene::ISceneManager* irrSmgr;*/
 
         unsigned int mainWidth,mainHeight;
+        bool isFullscreen;
 
-        MainEventReceiver* irrReceiver;
+        //MainEventReceiver* irrReceiver;
 
-        irrDynamics* dynamics;
+        //irrDynamics* dynamics;
+        void initBasics();
 
-        class Player* mainPlayer;
+        //class Player* mainPlayer;
+        irr::core::vector2di mouseDistFromCenter;
         std::vector<class NPC*> npcList;
         irr::scene::IMeshSceneNode* testNode;
 
@@ -271,6 +281,10 @@ class World {
         void getRoomListToPlayer(const irr::core::vector2di &startPos,std::vector<irr::core::vector2di> &roomPath);
         void npcPathFind(const irr::core::vector3df &startPos,const irr::core::vector3df &endPos,const irr::core::vector2di &RoomPos,std::vector<irr::core::vector3df> &posList);
         void npcPathFindToPlayer(const irr::core::vector3df &startPos,const irr::core::vector2di &RoomPos,std::vector<irr::core::vector3df> &posList);
+
+        void refineItems(Item::REFINE_SETTINGS setting,irr::core::aabbox3df intake,irr::core::aabbox3df output);
+
+        bool mouseRotate(irr::scene::IMeshSceneNode* node,irr::core::vector3df rot1,irr::core::vector3df rot2,bool verticalDrag);
 };
 
 struct SSkinningVertex

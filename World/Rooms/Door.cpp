@@ -4,7 +4,6 @@
 
 irr::scene::IMeshSceneNode* Door::baseButtonNode[4] = {nullptr,nullptr,nullptr,nullptr};
 irr::scene::IMeshSceneNode* Door::baseFrameNode = nullptr;
-irrDynamics* Door::dynamics = nullptr;
 irr::scene::IMeshSceneNode* Door::baseDoorNode[3] = {nullptr,nullptr,nullptr};
 btBoxShape* Door::shape = nullptr;
 Sound* Door::openSound[2][3] = {{nullptr,nullptr,nullptr},{nullptr,nullptr,nullptr}};

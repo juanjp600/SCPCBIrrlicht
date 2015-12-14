@@ -962,7 +962,7 @@ void World::createMap(unsigned char zone) {
 							case 0: //LCZ
 								if (currentRoom1==0) {
 									roomArray[x][y] = RoomStart::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,50.f*RoomScale,y*204.8f*RoomScale));
+									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,50.f*RoomScale,y*204.8f*RoomScale));
 
 									for (unsigned int i=0;i<itemList.size();i++) {
 										itemList[i]->unpick(irr::core::vector3df(x*204.8f*RoomScale,50.f*RoomScale,y*204.8f*RoomScale));
@@ -1000,7 +1000,50 @@ void World::createMap(unsigned char zone) {
 									roomArray[x][y] = Roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom1==(int)(0.8f*(float)Room1amount)) {
 									roomArray[x][y] = Room914::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+									irr::scene::IMeshSceneNode* knob = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/914knob.x"));
+									setupForPlainLighting(knob);
+									knob->setScale(irr::core::vector3df(RoomScale*0.09f,RoomScale*0.09f,RoomScale*0.09f));
+									knob->setRotation(irr::core::vector3df(0.f,roomTemp[x][y].angle*90.f,0.f));
+									roomArray[x][y]->setIrrNode(0,knob);
+
+									irr::scene::IMeshSceneNode* key = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/914key.x"));
+									setupForPlainLighting(key);
+									key->setScale(irr::core::vector3df(RoomScale*0.09f,RoomScale*0.09f,RoomScale*0.09f));
+									key->setRotation(irr::core::vector3df(0.f,roomTemp[x][y].angle*90.f,0.f));
+									roomArray[x][y]->setIrrNode(1,key);
+
+
+									irr::core::vector3df roomPos(x*204.8f*RoomScale,0,y*204.8f*RoomScale);
+                                    float rotation = roomTemp[x][y].angle*90.f;
+                                    irr::core::matrix4 rotMat;
+                                    rotMat.setRotationDegrees(irr::core::vector3df(0.f,rotation,0.f));
+
+                                    irr::core::vector3df door1Pos(-62.5f*RoomScale,0.f,52.5f*RoomScale);
+                                    rotMat.transformVect(door1Pos);
+                                    door1Pos+=roomPos;
+
+									tempDoor = Door::createDoor(0,0,0,0);
+                                    tempDoor->setPosition(door1Pos);
+                                    tempDoor->setRotation(rotation);
+                                    tempDoor->setButtonVisibility(0,false);
+                                    tempDoor->setButtonVisibility(1,false);
+                                    tempDoor->setDoorVisibility(0,false);
+                                    doorList.push_back(tempDoor);
+                                    roomArray[x][y]->setDoor(0,tempDoor);
+
+                                    irr::core::vector3df door2Pos(81.5f*RoomScale,0.f,52.5f*RoomScale);
+                                    rotMat.transformVect(door2Pos);
+                                    door2Pos+=roomPos;
+
+                                    tempDoor = Door::createDoor(0,0,0,0);
+                                    tempDoor->setPosition(door2Pos);
+                                    tempDoor->setRotation(rotation);
+                                    tempDoor->setButtonVisibility(0,false);
+                                    tempDoor->setButtonVisibility(1,false);
+                                    tempDoor->setDoorVisibility(0,false);
+                                    doorList.push_back(tempDoor);
+                                    roomArray[x][y]->setDoor(1,tempDoor);
 								}
 							break;
 							case 1: //HCZ

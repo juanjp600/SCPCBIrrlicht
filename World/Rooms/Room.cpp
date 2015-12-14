@@ -1,4 +1,5 @@
 #include "Room.h"
+#include "../World.h"
 
 #include <cmath>
 
@@ -35,9 +36,6 @@
 
 extern ContactAddedCallback gContactAddedCallback;*/
 
-irrDynamics* Room::dynamics = nullptr;
-irr::scene::ISceneManager* Room::smgr = nullptr;
-
 Room::Room() {
     std::cout<<"Room constructor\n";
 	for (unsigned char i=0;i<4;i++) {
@@ -45,17 +43,9 @@ Room::Room() {
 	}
 }
 
-void Room::setDynamics(irrDynamics* inDyn) {
-	if (Room::dynamics==nullptr) Room::dynamics = inDyn;
-}
-
-void Room::setSmgr(irr::scene::ISceneManager* inSmgr) {
-	if (Room::smgr==nullptr) Room::smgr = inSmgr;
-}
-
 irr::scene::ITriangleSelector* Room::getSelector(irr::scene::IMesh* mesh) {
 	if (node->getTriangleSelector()==nullptr) {
-		irr::scene::ITriangleSelector* retSelec = smgr->createTriangleSelector(mesh,node);
+		irr::scene::ITriangleSelector* retSelec = GameObject::irrSmgr->createTriangleSelector(mesh,node);
 		node->setTriangleSelector(retSelec);
 		retSelec->drop();
 		return retSelec;
@@ -64,7 +54,7 @@ irr::scene::ITriangleSelector* Room::getSelector(irr::scene::IMesh* mesh) {
 }
 
 irr::scene::IMeshSceneNode* Room::getNewNode(irr::scene::IMesh* mesh) {
-	return smgr->addMeshSceneNode(mesh);
+	return GameObject::irrSmgr->addMeshSceneNode(mesh);
 }
 
 void Room::setActivation(bool s) {

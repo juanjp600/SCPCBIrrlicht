@@ -20,6 +20,15 @@
 #include <cstdlib>
 #include <sstream>
 
+World* GameObject::owner = nullptr;
+irrDynamics* GameObject::dynamics = nullptr;
+irr::scene::ISceneManager* GameObject::irrSmgr = nullptr;
+irr::video::IVideoDriver* GameObject::irrDriver = nullptr;
+MainEventReceiver* GameObject::irrReceiver = nullptr;
+Player* GameObject::mainPlayer = nullptr;
+unsigned short GameObject::screenWidth = 0;
+unsigned short GameObject::screenHeight = 0;
+
 void World::renderLights() {
 #if 0
     //smCamera->setVisible(true);
@@ -109,20 +118,17 @@ void World::renderLights() {
 #endif
 }
 
-World::World(unsigned int width,unsigned int height,bool fullscreen) {
-    mainWidth = width; mainHeight = height;
-
-	scale2D = height/1024.f;
-	scale2Db = height/720.f;
+void World::initBasics() {
+    scale2D = mainHeight/1024.f;
+	scale2Db = mainHeight/720.f;
 
     irrDriverType = irr::video::EDT_OPENGL;
-    irrReceiver = new MainEventReceiver;
-    irrDevice = irr::createDevice(irrDriverType,irr::core::dimension2d<irr::u32>(width,height),32,fullscreen,false,false,irrReceiver);
-    irrDriver = irrDevice->getVideoDriver();
-	irrSmgr = irrDevice->getSceneManager();
+    GameObject::irrReceiver = new MainEventReceiver;
+    irrDevice = irr::createDevice(irrDriverType,irr::core::dimension2d<irr::u32>(mainWidth,mainHeight),32,isFullscreen,false,false,irrReceiver);
+    GameObject::screenWidth = mainWidth; GameObject::screenHeight = mainHeight;
+    GameObject::irrDriver = irrDevice->getVideoDriver();
+	GameObject::irrSmgr = irrDevice->getSceneManager();
 	irrColl = irrSmgr->getSceneCollisionManager();
-
-	Room::setSmgr(irrSmgr);
 
 	Sound::initSounds();
 
@@ -138,19 +144,27 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     time = irrTimer->getRealTime();
     irrReceiver->setTime(time);
 
-	font1 = irr::gui::CGUITTFont::createTTFont(irrEnv, "GFX/cour.ttf", 16*scale2D, true, true);
-	font2 = irr::gui::CGUITTFont::createTTFont(irrEnv, "GFX/cour.ttf", 64*scale2D, true, true);
-
-	smCamera = irrSmgr->addCameraSceneNode(0,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,-1));
-	smCamera->setFOV(90.0*irr::core::DEGTORAD64);
-	smCamera->setAspectRatio(1.f);
-	smCamera->setNearValue(1.f);
-    smCamera->setFarValue(200.0*RoomScale);
-
-	int seed = time;
+    int seed = time;
 	std::cout<<"Seed: "<<seed<<"\n";
 
     srand(seed);
+
+    GameObject::dynamics = new irrDynamics();
+    dynamics->setGravity(-100*RoomScale);
+}
+
+World::World(unsigned int width,unsigned int height,bool fullscreen) {
+    mainWidth = width; mainHeight = height; isFullscreen = fullscreen;
+    initBasics();
+
+	font1 = irr::gui::CGUITTFont::createTTFont(irrEnv, "GFX/cour.ttf", 16*scale2D, true, true);
+	font2 = irr::gui::CGUITTFont::createTTFont(irrEnv, "GFX/cour.ttf", 64*scale2D, true, true);
+
+	/*smCamera = irrSmgr->addCameraSceneNode(0,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,-1));
+	smCamera->setFOV(90.0*irr::core::DEGTORAD64);
+	smCamera->setAspectRatio(1.f);
+	smCamera->setNearValue(1.f);
+    smCamera->setFarValue(200.0*RoomScale);*/
 
     shadersSetup();
 
@@ -232,13 +246,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
 	//Add test model
 
-    dynamics = new irrDynamics();
-    dynamics->setGravity(-100*RoomScale);
-
 	irr::scene::IMeshSceneNode* node = nullptr;
-	Item::setDynamics(dynamics);
-	Item::setDriver(irrDriver);
-	Item::setDimensions(mainWidth,mainHeight);
 
     Item420::setMeshNode(genItemNode(std::string("GFX/Items/420.x"),std::string(""),0.015f*RoomScale));
 	ItemKey1::setMeshNode(genItemNode(std::string("GFX/Items/keycard.x"),std::string("GFX/Items/keycard1.jpg"),0.012f*RoomScale));
@@ -289,7 +297,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
 	for (irr::u32 ui=0;ui<1;ui++) {
 
-		Item* it = ItemSupergasmask::createItemSupergasmask();
+		Item* it = ItemGasmask::createItemGasmask();
         itemList.push_back(it);
 
         it = ItemKey1::createItemKey1();
@@ -315,8 +323,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     }
 
 	btRigidBody* rbody;
-
-	Room::setDynamics(dynamics);
 
 	ambient[0] = Sound::getSound(std::string("SFX/Music/The Dread.ogg"),false);
 	if (ambient[0]!=nullptr) {
@@ -413,8 +419,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	/*RoomLockroom*/rme = loadRMesh(std::string("GFX/map/lockroom_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomLockroom::setBase(rme);
 	/*RoomEndroom*/rme = loadRMesh(std::string("GFX/map/endroom_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); RoomEndroom::setBase(rme);
 
-    NPC::owner = this;
-    NPC::dynamics = dynamics;
     NPC096::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/scp096.b3d"));
     setupForHWSkinning(NPC096::baseNode->getMesh());
 
@@ -435,14 +439,13 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC096::baseNode->setScale(irr::core::vector3df(4.f*RoomScale,4.f*RoomScale,4.f*RoomScale));
     NPC096::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
 
-    NPC::owner = this;
-    NPC::dynamics = dynamics;
     NPC178::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/npc178.b3d"));
     setupForHWSkinning(NPC178::baseNode->getMesh());
-    NPC178::baseNode->setMaterialType(plainLightShader);
-    setupForPlainLighting(NPC178::baseNode);
+    setupForNormalsLighting(NPC178::baseNode);
     NPC178::baseNode->setScale(irr::core::vector3df(0.45f*RoomScale,0.45f*RoomScale,0.45f*RoomScale));
     NPC178::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
+    NPC178::baseNode->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/NPCs/178_normal.png"));
+    NPC178::baseNode->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/178_specular.jpg"));
 
     NPC173::baseNode = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/173_2.b3d"));
 
@@ -450,19 +453,15 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
     NPC173::baseOcclusionNode = irrSmgr->addCubeSceneNode(10.0f,nullptr,-1,irr::core::vector3df(0,0,0),irr::core::vector3df(0,0,0),irr::core::vector3df(0.7f*RoomScale, 2.75f*RoomScale, 0.7f*RoomScale));
     NPC173::baseOcclusionNode->getMaterial(0).MaterialType = irr::video::EMT_TRANSPARENT_ADD_COLOR;
-    NPC173::driver = irrDriver;
 
     setupForNormalsLighting(NPC173::baseNode,true);
 
     NPC173::baseNode->getMaterial(0).setTexture(1, irrDriver->getTexture("GFX/NPCs/173_norm.jpg"));
     NPC173::baseNode->getMaterial(0).setTexture(2, irrDriver->getTexture("GFX/NPCs/173_Spec.jpg"));
 
-	mainPlayer = new Player(this,irrSmgr,dynamics,irrReceiver);
+	GameObject::mainPlayer = new Player(this,irrSmgr,dynamics,irrReceiver);
 
-	Item::setPlayer(mainPlayer);
-	NPC::player = mainPlayer; //add setplayer?
-
-	mainPlayer->testNode = NPC173::baseNode;
+	GameObject::mainPlayer->testNode = NPC173::baseNode;
 
     Door::baseDoorNode[0] = irrSmgr->addMeshSceneNode(irrSmgr->getMesh("GFX/map/Door01.x"));
     Door::baseDoorNode[0]->setScale(irr::core::vector3df(RoomScale*0.1f,RoomScale*0.1f,RoomScale*0.1f));
@@ -486,7 +485,6 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     Door::closeSound[0][0] = Sound::getSound(std::string("SFX/Doors/DoorClose1.ogg"),true,1);
     Door::closeSound[0][1] = Sound::getSound(std::string("SFX/Doors/DoorClose2.ogg"),true,1);
     Door::closeSound[0][2] = Sound::getSound(std::string("SFX/Doors/DoorClose3.ogg"),true,1);
-    Door::dynamics = dynamics;
 
 	createMap(0);
 
@@ -953,6 +951,7 @@ bool World::run() {
             }
 
             irr::core::position2di mousePos = irrReceiver->getMousePos();
+            mouseDistFromCenter = mousePos-irr::core::position2di(mainWidth/2,mainHeight/2);
             if (mousePos != irr::core::position2di(mainWidth/2,mainHeight/2)) {
                 mainPlayer->yaw += ((int)mousePos.X-(int)(mainWidth/2))*0.1f;
                 mainPlayer->pitch += ((int)mousePos.Y-(int)(mainHeight/2))*0.1f;
@@ -1636,6 +1635,46 @@ bool World::button(const std::string &text,int x,int y,int w,int h) {
 	}
 	buttonFont->draw(text.c_str(),irr::core::recti(x,y,x+w,y+h),irr::video::SColor(255,255,255,255),true,true,nullptr);
 	return clicking;
+}
+
+bool World::mouseRotate(irr::scene::IMeshSceneNode* node,irr::core::vector3df rot1,irr::core::vector3df rot2,bool verticalDrag) {
+    irr::scene::ICameraSceneNode* cam = mainPlayer->camera;
+    float distFactor = (0.4f/cam->getPosition().getDistanceFromSQ(node->getPosition()))*0.1f;
+    if (distFactor>0.02f) {
+        if ((node->getPosition()-cam->getPosition()).normalize().getDistanceFromSQ(cam->getTarget()-cam->getPosition())<distFactor) {
+            drawHandIcon.push_back(irr::core::vector2di(mainWidth/2,mainHeight/2));
+            if (irrReceiver->IsMouseDown(0)) {
+                //if (mainPlayer->seesMeshNode(node)) {
+                float currentRot = 0.f;
+                irr::core::vector3df selfRot = node->getRotation();
+                /*while (selfRot.X>180.f) { selfRot.X-=360.f; } while (selfRot.X<=-180.f) { selfRot.X+=360.f; }
+                while (selfRot.Y>180.f) { selfRot.Y-=360.f; } while (selfRot.Y<=-180.f) { selfRot.Y+=360.f; }
+                while (selfRot.Z>180.f) { selfRot.Z-=360.f; } while (selfRot.Z<=-180.f) { selfRot.Z+=360.f; }
+                while (rot1.X>180.f) { rot1.X-=360.f; } while (rot1.X<=-180.f) { rot1.X+=360.f; }
+                while (rot1.Y>180.f) { rot1.Y-=360.f; } while (rot1.Y<=-180.f) { rot1.Y+=360.f; }
+                while (rot1.Z>180.f) { rot1.Z-=360.f; } while (rot1.Z<=-180.f) { rot1.Z+=360.f; }
+                while (rot2.X>180.f) { rot2.X-=360.f; } while (rot2.X<=-180.f) { rot2.X+=360.f; }
+                while (rot2.Y>180.f) { rot2.Y-=360.f; } while (rot2.Y<=-180.f) { rot2.Y+=360.f; }
+                while (rot2.Z>180.f) { rot2.Z-=360.f; } while (rot2.Z<=-180.f) { rot2.Z+=360.f; }*/
+                float d1 = selfRot.getDistanceFrom(rot1);
+                float d2 = selfRot.getDistanceFrom(rot2);
+                currentRot = d2/(d1+d2);
+                float dragFactor = 0.f;
+                if (verticalDrag) {
+                    dragFactor = (float)(mouseDistFromCenter.Y)*0.005f;
+                } else {
+                    dragFactor = (float)(mouseDistFromCenter.X)*0.005f;
+                }
+                currentRot+= dragFactor;
+                if (currentRot<0.f) { currentRot=0.f; }
+                if (currentRot>1.f) { currentRot=1.f; }
+                node->setRotation(rot1*currentRot+rot2*(1.f-currentRot));
+                return true;
+                //}
+            }
+        }
+    }
+    return false;
 }
 
 /*float World::getFPSfactor() {

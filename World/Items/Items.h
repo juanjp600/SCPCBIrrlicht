@@ -6,6 +6,7 @@
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
 #include <string>
+#include "../GameObject.h"
 
 enum class ItemTempIDs : unsigned short {
     ITEM_NULL,
@@ -59,19 +60,18 @@ enum class ItemTempIDs : unsigned short {
 
 class World; class Player;
 
-class Item {
+class Item : public GameObject {
     protected:
         irr::scene::ISceneNode* irrObj;
         btRigidBody* rbody;
         bool picked = true;
         float state[3];
-        static irrDynamics* dynamics;
-        static irr::video::IVideoDriver* irrDriver;
-        static Player* mainPlayer;
-        static unsigned short screenWidth; static unsigned short screenHeight;
 
         static void createShapeFromNode(irr::scene::IMeshSceneNode* node,btConvexHullShape* &outShape,irr::core::vector3df &offset);
         void loadAssets(irr::scene::IMeshSceneNode* node,btConvexHullShape* shape);
+
+        Item();
+        ~Item();
     public:
         virtual bool updateItem() =0;
 		virtual void updateWearing() =0;
@@ -97,13 +97,16 @@ class Item {
         virtual irr::core::matrix4 getTransform();
         virtual irr::core::vector3df getPosition();
 
-        static void setDynamics(irrDynamics* dyn);
-        static void setDriver(irr::video::IVideoDriver* inDriver);
-        static void setPlayer(Player* inPlayer);
-        static void setDimensions(unsigned short width,unsigned short height);
+        enum class REFINE_SETTINGS : char {
+            ROUGH,
+            COARSE,
+            RATIO1,
+            FINE,
+            VERYFINE
+        };
+        virtual bool refineItem(REFINE_SETTINGS setting,irr::core::aabbox3df intake,irr::core::aabbox3df output,Item*& result);
 
-        Item();
-        ~Item();
+        virtual void destroy();
 };
 
 /*#include "ItemEyedrops/ItemEyedrops.h"

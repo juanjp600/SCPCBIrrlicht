@@ -33,7 +33,6 @@ class NPC178 : public NPC {
         static irr::scene::IAnimatedMeshSceneNode* baseNode;
         virtual void update();
         virtual void updateModel();
-        static void setBase(class btCollisionShape* inShape,irr::scene::IMeshSceneNode* inNode);
         static NPC178* createNPC178();
         virtual void teleport(irr::core::vector3df newPos);
         virtual irr::core::vector3df getPosition();

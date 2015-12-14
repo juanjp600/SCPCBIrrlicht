@@ -19,3 +19,12 @@ Room2storage* Room2storage::createNew(irr::core::vector3df inPosition,char inAng
 void Room2storage::findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) {
 	Room::findWPPath(Room2storage::baseRMesh,startPos,destPos,posList);
 }
+
+void Room2storage::updateEvent() {
+
+}
+
+void Room2storage::setDoor(unsigned char index,Door* door) {
+    if (index>3) { return; }
+    doors[index] = door;
+}

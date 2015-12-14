@@ -2,8 +2,9 @@
 #define DOOR_H_INCLUDED
 
 #include <irrlicht.h>
+#include "../GameObject.h"
 
-class Door {
+class Door : public GameObject {
     private:
         Door();
         ~Door();
@@ -13,7 +14,6 @@ class Door {
         irr::scene::ISceneNode* buttonNode2; bool buttonVisible2; irr::core::vector3df buttonOffset2; float buttonAngle2;
         irr::scene::ISceneNode* frameNode;
         class btRigidBody* collider;
-        //static class World* owner;
 
         unsigned char type;
 
@@ -44,9 +44,6 @@ class Door {
         virtual void setButtonVisibility(unsigned char index,bool newVisible);
         virtual void setDoorVisibility(unsigned char index,bool newVisible);
         virtual void setButtonOffset(unsigned char index,irr::core::vector3df newOffset,float newAngle=-1.f);
-        static class World* owner;
-        static class irrDynamics* dynamics;
-        static class Player* player;
 
         static irr::scene::IMeshSceneNode* baseFrameNode;
         //0 = standard, 1 = hcz doors, 2 = blast doors

@@ -33,6 +33,8 @@ class ItemKey2 : public Item {
 		virtual std::string getInvImgPath();
 
         virtual irr::core::vector3df getOffset();
+
+        virtual bool refineItem(REFINE_SETTINGS setting,irr::core::aabbox3df intake,irr::core::aabbox3df output,Item*& result);
 };
 
 #endif // ITEMKEY2_H_INCLUDED

@@ -3,15 +3,12 @@
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include "KinematicCharacterController/KinematicCharacterController.h"
+#include "GameObject.h"
 
 const unsigned int inventory_size = 10;
 
-class Player {
+class Player : public GameObject {
     private:
-        World* owner;
-        irr::scene::ISceneManager* irrSmgr;
-        irrDynamics* dynamics;
-        MainEventReceiver* irrReceiver;
         btVector3 linearVelocity;
         float walkingSpeed;
         //irr::scene::ICameraSceneNode* Camera;

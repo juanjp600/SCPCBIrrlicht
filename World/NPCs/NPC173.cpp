@@ -8,7 +8,6 @@ btCollisionShape* NPC173::shape = nullptr;
 //irr::scene::IMeshSceneNode* NPC096::baseNode = nullptr;
 irr::scene::IMeshSceneNode* NPC173::baseNode = nullptr;
 irr::scene::IMeshSceneNode* NPC173::baseOcclusionNode = nullptr;
-irr::video::IVideoDriver* NPC173::driver = nullptr;
 
 NPC173::NPC173() {
     node = NPC173::baseNode->clone();
@@ -41,16 +40,16 @@ void NPC173::update() {
     //std::cout<<"173update"<<prevPos[0].X<<"___"<<prevPos[1].X<<"\n";
 
     bool seesPlayer = false;
-    if (NPC::dynamics->rayTestPoint(irrToBtVec(NPC::player->getPosition()),collider->getCenterOfMassPosition()).equals(btToIrrVec(collider->getCenterOfMassPosition()),4.f*RoomScale)) {
+    if (NPC::dynamics->rayTestPoint(irrToBtVec(GameObject::mainPlayer->getPosition()),collider->getCenterOfMassPosition()).equals(btToIrrVec(collider->getCenterOfMassPosition()),4.f*RoomScale)) {
         seesPlayer = true;
-        irr::core::vector3df dirToPlayer = (NPC::player->getPosition()-node->getPosition());
+        irr::core::vector3df dirToPlayer = (GameObject::mainPlayer->getPosition()-node->getPosition());
         dirToPlayer.Y = 0.f;
         memDir = dirToPlayer.normalize();
     } else {
-        //boxNode->setPosition(NPC::dynamics->rayTestPoint(irrToBtVec(NPC::player->getPosition()),collider->getCenterOfMassPosition()));
+        //boxNode->setPosition(NPC::dynamics->rayTestPoint(irrToBtVec(GameObject::mainPlayer->getPosition()),collider->getCenterOfMassPosition()));
     }
 
-    if (!NPC::player->seesMeshNode(static_cast<irr::scene::IMeshSceneNode*>(node)) || (NPC::player->blinkTimer<=-0.25f && NPC::player->blinkTimer>=-0.75f)/* || !(driver->getOcclusionQueryResult(occlusionNode)>0)*/) {
+    if (!GameObject::mainPlayer->seesMeshNode(static_cast<irr::scene::IMeshSceneNode*>(node)) || (GameObject::mainPlayer->blinkTimer<=-0.25f && GameObject::mainPlayer->blinkTimer>=-0.75f)/* || !(driver->getOcclusionQueryResult(occlusionNode)>0)*/) {
         collider->setLinearFactor(btVector3(1.f,1.f,1.f));
         moveDir = memDir*450.f*RoomScale;
         moveDir.Y = collider->getLinearVelocity()[1];

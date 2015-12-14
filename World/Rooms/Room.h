@@ -3,14 +3,13 @@
 
 #include "RMesh.h"
 #include <irrDynamics.h>
+#include "../GameObject.h"
 
 enum class RoomTypes {
 	ROOM1,ROOM2,ROOM2C,ROOM3,ROOM4
 };
 
-class Room {
-	private:
-		static irr::scene::ISceneManager* smgr;
+class Room : public GameObject {
 	protected:
 		char angle;
 		irr::core::matrix4 rotMatrix;
@@ -19,7 +18,6 @@ class Room {
 		irr::scene::ISceneNode* node;
 		btRigidBody* rbody;
 
-		static irrDynamics* dynamics;
 		irr::scene::ITriangleSelector* getSelector(irr::scene::IMesh* mesh);
 		static irr::scene::IMeshSceneNode* getNewNode(irr::scene::IMesh* mesh);
 
@@ -43,8 +41,6 @@ class Room {
 		virtual bool disableDecals() const { return false; }
 		virtual void setLinkedTurnDist(unsigned char index,signed char value);
 		virtual char getLinkedTurnDist(unsigned char index) const;
-		static void setDynamics(irrDynamics* inDyn);
-		static void setSmgr(irr::scene::ISceneManager* inSmgr);
 		virtual void destroy();
 		virtual void findWPPath(irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList) =0;
 		virtual void setNPC(unsigned char index,class NPC* npc) { return; };

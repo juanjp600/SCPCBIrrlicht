@@ -2,35 +2,7 @@
 #include "Items.h"
 
 Item::Item() {}
-
-irrDynamics* Item::dynamics = nullptr;
-Player* Item::mainPlayer = nullptr;
-irr::video::IVideoDriver* Item::irrDriver = nullptr;
-unsigned short Item::screenWidth = 0;
-unsigned short Item::screenHeight = 0;
-
-void Item::setDynamics(irrDynamics* dyn) {
-    if (Item::dynamics == nullptr) {
-        Item::dynamics = dyn;
-    }
-}
-
-void Item::setPlayer(Player* inPlayer) {
-    if (Item::mainPlayer == nullptr) {
-        Item::mainPlayer = inPlayer;
-    }
-}
-
-void Item::setDriver(irr::video::IVideoDriver* inDriver) {
-    if (Item::irrDriver == nullptr) {
-        Item::irrDriver = inDriver;
-    }
-}
-
-void Item::setDimensions(unsigned short width,unsigned short height) {
-    Item::screenWidth = width;
-    Item::screenHeight = height;
-}
+Item::~Item() {}
 
 irr::core::aabbox3df Item::getBBox() {
 	return irrObj->getBoundingBox();
@@ -249,6 +221,29 @@ void Item::loadAssets(irr::scene::IMeshSceneNode* node,btConvexHullShape* shape)
     irrObj->setVisible(false);
 }
 
+void Item::destroy() {
+    irrObj->remove();
+    dynamics->unregisterRBody(rbody);
+    delete rbody;
+    delete this;
+}
+
+bool Item::refineItem(REFINE_SETTINGS setting,irr::core::aabbox3df intake,irr::core::aabbox3df output,Item*& result) {
+    result = this;
+    if (intake.isPointInside(getPosition()) && !picked) {
+        pick();
+        irr::core::vector3df newPos;
+        newPos.X = ((float)(rand()%10000))*0.0001f;
+        newPos.X = (newPos.X*output.MinEdge.X)+((1.f-newPos.X)*output.MaxEdge.X);
+        newPos.Y = ((float)(rand()%10000))*0.0001f;
+        newPos.Y = (newPos.Y*output.MinEdge.Y)+((1.f-newPos.Y)*output.MaxEdge.Y);
+        newPos.Z = ((float)(rand()%10000))*0.0001f;
+        newPos.Z = (newPos.Z*output.MinEdge.Z)+((1.f-newPos.Z)*output.MaxEdge.Z);
+        unpick(newPos);
+    }
+    return false;
+}
+
 irr::scene::IMeshSceneNode* World::genItemNode(const std::string &meshPath,const std::string &texPath,float scale) {
 	irr::scene::IMeshSceneNode* node = irrSmgr->addMeshSceneNode(irrSmgr->getMesh(meshPath.c_str()));
 
@@ -262,4 +257,18 @@ irr::scene::IMeshSceneNode* World::genItemNode(const std::string &meshPath,const
     node->setMaterialFlag(irr::video::EMF_NORMALIZE_NORMALS, true);
 
     return node;
+}
+
+void World::refineItems(Item::REFINE_SETTINGS setting,irr::core::aabbox3df intake,irr::core::aabbox3df output) {
+    for (int i=0;i<itemList.size();i++) {
+        Item* it = nullptr;
+        bool changed = itemList[i]->refineItem(setting,intake,output,it);
+        if (changed) {
+            if (it==nullptr) {
+                itemList.erase(itemList.begin()+i); i--;
+            } else {
+                itemList[i] = it;
+            }
+        }
+    }
 }

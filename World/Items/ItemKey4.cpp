@@ -54,3 +54,41 @@ void ItemKey4::drawItem() {
 void ItemKey4::setDrawCoords(irr::core::vector2di newCoords) {
     drawCoords = newCoords;
 }
+
+bool ItemKey4::refineItem(REFINE_SETTINGS setting,irr::core::aabbox3df intake,irr::core::aabbox3df output,Item*& result) {
+    result = this;
+    if (intake.isPointInside(getPosition()) && !picked) {
+        irr::core::vector3df newPos;
+        newPos.X = ((float)(rand()%10000))*0.0001f;
+        newPos.X = (newPos.X*output.MinEdge.X)+((1.f-newPos.X)*output.MaxEdge.X);
+        newPos.Y = ((float)(rand()%10000))*0.0001f;
+        newPos.Y = (newPos.Y*output.MinEdge.Y)+((1.f-newPos.Y)*output.MaxEdge.Y);
+        newPos.Z = ((float)(rand()%10000))*0.0001f;
+        newPos.Z = (newPos.Z*output.MinEdge.Z)+((1.f-newPos.Z)*output.MaxEdge.Z);
+        switch (setting) {
+            case REFINE_SETTINGS::FINE:
+                result = ItemKey5::createItemKey5();
+                result->pick();
+                result->unpick(newPos);
+                destroy();
+                return true;
+            break;
+            case REFINE_SETTINGS::VERYFINE:
+                if (rand()%4>=3) {
+                    result = ItemKey6::createItemKey6();
+                } else {
+                    result = ItemMisc::createItemMisc();
+                }
+                result->pick();
+                result->unpick(newPos);
+                destroy();
+                return true;
+            break;
+            default:
+                pick();
+                unpick(newPos);
+            break;
+        }
+    }
+    return false;
+}

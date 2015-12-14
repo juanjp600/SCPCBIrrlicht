@@ -30,12 +30,10 @@ class NPC173 : public NPC {
     public:
         static class btCollisionShape* shape;
         irr::scene::ISceneNode* boxNode;
-        static irr::video::IVideoDriver* driver;
         static irr::scene::IMeshSceneNode* baseOcclusionNode;
-        static irr::scene::IMeshSceneNode* baseNode; //REMOVE THIS
+        static irr::scene::IMeshSceneNode* baseNode;
         virtual void update();
         virtual void updateModel();
-        static void setBase(class btCollisionShape* inShape,irr::scene::IMeshSceneNode* inNode);
         static NPC173* createNPC173();
         virtual void teleport(irr::core::vector3df newPos);
         virtual irr::core::vector3df getPosition() { return node->getPosition(); };
