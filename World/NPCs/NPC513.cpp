@@ -1,25 +1,25 @@
-#include "NPC106.h"
+#include "NPC513.h"
 #include "../World.h"
 #include "../Player.h"
 
 #include <cmath>
 
-irr::scene::IAnimatedMeshSceneNode* NPC106::baseNode = nullptr;
+irr::scene::IAnimatedMeshSceneNode* NPC513::baseNode = nullptr;
 
-NPC106::NPC106() {
-    node = NPC106::baseNode->clone();
+NPC513::NPC513() {
+    node = NPC513::baseNode->clone();
 }
 
-NPC106* NPC106::createNPC106() {
-    NPC106* returnNPC = new NPC106;
+NPC513* NPC513::createNPC513() {
+    NPC513* returnNPC = new NPC513;
     return returnNPC;
 }
 
-void NPC106::teleport(irr::core::vector3df newPos) {
+void NPC513::teleport(irr::core::vector3df newPos) {
 	node->setPosition(newPos);
 }
 
-void NPC106::update() {
+void NPC513::update() {
     chasingPlayer = true;
     if (roomList.size()>0) {
         if (waypointList.size()>0) {
@@ -34,7 +34,7 @@ void NPC106::update() {
                     wpListIndex++;
                     if (wpListIndex>=waypointList.size()) {
                         waypointList.clear(); std::cout<<"CLEAR1\n";
-                        std::cout<<"106 this Room is done, go to next one\n";
+                        std::cout<<"513 this Room is done, go to next one\n";
                     } else {
 
                     }
@@ -65,12 +65,12 @@ void NPC106::update() {
         }
         if (waypointList.size()==0) {
             speed = irr::core::vector3df(0.f,0.f,0.f);
-            std::cout<<"106 waypointlist empty\n";
+            std::cout<<"513 waypointlist empty\n";
             wpListIndex = 0;
             rListIndex++;
             if (rListIndex>=roomList.size()) {
                 roomList.clear();
-                std::cout<<"106 end of search\n";
+                std::cout<<"513 end of search\n";
             } else {
                 //currRoom = roomList[rListIndex];
                 if (rListIndex<roomList.size()-1) {
@@ -112,7 +112,7 @@ void NPC106::update() {
         waypointList.clear(); std::cout<<"CLEAR3\n";
         wpListIndex = 0;
         rListIndex = 0;
-        std::cout<<"106 Roomlist empty\n";
+        std::cout<<"513 Roomlist empty\n";
 
         currRoom = irr::core::vector2di(coordToRoomGrid(node->getPosition().X),coordToRoomGrid(node->getPosition().Z));
         std::vector<irr::core::vector2di> tempRoomList;
@@ -151,7 +151,7 @@ void NPC106::update() {
         bool mustFix = false;
         for (unsigned int i=0;i<roomList.size()-1;i++) {
             if (std::abs(roomList[i].X-roomList[i+1].X)>1 || std::abs(roomList[i].Y-roomList[i+1].Y)>1) {
-                std::cout<<"error generating final 106 Roomlist: "<<(roomList[i].X-roomList[i+1].X)<<" "<<(roomList[i].Y-roomList[i+1].Y)<<"\n";
+                std::cout<<"error generating final 513 Roomlist: "<<(roomList[i].X-roomList[i+1].X)<<" "<<(roomList[i].Y-roomList[i+1].Y)<<"\n";
                 mustFix = true;
                 break;
             }
@@ -192,7 +192,7 @@ void NPC106::update() {
     node->setPosition(node->getPosition()+speed*0.5f*RoomScale);
 }
 
-void NPC106::updateModel() {
+void NPC513::updateModel() {
     irr::core::vector3df rot;
     irr::core::vector3df pointAt;
     pointAt = speed;

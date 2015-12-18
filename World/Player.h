@@ -36,6 +36,7 @@ class Player : public GameObject {
         bool crouched = false;
 
         bool dead = false;
+        irr::core::vector3df forceDir; float playerControl = 1.f;
 
         float sprintTimer = 0;
 
@@ -112,6 +113,8 @@ class Player : public GameObject {
 		void selectPrevItem();
 
 		bool noclip = false;
+
+		void forceWalk(irr::core::vector3df inForcedDir,float inPlayerControl);
 };
 
 #endif // PLAYER_H_INCLUDED

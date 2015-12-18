@@ -6,9 +6,9 @@ class Room2storage : public Room {
 		static RMesh* baseRMesh;
 		Room2storage() {};
 		irr::core::aabbox3df tpBBox1;
-		irr::core::vector3df tpPos1;
+		irr::core::vector3df tpPos1S; irr::core::vector3df tpPos1D;
 		irr::core::aabbox3df tpBBox2;
-		irr::core::vector3df tpPos2;
+		irr::core::vector3df tpPos2S; irr::core::vector3df tpPos2D;
 		class Door* doors[4];
 	public:
 		virtual RoomTypes getType() const { return RoomTypes::ROOM2; }

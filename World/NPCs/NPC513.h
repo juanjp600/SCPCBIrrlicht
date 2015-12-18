@@ -1,13 +1,13 @@
-#ifndef NPC106_H_INCLUDED
-#define NPC106_H_INCLUDED
+#ifndef NPC513_H_INCLUDED
+#define NPC513_H_INCLUDED
 
 #include "NPC.h"
 #include <vector>
 
-class NPC106 : public NPC {
+class NPC513 : public NPC {
     private:
-        NPC106();
-        ~NPC106();
+        NPC513();
+        ~NPC513();
         bool chasingPlayer = false;
         unsigned int rListIndex = 0;
         unsigned int wpListIndex = 0;
@@ -24,9 +24,9 @@ class NPC106 : public NPC {
         static irr::scene::IAnimatedMeshSceneNode* baseNode;
         virtual void update();
         virtual void updateModel();
-        static NPC106* createNPC106();
+        static NPC513* createNPC513();
         virtual void teleport(irr::core::vector3df newPos);
         virtual irr::core::vector3df getPosition() { return node->getPosition(); };
 };
 
-#endif // NPC106_H_INCLUDED
+#endif // NPC513_H_INCLUDED

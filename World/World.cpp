@@ -2,8 +2,10 @@
 #include "Player.h"
 
 #include "NPCs/NPC096.h"
+#include "NPCs/NPC106.h"
 #include "NPCs/NPC173.h"
 #include "NPCs/NPC178.h"
+#include "NPCs/NPC513.h"
 
 #include "Rooms/Room.h"
 #include "Rooms/RMesh.h"
@@ -306,7 +308,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
         it = ItemKey2::createItemKey2();
         itemList.push_back(it);
 
-        it = ItemScp714::createItemScp714();
+        it = ItemScp513::createItemScp513();
         itemList.push_back(it);
 
         it = ItemKey3::createItemKey3();
@@ -438,6 +440,24 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     NPC096::baseNode->getMaterial(2).setTexture(5,nullptr);
     NPC096::baseNode->setScale(irr::core::vector3df(4.f*RoomScale,4.f*RoomScale,4.f*RoomScale));
     NPC096::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
+
+    NPC106::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/106_2.b3d"));
+    setupForHWSkinning(NPC106::baseNode->getMesh());
+
+    NPC106::baseNode->getMaterial(0).setTexture(1,irrDriver->getTexture("GFX/NPCs/106_normals.png"));
+    NPC106::baseNode->getMaterial(0).setTexture(2,irrDriver->getTexture("GFX/NPCs/106_specular.png"));
+
+    setupForNormalsLighting(NPC106::baseNode);
+
+    NPC106::baseNode->setScale(irr::core::vector3df(2.8f*RoomScale,2.8f*RoomScale,2.8f*RoomScale));
+    NPC106::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
+
+    NPC513::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/bll.b3d"));
+    setupForHWSkinning(NPC513::baseNode->getMesh());
+    setupForPlainLighting(NPC513::baseNode);
+
+    NPC513::baseNode->setScale(irr::core::vector3df(2.8f*RoomScale,2.8f*RoomScale,2.8f*RoomScale));
+    NPC513::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
 
     NPC178::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/npc178.b3d"));
     setupForHWSkinning(NPC178::baseNode->getMesh());
@@ -639,7 +659,7 @@ bool World::run() {
             }
             if (irrReceiver->IsKeyDown(irr::KEY_KEY_1) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_1)) {
                 irr::core::vector3df pickPos = mainPlayer->camera->getTarget();
-                NPC* newNPC = NPC173::createNPC173();
+                NPC* newNPC = NPC106::createNPC106();
                 newNPC->teleport(pickPos);
                 npcList.push_back(newNPC);
             }
