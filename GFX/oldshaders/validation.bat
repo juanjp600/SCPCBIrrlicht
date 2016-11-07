@@ -1,0 +1,36 @@
+@ECHO OFF
+ECHO lighting
+ECHO vert
+glslangValidator LightingVert_sm.vert
+ECHO frag
+glslangValidator LightingFrag_sm.frag
+ECHO newnormal
+ECHO vert
+glslangValidator NewNormalVert.vert
+ECHO frag
+glslangValidator NewNormalFrag.frag
+ECHO postprocess
+ECHO vert
+glslangValidator PostProcessVert.vert
+ECHO frag
+glslangValidator PostProcessFrag.frag
+ECHO roomshader
+ECHO vert
+glslangValidator RoomVertShader.vert
+ECHO frag
+glslangValidator RoomFragShader.frag
+ECHO roomshader_nonormals
+ECHO frag
+glslangValidator RoomFragShader_noNormal.frag
+ECHO vertlight
+ECHO vert
+glslangValidator VertLightingVert.vert
+ECHO frag
+glslangValidator VertLightingFrag.frag
+ECHO zbuffer
+ECHO vert
+glslangValidator ZBufferVert.vert
+ECHO frag
+glslangValidator ZBufferFrag.frag
+
+PAUSE
