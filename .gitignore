@@ -42,4 +42,11 @@ Icon
 *.obj
 Libs_src/*
 build/*
-GFX/*
+GFX/895pics/*
+GFX/items/*
+GFX/map/*
+GFX/menu/*
+GFX/npcs/*
+GFX/oldshaders/*
+GFX/screens/*
+GFX/shaders/*
