@@ -34,3 +34,13 @@ Icon
 # Files that might appear on external disk
 .Spotlight-V100
 .Trashes
+
+*.VC.db
+*.VC.VC.db
+*.VC.VC.opendb
+*.suo
+*.obj
+Libs_src/*
+build/*
+GFX/*
+SFX/*

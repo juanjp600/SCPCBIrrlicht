@@ -104,7 +104,7 @@ bool Sound::loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum
     long bytes;
     char arry[32768];
     FILE *f;
-    f=fopen(filename.c_str(),"rb");
+    fopen_s(&f,filename.c_str(),"rb");
     if (f==nullptr) {
         std::cout<<"\""<<filename<<"\" failed to load.\n";
         return false;

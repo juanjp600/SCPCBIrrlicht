@@ -150,7 +150,7 @@ CharacterController::CharacterController (btPairCachingGhostObject* ghostObject,
    m_verticalOffset = 0.0;
    m_gravity = 9.8f * 9.0f ; // 9G acceleration.
    m_fallSpeed = 550.0f; // Terminal velocity of a sky diver in m/s.
-   //m_jumpSpeed = 100.0f; // ?
+   m_jumpSpeed = 0.0f; // ?
    m_wasOnGround = false;
    m_wasJumping = false;
    setMaxSlope(btRadians(85.0f));
@@ -685,7 +685,7 @@ void CharacterController::playerStep (  btCollisionWorld* collisionWorld, btScal
    {
       m_verticalVelocity = m_jumpSpeed;
    }
-   if(m_verticalVelocity < 0.0 && btFabs(m_verticalVelocity) > m_fallSpeed)
+   if(m_verticalVelocity < -m_fallSpeed)// && btFabs(m_verticalVelocity) > m_fallSpeed)
    {
       m_verticalVelocity = -m_fallSpeed;
    }
@@ -697,10 +697,12 @@ void CharacterController::playerStep (  btCollisionWorld* collisionWorld, btScal
    m_ghostObject->setWorldTransform (xform);
 }
 //---------------------------------------------------------------------------------------
-void CharacterController::jump ()
+void CharacterController::jump (const btVector3 &dir)
 {
    if (!canJump())
       return;
+
+      std::terminate();
 
    m_verticalVelocity = m_jumpSpeed;
    m_wasJumping = true;
@@ -728,7 +730,7 @@ void CharacterController::debugDraw(btIDebugDraw* debugDrawer)
    debugDrawer;
 }
 
-void CharacterController::teleport(btVector3 pos) {
+void CharacterController::teleport(const btVector3 &pos) {
    m_currentPosition = pos;
    m_targetPosition = pos;
    m_ghostObject->getWorldTransform().setOrigin(pos);

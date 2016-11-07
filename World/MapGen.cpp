@@ -998,6 +998,9 @@ void World::createMap(unsigned char zone) {
                                     roomArray[x][y]->setDoor(0,tempDoor);
 								} else if (currentRoom1==(int)(0.4f*(float)Room1amount)) {
 									roomArray[x][y] = Roompj::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom1==(int)(0.5f*(float)Room1amount)) {
+									roomArray[x][y] = Room205::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
 								} else if (currentRoom1==(int)(0.8f*(float)Room1amount)) {
 									roomArray[x][y] = Room914::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
@@ -1084,11 +1087,14 @@ void World::createMap(unsigned char zone) {
 									roomArray[x][y] = Room2testRoom2::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom2==(int)(0.4f*(float)Room2amount)) {
 									roomArray[x][y] = Room2scps::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+								} else if (currentRoom2==(int)(0.6f*(float)Room2amount)) {
+									roomArray[x][y] = Room1123::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
+									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
 								} else if (currentRoom2==(int)(0.8f*(float)Room2amount)) {
 									roomArray[x][y] = Room2storage::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
 								} else if (currentRoom2==(int)(0.9f*(float)Room2amount)) {
 									roomArray[x][y] = Room012::createNew(irr::core::vector3df(x*204.8f*RoomScale,0,y*204.8f*RoomScale),roomTemp[x][y].angle);
-									mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
+									//mainPlayer->teleport(irr::core::vector3df(x*204.8f*RoomScale,10.f,y*204.8f*RoomScale));
 
 									irr::core::vector3df roomPos(x*204.8f*RoomScale,0,y*204.8f*RoomScale);
                                     float rotation = roomTemp[x][y].angle*90.f;

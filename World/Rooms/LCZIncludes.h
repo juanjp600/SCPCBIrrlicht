@@ -8,6 +8,8 @@
 #include "LCZ/Room3storage.h"
 #include "LCZ/RoomEndroom.h"
 #include "LCZ/Room012.h"
+#include "LCZ/Room205.h"
+#include "LCZ/Room1123.h"
 #include "LCZ/Room2.h"
 #include "LCZ/Room2_2.h"
 #include "LCZ/Room2c.h"

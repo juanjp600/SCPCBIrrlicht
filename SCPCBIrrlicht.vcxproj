@@ -1,0 +1,397 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Libs\irrlicht-code-5113-branches-shader-pipeline\CGUITTFont\CGUITTFont.h" />
+    <ClInclude Include="Libs\irrlicht-code-5113-branches-shader-pipeline\CGUITTFont\irrUString.h" />
+    <ClInclude Include="Libs\irrlicht-code-5113-branches-shader-pipeline\irrDynamics\irrDynamics.h" />
+    <ClInclude Include="Sound\SoundWrapper.h" />
+    <ClInclude Include="World\GameObject.h" />
+    <ClInclude Include="World\Items\Item18vbat.h" />
+    <ClInclude Include="World\Items\Item18vradio.h" />
+    <ClInclude Include="World\Items\Item420.h" />
+    <ClInclude Include="World\Items\Item420s.h" />
+    <ClInclude Include="World\Items\ItemBat.h" />
+    <ClInclude Include="World\Items\ItemCigarette.h" />
+    <ClInclude Include="World\Items\ItemCup.h" />
+    <ClInclude Include="World\Items\ItemEmptycup.h" />
+    <ClInclude Include="World\Items\ItemEyedrops.h" />
+    <ClInclude Include="World\Items\ItemFineeyedrops.h" />
+    <ClInclude Include="World\Items\ItemFinefirstaid.h" />
+    <ClInclude Include="World\Items\ItemFineradio.h" />
+    <ClInclude Include="World\Items\ItemFinevest.h" />
+    <ClInclude Include="World\Items\ItemFirstaid.h" />
+    <ClInclude Include="World\Items\ItemFirstaid2.h" />
+    <ClInclude Include="World\Items\ItemGasmask.h" />
+    <ClInclude Include="World\Items\ItemGasmask3.h" />
+    <ClInclude Include="World\Items\ItemHand.h" />
+    <ClInclude Include="World\Items\ItemHand2.h" />
+    <ClInclude Include="World\Items\ItemHazmatsuit.h" />
+    <ClInclude Include="World\Items\ItemHazmatsuit2.h" />
+    <ClInclude Include="World\Items\ItemHazmatsuit3.h" />
+    <ClInclude Include="World\Items\ItemKey1.h" />
+    <ClInclude Include="World\Items\ItemKey2.h" />
+    <ClInclude Include="World\Items\ItemKey3.h" />
+    <ClInclude Include="World\Items\ItemKey4.h" />
+    <ClInclude Include="World\Items\ItemKey5.h" />
+    <ClInclude Include="World\Items\ItemKey6.h" />
+    <ClInclude Include="World\Items\ItemKillbat.h" />
+    <ClInclude Include="World\Items\ItemMisc.h" />
+    <ClInclude Include="World\Items\ItemNav.h" />
+    <ClInclude Include="World\Items\ItemPaper.h" />
+    <ClInclude Include="World\Items\ItemRadio.h" />
+    <ClInclude Include="World\Items\Items.h" />
+    <ClInclude Include="World\Items\ItemScp1025.h" />
+    <ClInclude Include="World\Items\ItemScp148.h" />
+    <ClInclude Include="World\Items\ItemScp148ingot.h" />
+    <ClInclude Include="World\Items\ItemScp500.h" />
+    <ClInclude Include="World\Items\ItemScp513.h" />
+    <ClInclude Include="World\Items\ItemScp714.h" />
+    <ClInclude Include="World\Items\ItemScp860.h" />
+    <ClInclude Include="World\Items\ItemSupereyedrops.h" />
+    <ClInclude Include="World\Items\ItemSupergasmask.h" />
+    <ClInclude Include="World\Items\ItemVeryfinefirstaid.h" />
+    <ClInclude Include="World\Items\ItemVeryfineradio.h" />
+    <ClInclude Include="World\Items\ItemVeryfinevest.h" />
+    <ClInclude Include="World\Items\ItemVest.h" />
+    <ClInclude Include="World\KinematicCharacterController\KinematicCharacterController.h" />
+    <ClInclude Include="World\NPCs\NPC.h" />
+    <ClInclude Include="World\NPCs\NPC096.h" />
+    <ClInclude Include="World\NPCs\NPC106.h" />
+    <ClInclude Include="World\NPCs\NPC173.h" />
+    <ClInclude Include="World\NPCs\NPC178.h" />
+    <ClInclude Include="World\NPCs\NPC513.h" />
+    <ClInclude Include="World\Player.h" />
+    <ClInclude Include="World\Rooms\Door.h" />
+    <ClInclude Include="World\Rooms\EZIncludes.h" />
+    <ClInclude Include="World\Rooms\EZ\Room079.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2cafeteria.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2ccont.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2cz3.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2offices.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2offices2.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2offices3.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2poffices.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2poffices2.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2sroom.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2tesla.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2toilets.h" />
+    <ClInclude Include="World\Rooms\EZ\Room2z3.h" />
+    <ClInclude Include="World\Rooms\EZ\Room3servers.h" />
+    <ClInclude Include="World\Rooms\EZ\Room3servers2.h" />
+    <ClInclude Include="World\Rooms\EZ\Room3z3.h" />
+    <ClInclude Include="World\Rooms\EZ\Room4z3.h" />
+    <ClInclude Include="World\Rooms\EZ\Room860.h" />
+    <ClInclude Include="World\Rooms\EZ\RoomExit1.h" />
+    <ClInclude Include="World\Rooms\EZ\RoomGateaentrance.h" />
+    <ClInclude Include="World\Rooms\EZ\RoomLockroom2.h" />
+    <ClInclude Include="World\Rooms\HCZIncludes.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room008.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room035.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room049.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room106.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room2ctunnel.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room2nuke.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room2pipes.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room2pit.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room2servers.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room2tunnel.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room3pit.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room3tunnel.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room4tunnels.h" />
+    <ClInclude Include="World\Rooms\HCZ\Room513.h" />
+    <ClInclude Include="World\Rooms\HCZ\RoomCoffin.h" />
+    <ClInclude Include="World\Rooms\HCZ\RoomEndroom2.h" />
+    <ClInclude Include="World\Rooms\HCZ\RoomTestroom.h" />
+    <ClInclude Include="World\Rooms\HCZ\RoomTunnel.h" />
+    <ClInclude Include="World\Rooms\HCZ\RoomTunnel2.h" />
+    <ClInclude Include="World\Rooms\LCZIncludes.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room012.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room1123.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room205.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2c.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2closets.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2doors.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2elevator.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2scps.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2storage.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2testroom2.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room2_2.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room3.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room3storage.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room3_2.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room4.h" />
+    <ClInclude Include="World\Rooms\LCZ\Room914.h" />
+    <ClInclude Include="World\Rooms\LCZ\RoomEndroom.h" />
+    <ClInclude Include="World\Rooms\LCZ\RoomLockroom.h" />
+    <ClInclude Include="World\Rooms\LCZ\Roompj.h" />
+    <ClInclude Include="World\Rooms\LCZ\RoomStart.h" />
+    <ClInclude Include="World\Rooms\MiscIncludes.h" />
+    <ClInclude Include="World\Rooms\Misc\Room173.h" />
+    <ClInclude Include="World\Rooms\Misc\RoomCheckpoint1.h" />
+    <ClInclude Include="World\Rooms\Misc\RoomCheckpoint2.h" />
+    <ClInclude Include="World\Rooms\Misc\RoomGatea.h" />
+    <ClInclude Include="World\Rooms\Misc\RoomPocketdimension.h" />
+    <ClInclude Include="World\Rooms\RMesh.h" />
+    <ClInclude Include="World\Rooms\Room.h" />
+    <ClInclude Include="World\ShaderCallbacks.h" />
+    <ClInclude Include="World\World.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Libs\irrlicht-code-5113-branches-shader-pipeline\CGUITTFont\CGUITTFont.cpp" />
+    <ClCompile Include="Libs\irrlicht-code-5113-branches-shader-pipeline\irrDynamics\irrDynamics.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Sound\SoundWrapper.cpp" />
+    <ClCompile Include="World\Items\Item18vbat.cpp" />
+    <ClCompile Include="World\Items\Item18vradio.cpp" />
+    <ClCompile Include="World\Items\Item420.cpp" />
+    <ClCompile Include="World\Items\Item420s.cpp" />
+    <ClCompile Include="World\Items\ItemBat.cpp" />
+    <ClCompile Include="World\Items\ItemCigarette.cpp" />
+    <ClCompile Include="World\Items\ItemCup.cpp" />
+    <ClCompile Include="World\Items\ItemEmptycup.cpp" />
+    <ClCompile Include="World\Items\ItemEyedrops.cpp" />
+    <ClCompile Include="World\Items\ItemFineeyedrops.cpp" />
+    <ClCompile Include="World\Items\ItemFinefirstaid.cpp" />
+    <ClCompile Include="World\Items\ItemFineradio.cpp" />
+    <ClCompile Include="World\Items\ItemFinevest.cpp" />
+    <ClCompile Include="World\Items\ItemFirstaid.cpp" />
+    <ClCompile Include="World\Items\ItemFirstaid2.cpp" />
+    <ClCompile Include="World\Items\ItemGasmask.cpp" />
+    <ClCompile Include="World\Items\ItemGasmask3.cpp" />
+    <ClCompile Include="World\Items\ItemHand.cpp" />
+    <ClCompile Include="World\Items\ItemHand2.cpp" />
+    <ClCompile Include="World\Items\ItemHazmatsuit.cpp" />
+    <ClCompile Include="World\Items\ItemHazmatsuit2.cpp" />
+    <ClCompile Include="World\Items\ItemHazmatsuit3.cpp" />
+    <ClCompile Include="World\Items\ItemKey1.cpp" />
+    <ClCompile Include="World\Items\ItemKey2.cpp" />
+    <ClCompile Include="World\Items\ItemKey3.cpp" />
+    <ClCompile Include="World\Items\ItemKey4.cpp" />
+    <ClCompile Include="World\Items\ItemKey5.cpp" />
+    <ClCompile Include="World\Items\ItemKey6.cpp" />
+    <ClCompile Include="World\Items\ItemKillbat.cpp" />
+    <ClCompile Include="World\Items\ItemMisc.cpp" />
+    <ClCompile Include="World\Items\ItemNav.cpp" />
+    <ClCompile Include="World\Items\ItemPaper.cpp" />
+    <ClCompile Include="World\Items\ItemRadio.cpp" />
+    <ClCompile Include="World\Items\Items.cpp" />
+    <ClCompile Include="World\Items\ItemScp1025.cpp" />
+    <ClCompile Include="World\Items\ItemScp148.cpp" />
+    <ClCompile Include="World\Items\ItemScp148ingot.cpp" />
+    <ClCompile Include="World\Items\ItemScp500.cpp" />
+    <ClCompile Include="World\Items\ItemScp513.cpp" />
+    <ClCompile Include="World\Items\ItemScp714.cpp" />
+    <ClCompile Include="World\Items\ItemScp860.cpp" />
+    <ClCompile Include="World\Items\ItemSupereyedrops.cpp" />
+    <ClCompile Include="World\Items\ItemSupergasmask.cpp" />
+    <ClCompile Include="World\Items\ItemVeryfinefirstaid.cpp" />
+    <ClCompile Include="World\Items\ItemVeryfineradio.cpp" />
+    <ClCompile Include="World\Items\ItemVeryfinevest.cpp" />
+    <ClCompile Include="World\Items\ItemVest.cpp" />
+    <ClCompile Include="World\KinematicCharacterController\KinematicCharacterController.cpp" />
+    <ClCompile Include="World\MapGen.cpp" />
+    <ClCompile Include="World\NPCs\NPC.cpp" />
+    <ClCompile Include="World\NPCs\NPC096.cpp" />
+    <ClCompile Include="World\NPCs\NPC106.cpp" />
+    <ClCompile Include="World\NPCs\NPC173.cpp" />
+    <ClCompile Include="World\NPCs\NPC178.cpp" />
+    <ClCompile Include="World\NPCs\NPC513.cpp" />
+    <ClCompile Include="World\Player.cpp" />
+    <ClCompile Include="World\Rooms\Door.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room079.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2cafeteria.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2ccont.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2cz3.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2offices.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2offices2.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2offices3.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2poffices.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2poffices2.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2sroom.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2tesla.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2toilets.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room2z3.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room3servers.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room3servers2.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room3z3.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room4z3.cpp" />
+    <ClCompile Include="World\Rooms\EZ\Room860.cpp" />
+    <ClCompile Include="World\Rooms\EZ\RoomExit1.cpp" />
+    <ClCompile Include="World\Rooms\EZ\RoomGateaentrance.cpp" />
+    <ClCompile Include="World\Rooms\EZ\RoomLockroom2.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room008.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room035.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room049.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room106.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room2ctunnel.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room2nuke.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room2pipes.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room2pit.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room2servers.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room2tunnel.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room3pit.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room3tunnel.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room4tunnels.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\Room513.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\RoomCoffin.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\RoomEndroom2.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\RoomTestroom.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\RoomTunnel.cpp" />
+    <ClCompile Include="World\Rooms\HCZ\RoomTunnel2.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room012.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room1123.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room205.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2c.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2closets.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2doors.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2elevator.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2scps.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2storage.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2testroom2.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room2_2.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room3.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room3storage.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room3_2.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room4.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Room914.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\RoomEndroom.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\RoomLockroom.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\Roompj.cpp" />
+    <ClCompile Include="World\Rooms\LCZ\RoomStart.cpp" />
+    <ClCompile Include="World\Rooms\Misc\Room173.cpp" />
+    <ClCompile Include="World\Rooms\Misc\RoomCheckpoint1.cpp" />
+    <ClCompile Include="World\Rooms\Misc\RoomCheckpoint2.cpp" />
+    <ClCompile Include="World\Rooms\Misc\RoomGatea.cpp" />
+    <ClCompile Include="World\Rooms\Misc\RoomPocketdimension.cpp" />
+    <ClCompile Include="World\Rooms\RMesh.cpp" />
+    <ClCompile Include="World\Rooms\Room.cpp" />
+    <ClCompile Include="World\ShaderCallbacks.cpp" />
+    <ClCompile Include="World\SharedAI.cpp" />
+    <ClCompile Include="World\World.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{83DC6274-B2EF-421B-A092-BB1599A4F711}</ProjectGuid>
+    <RootNamespace>SCPCBIrrlicht</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)build\$(Configuration)\exe\</OutDir>
+    <IntDir>build\$(Configuration)\obj\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\OpenAL 1.1 SDK\include;Libs\irrlicht-code-5113-branches-shader-pipeline\irrDynamics;Libs\irrlicht-code-5113-branches-shader-pipeline\CGUITTFont;Libs\bullet3-2.85.1\src;Libs\FreeType\include\freetype2;Libs\FreeType\include;Libs\irrlicht-code-5113-branches-shader-pipeline\include;Libs\oggVorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Libs\bullet3-2.85.1\bin\BulletCollision_vs2010.lib;Libs\bullet3-2.85.1\bin\BulletDynamics_vs2010.lib;Libs\bullet3-2.85.1\bin\LinearMath_vs2010.lib;Libs\FreeType\lib\freetype.lib;Libs\irrlicht-code-5113-branches-shader-pipeline\lib\Win32-visualstudio\Irrlicht.lib;Libs\oggVorbis\lib\vorbis\libvorbis_static.lib;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib;Libs\oggVorbis\lib\ogg\libogg_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\OpenAL 1.1 SDK\include;Libs\irrlicht-code-5113-branches-shader-pipeline\irrDynamics;Libs\irrlicht-code-5113-branches-shader-pipeline\CGUITTFont;Libs\bullet3-2.85.1\src;Libs\FreeType\include\freetype2;Libs\FreeType\include;Libs\irrlicht-code-5113-branches-shader-pipeline\include;Libs\oggVorbis\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Libs\bullet3-2.85.1\bin\BulletCollision_vs2010.lib;Libs\bullet3-2.85.1\bin\BulletDynamics_vs2010.lib;Libs\bullet3-2.85.1\bin\LinearMath_vs2010.lib;Libs\FreeType\lib\freetype.lib;Libs\irrlicht-code-5113-branches-shader-pipeline\lib\Win32-visualstudio\Irrlicht.lib;Libs\oggVorbis\lib\ogg\libogg_static.lib;Libs\oggVorbis\lib\vorbis\libvorbis_static.lib;Libs\oggVorbis\lib\vorbis\libvorbisfile_static.lib;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>libcmtd.lib;msvcrtd.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

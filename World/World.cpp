@@ -194,6 +194,11 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 
     fogTexture = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(width,height),"fogTexture",irr::video::ECF_A8R8G8B8));
 
+    ingameRTT.reallocate(2);
+    ingameRTT.set_used(2);
+    ingameRTT[0] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(512,512),"ingameRTT0",irr::video::ECF_R8G8B8));
+    ingameRTT[1] = irr::video::IRenderTarget(irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(512,512),"ingameRTT1",irr::video::ECF_R8G8B8));
+
     irr::video::ITexture* fogBillTex = irrDriver->getTexture("GFX/fogBillboard.png");
 
     irr::scene::SMesh* quadMesh = new irr::scene::SMesh();
@@ -348,6 +353,8 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
 	/*Room2storage*/rme = loadRMesh(std::string("GFX/map/Room2storage_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2storage::setBase(rme);
 	/*Room3storage*/rme = loadRMesh(std::string("GFX/map/Room3storage_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room3storage::setBase(rme);
 	/*Room012*/rme = loadRMesh(std::string("GFX/map/Room012_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room012::setBase(rme);
+	/*Room205*/rme = loadRMesh(std::string("GFX/map/room205_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room205::setBase(rme);
+	/*Room1123*/rme = loadRMesh(std::string("GFX/map/1123_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room1123::setBase(rme);
 	/*Room2*/rme = loadRMesh(std::string("GFX/map/Room2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2::setBase(rme);
 	/*Room2_2*/rme = loadRMesh(std::string("GFX/map/Room2_2_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2_2::setBase(rme);
 	/*Room2c*/rme = loadRMesh(std::string("GFX/map/Room2C_opt.rm2"),irrFileSystem,irrSmgr,roomTextures,roomShaders); Room2c::setBase(rme);
@@ -456,7 +463,7 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     setupForHWSkinning(NPC513::baseNode->getMesh());
     setupForPlainLighting(NPC513::baseNode);
 
-    NPC513::baseNode->setScale(irr::core::vector3df(2.8f*RoomScale,2.8f*RoomScale,2.8f*RoomScale));
+    NPC513::baseNode->setScale(irr::core::vector3df(1.8f*RoomScale,1.8f*RoomScale,1.8f*RoomScale));
     NPC513::baseNode->setAnimationSpeed(0.f); //animation is handled by the npc, not Irrlicht
 
     NPC178::baseNode = irrSmgr->addAnimatedMeshSceneNode(irrSmgr->getMesh("GFX/NPCs/npc178.b3d"));
@@ -659,7 +666,7 @@ bool World::run() {
             }
             if (irrReceiver->IsKeyDown(irr::KEY_KEY_1) && !irrReceiver->IsPrevKeyDown(irr::KEY_KEY_1)) {
                 irr::core::vector3df pickPos = mainPlayer->camera->getTarget();
-                NPC* newNPC = NPC106::createNPC106();
+                NPC* newNPC = NPC513::createNPC513();
                 newNPC->teleport(pickPos);
                 npcList.push_back(newNPC);
             }
@@ -970,9 +977,10 @@ bool World::run() {
                 }
             }
 
-            irr::core::position2di mousePos = irrReceiver->getMousePos();
+            irr::core::position2di mousePos = irrDevice->getCursorControl()->getPosition();
             mouseDistFromCenter = mousePos-irr::core::position2di(mainWidth/2,mainHeight/2);
             if (mousePos != irr::core::position2di(mainWidth/2,mainHeight/2)) {
+                float oldYaw = mainPlayer->yaw;
                 mainPlayer->yaw += ((int)mousePos.X-(int)(mainWidth/2))*0.1f;
                 mainPlayer->pitch += ((int)mousePos.Y-(int)(mainHeight/2))*0.1f;
                 irrDevice->getCursorControl()->setPosition((irr::s32)mainWidth/2,(irr::s32)mainHeight/2);

@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 
-#include <AL/al.h>
+#include <al.h>
 
 #include <irrlicht.h>
 
@@ -25,7 +25,7 @@
 const float RoomScale = 0.2f;
 
 //extern ContactAddedCallback gContactAddedCallback;
-bool CustomMaterialCombinerCallback(btManifoldPoint& cp,	const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1);
+//bool CustomMaterialCombinerCallback(btManifoldPoint& cp,	const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1);
 
 class MainEventReceiver : public irr::IEventReceiver {
 	private:
@@ -181,6 +181,8 @@ class World : public GameObject {
         //irr::video::ITexture* lightPass[2];
 
         irr::video::IRenderTarget fogTexture = irr::video::IRenderTarget(0);
+
+        irr::core::array<irr::video::IRenderTarget> ingameRTT;
 
         //irr::video::ITexture* lightDepth;
 

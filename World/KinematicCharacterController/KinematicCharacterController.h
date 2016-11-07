@@ -149,9 +149,9 @@ public:
    ///
    bool isJumping ()const                        { return m_wasJumping; }
    ///
-   bool canJump() const                        { return onGround(); }
+   bool canJump() const                        { return false; }
 
-   void jump ();
+   void jump (const btVector3& dir = btVector3());
 
    void setGravity(btScalar gravity)               { m_gravity = gravity; }
    btScalar getGravity() const                     { return m_gravity; }
@@ -169,7 +169,7 @@ public:
    virtual void setUpInterpolate(bool val) {};
 
    btVector3 getPosition() { return m_currentPosition; };
-   void teleport(btVector3 pos);
+   void teleport(const btVector3 &pos);
 };
 //---------------------------------------------------------------------------------------
 

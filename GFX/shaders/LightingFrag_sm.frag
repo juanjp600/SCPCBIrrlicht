@@ -1,5 +1,3 @@
-#version 110
-
 varying vec4 olightPos;
 varying vec3 v;
 varying vec3 TN;

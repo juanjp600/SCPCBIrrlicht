@@ -1,0 +1,882 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\World">
+      <UniqueIdentifier>{65d785df-2588-4e53-b01e-bc57a3271d21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\World\Items">
+      <UniqueIdentifier>{a1b601a1-8ea2-4226-ba57-888e5078331b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\World\KinematicCharacterController">
+      <UniqueIdentifier>{04e555e1-378d-406d-bfa4-86a81daf1045}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\World\NPCs">
+      <UniqueIdentifier>{bfb1fb10-53e4-47af-821a-6689582e501f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\World\Rooms">
+      <UniqueIdentifier>{d87ce4d3-8a47-4369-85b0-4da5b0687c87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\World\Rooms\LCZ">
+      <UniqueIdentifier>{405a40b7-e0cf-45b9-b7f8-f20c78c63233}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\World\Rooms\HCZ">
+      <UniqueIdentifier>{2bb2d3e7-5032-4b0c-9e90-409ebcfa90d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\World\Rooms\EZ">
+      <UniqueIdentifier>{5185832e-3593-4efc-b2df-a8ca5c1a2f06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\World\Rooms\Misc">
+      <UniqueIdentifier>{d507f502-8b03-4025-87fa-9d1b7cf23c0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Sound">
+      <UniqueIdentifier>{9a236ee7-98ed-4309-ade6-4a20ce527c3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sound">
+      <UniqueIdentifier>{f44920a1-d949-4007-bd1b-6455f69e7bd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World">
+      <UniqueIdentifier>{0429118a-4fa2-4355-a712-955e80a91ffe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World\Items">
+      <UniqueIdentifier>{a3e4f512-5b96-43af-a7c5-37847219fdaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World\KinematicCharacterController">
+      <UniqueIdentifier>{872776f4-23a7-49c8-a181-65342a19c931}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World\NPCs">
+      <UniqueIdentifier>{53c16e68-07db-4d70-8736-9c85e87c7d9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World\Rooms">
+      <UniqueIdentifier>{1911ee88-28f0-4919-9a73-a1c78176504f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World\Rooms\EZ">
+      <UniqueIdentifier>{78fd31e0-0b09-4324-9c76-8e14c6af88df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World\Rooms\HCZ">
+      <UniqueIdentifier>{690fa733-482b-4086-815b-a2be6166c66f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World\Rooms\LCZ">
+      <UniqueIdentifier>{572dee44-42a2-469f-ad0f-200608a2585d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\World\Rooms\Misc">
+      <UniqueIdentifier>{e4c27224-d5e0-418c-a8fd-43386e8999ef}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="World\GameObject.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Player.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="World\ShaderCallbacks.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="World\World.h">
+      <Filter>Header Files\World</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\Item18vbat.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\Item18vradio.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\Item420.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\Item420s.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemBat.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemCigarette.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemCup.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemEmptycup.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemEyedrops.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemFineeyedrops.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemFinefirstaid.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemFineradio.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemFinevest.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemFirstaid.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemFirstaid2.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemGasmask.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemGasmask3.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemHand.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemHand2.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemHazmatsuit.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemHazmatsuit2.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemHazmatsuit3.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemKey1.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemKey2.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemKey3.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemKey4.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemKey5.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemKey6.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemKillbat.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemMisc.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemNav.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemPaper.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemRadio.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\Items.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemScp148.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemScp148ingot.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemScp500.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemScp513.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemScp714.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemScp860.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemScp1025.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemSupereyedrops.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemSupergasmask.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemVeryfinefirstaid.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemVeryfineradio.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemVeryfinevest.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Items\ItemVest.h">
+      <Filter>Header Files\World\Items</Filter>
+    </ClInclude>
+    <ClInclude Include="World\KinematicCharacterController\KinematicCharacterController.h">
+      <Filter>Header Files\World\KinematicCharacterController</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\Door.h">
+      <Filter>Header Files\World\Rooms</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZIncludes.h">
+      <Filter>Header Files\World\Rooms</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZIncludes.h">
+      <Filter>Header Files\World\Rooms</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZIncludes.h">
+      <Filter>Header Files\World\Rooms</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\MiscIncludes.h">
+      <Filter>Header Files\World\Rooms</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\RMesh.h">
+      <Filter>Header Files\World\Rooms</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\Room.h">
+      <Filter>Header Files\World\Rooms</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2_2.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2c.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2closets.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2doors.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2elevator.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2scps.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2storage.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room2testroom2.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room3.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room3_2.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room3storage.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room4.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room012.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room205.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room914.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Room1123.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\RoomEndroom.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\RoomLockroom.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\Roompj.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\LCZ\RoomStart.h">
+      <Filter>Header Files\World\Rooms\LCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room2ctunnel.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room2nuke.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room2pipes.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room2pit.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room2servers.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room2tunnel.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room3pit.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room3tunnel.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room4tunnels.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room008.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room035.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room049.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room106.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\Room513.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\RoomCoffin.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\RoomEndroom2.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\RoomTestroom.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\RoomTunnel.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\HCZ\RoomTunnel2.h">
+      <Filter>Header Files\World\Rooms\HCZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2cafeteria.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2ccont.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2cz3.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2offices.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2offices2.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2offices3.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2poffices.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2poffices2.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2sroom.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2tesla.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2toilets.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room2z3.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room3servers.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room3servers2.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room3z3.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room4z3.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room079.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\Room860.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\RoomExit1.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\RoomGateaentrance.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\EZ\RoomLockroom2.h">
+      <Filter>Header Files\World\Rooms\EZ</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\Misc\Room173.h">
+      <Filter>Header Files\World\Rooms\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\Misc\RoomCheckpoint1.h">
+      <Filter>Header Files\World\Rooms\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\Misc\RoomCheckpoint2.h">
+      <Filter>Header Files\World\Rooms\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\Misc\RoomGatea.h">
+      <Filter>Header Files\World\Rooms\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="World\Rooms\Misc\RoomPocketdimension.h">
+      <Filter>Header Files\World\Rooms\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="World\NPCs\NPC.h">
+      <Filter>Header Files\World\NPCs</Filter>
+    </ClInclude>
+    <ClInclude Include="World\NPCs\NPC096.h">
+      <Filter>Header Files\World\NPCs</Filter>
+    </ClInclude>
+    <ClInclude Include="World\NPCs\NPC106.h">
+      <Filter>Header Files\World\NPCs</Filter>
+    </ClInclude>
+    <ClInclude Include="World\NPCs\NPC173.h">
+      <Filter>Header Files\World\NPCs</Filter>
+    </ClInclude>
+    <ClInclude Include="World\NPCs\NPC178.h">
+      <Filter>Header Files\World\NPCs</Filter>
+    </ClInclude>
+    <ClInclude Include="World\NPCs\NPC513.h">
+      <Filter>Header Files\World\NPCs</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound\SoundWrapper.h">
+      <Filter>Header Files\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="Libs\irrlicht-code-5113-branches-shader-pipeline\CGUITTFont\CGUITTFont.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Libs\irrlicht-code-5113-branches-shader-pipeline\irrDynamics\irrDynamics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Libs\irrlicht-code-5113-branches-shader-pipeline\CGUITTFont\irrUString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Player.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+    <ClCompile Include="World\ShaderCallbacks.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+    <ClCompile Include="World\World.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\Item18vbat.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\Item18vradio.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\Item420.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\Item420s.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemBat.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemCigarette.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemCup.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemEmptycup.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemEyedrops.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemFineeyedrops.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemFinefirstaid.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemFineradio.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemFinevest.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemFirstaid.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemFirstaid2.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemGasmask.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemGasmask3.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemHand.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemHand2.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemHazmatsuit.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemHazmatsuit2.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemHazmatsuit3.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemKey1.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemKey2.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemKey3.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemKey4.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemKey5.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemKey6.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemKillbat.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemMisc.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemNav.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemPaper.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemRadio.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\Items.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemScp148.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemScp148ingot.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemScp500.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemScp513.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemScp714.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemScp860.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemScp1025.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemSupereyedrops.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemSupergasmask.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemVeryfinefirstaid.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemVeryfineradio.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemVeryfinevest.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Items\ItemVest.cpp">
+      <Filter>Source Files\World\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="World\KinematicCharacterController\KinematicCharacterController.cpp">
+      <Filter>Source Files\World\KinematicCharacterController</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\Door.cpp">
+      <Filter>Source Files\World\Rooms</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\RMesh.cpp">
+      <Filter>Source Files\World\Rooms</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\Room.cpp">
+      <Filter>Source Files\World\Rooms</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2_2.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2c.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2closets.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2doors.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2elevator.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2scps.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2storage.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room2testroom2.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room3.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room3_2.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room3storage.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room4.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room012.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room205.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room914.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Room1123.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\RoomEndroom.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\RoomLockroom.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\Roompj.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\LCZ\RoomStart.cpp">
+      <Filter>Source Files\World\Rooms\LCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room2ctunnel.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room2nuke.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room2pipes.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room2pit.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room2servers.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room2tunnel.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room3pit.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room3tunnel.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room4tunnels.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room008.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room035.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room049.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room106.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\Room513.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\RoomCoffin.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\RoomEndroom2.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\RoomTestroom.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\RoomTunnel.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\HCZ\RoomTunnel2.cpp">
+      <Filter>Source Files\World\Rooms\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2cafeteria.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2ccont.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2cz3.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2offices.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2offices2.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2offices3.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2poffices.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2poffices2.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2sroom.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2tesla.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2toilets.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room2z3.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room3servers.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room3servers2.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room3z3.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room4z3.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room079.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\Room860.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\RoomExit1.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\RoomGateaentrance.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\EZ\RoomLockroom2.cpp">
+      <Filter>Source Files\World\Rooms\EZ</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\Misc\Room173.cpp">
+      <Filter>Source Files\World\Rooms\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\Misc\RoomCheckpoint1.cpp">
+      <Filter>Source Files\World\Rooms\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\Misc\RoomCheckpoint2.cpp">
+      <Filter>Source Files\World\Rooms\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\Misc\RoomGatea.cpp">
+      <Filter>Source Files\World\Rooms\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="World\Rooms\Misc\RoomPocketdimension.cpp">
+      <Filter>Source Files\World\Rooms\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="World\NPCs\NPC.cpp">
+      <Filter>Source Files\World\NPCs</Filter>
+    </ClCompile>
+    <ClCompile Include="World\NPCs\NPC096.cpp">
+      <Filter>Source Files\World\NPCs</Filter>
+    </ClCompile>
+    <ClCompile Include="World\NPCs\NPC106.cpp">
+      <Filter>Source Files\World\NPCs</Filter>
+    </ClCompile>
+    <ClCompile Include="World\NPCs\NPC173.cpp">
+      <Filter>Source Files\World\NPCs</Filter>
+    </ClCompile>
+    <ClCompile Include="World\NPCs\NPC178.cpp">
+      <Filter>Source Files\World\NPCs</Filter>
+    </ClCompile>
+    <ClCompile Include="World\NPCs\NPC513.cpp">
+      <Filter>Source Files\World\NPCs</Filter>
+    </ClCompile>
+    <ClCompile Include="Libs\irrlicht-code-5113-branches-shader-pipeline\CGUITTFont\CGUITTFont.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Libs\irrlicht-code-5113-branches-shader-pipeline\irrDynamics\irrDynamics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="World\MapGen.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound\SoundWrapper.cpp">
+      <Filter>Source Files\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="World\SharedAI.cpp">
+      <Filter>Source Files\World</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -28,7 +28,7 @@ Libraries used:
 #include "Sound/SoundWrapper.h"
 #include "World/World.h"
 
-#include <AL/al.h>
+#include <al.h>
 
 int main() {
 

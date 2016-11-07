@@ -184,9 +184,9 @@ void NPC513::update() {
     }
 
     irr::scene::IAnimatedMeshSceneNode* animNode = static_cast<irr::scene::IAnimatedMeshSceneNode*>(node);
-    if (currFrame<283.f) { currFrame=283.f; }
+    if (currFrame<10.f) { currFrame=10.f; }
     currFrame+=0.85f;
-    while (currFrame>332.f) { currFrame-=49.f; }
+    while (currFrame>20.f) { currFrame-=10.f; }
     animNode->setCurrentFrame(currFrame);
 
     node->setPosition(node->getPosition()+speed*0.5f*RoomScale);

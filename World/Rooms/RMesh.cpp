@@ -667,7 +667,7 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 					file->read(&readFloat1,sizeof(float)); //inner cone angle
 					file->read(&readFloat2,sizeof(float)); //outer cone angle
 				break;
-				case 7: //soundemitter"
+				case 7: //soundemitter
 					file->read(&fx,sizeof(float));
 					file->read(&fy,sizeof(float));
 					file->read(&fz,sizeof(float));
@@ -675,6 +675,23 @@ RMesh* loadRMesh(std::string path,irr::io::IFileSystem* fs,irr::scene::ISceneMan
 					file->read(&readChar2,sizeof(unsigned char));
 
 					file->read(&fu1,sizeof(float)); //range
+				break;
+				case 8:
+                    file->read(&cr,sizeof(unsigned char));
+                    for (unsigned char j=0;j<cr;j++) {
+                        file->read(&cg,sizeof(unsigned char));
+                    }
+                    file->read(&fx,sizeof(float));
+                    file->read(&fy,sizeof(float));
+                    file->read(&fz,sizeof(float));
+
+                    file->read(&fx,sizeof(float));
+                    file->read(&fy,sizeof(float));
+                    file->read(&fz,sizeof(float));
+
+                    file->read(&fx,sizeof(float));
+                    file->read(&fy,sizeof(float));
+                    file->read(&fz,sizeof(float));
 				break;
 				default:
 					std::cout<<"Unknown RM2 entity: \""<<(int)readChar1<<"\"\n";

@@ -28,7 +28,7 @@ class Room : public GameObject {
 		signed char linkedTurnDists[4];
 
 		virtual void findWPPath(RMesh* rme,irr::core::vector3df startPos,irr::core::vector3df destPos,std::vector<irr::core::vector3df> &posList);
-		virtual short wpPathStep(RMesh* rme,unsigned char destWP,class TempWPPathList &currWP);
+		short wpPathStep(RMesh* rme,unsigned char destWP,class TempWPPathList &currWP);
 
 		std::vector<pointLight> pointLights;
 	public:
