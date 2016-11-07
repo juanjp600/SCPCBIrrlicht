@@ -21,7 +21,7 @@ Libraries used:
 ### How to compile
 
 1. Clone the repository
-2. Get the OpenAL SDK, install in "C:/Program Files (x86)/OpenAL" or change the project's path to it
+2. Get the OpenAL SDK, install in "C:/Program Files (x86)/OpenAL 1.1 SDK" or change the project's path to it
 3. Open SCPCBIrrlicht.vcxproj in Visual Studio 2015
 4. Change configuration to Release x86
 5. Hit F7, now you're good to go
