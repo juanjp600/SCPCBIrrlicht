@@ -15,7 +15,7 @@ http://creativecommons.org/licenses/by-sa/3.0/
 Libraries used:
   - Irrlicht Engine: http://irrlicht.sourceforge.net/
   - Bullet Physics: http://bulletphysics.org/
-  - OpenAL-Soft: http://kcat.strangesoft.net/openal.html
+  - OpenAL: http://openal.org/
   - FreeType: http://www.freetype.org/
 **/
 
