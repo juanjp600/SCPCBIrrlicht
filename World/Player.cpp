@@ -18,14 +18,14 @@ Player::Player(World* own,irr::scene::ISceneManager* smgr,irrDynamics* dyn,MainE
 		breathSound[i][1] = Sound::getSound(std::string("SFX/9341/breath")+std::to_string(i)+std::string("gas.ogg"),false,1);
 	}
 
-	for (unsigned char i=0;i<4;i++) {
-		stepSound[0][0][i] = Sound::getSound(std::string("SFX/Step")+std::to_string(i+1)+std::string(".ogg"),false,1);
-		stepSound[0][1][i] = Sound::getSound(std::string("SFX/Run")+std::to_string(i+1)+std::string(".ogg"),false,1);
-		stepSound[1][0][i] = Sound::getSound(std::string("SFX/StepMetal")+std::to_string(i+1)+std::string(".ogg"),false,1);
-		stepSound[1][1][i] = Sound::getSound(std::string("SFX/RunMetal")+std::to_string(i+1)+std::string(".ogg"),false,1);
+	for (unsigned char i=0;i<8;i++) {
+		stepSound[0][0][i] = Sound::getSound(std::string("SFX/Step/Step")+std::to_string(i+1)+std::string(".ogg"),false,1);
+		stepSound[0][1][i] = Sound::getSound(std::string("SFX/Step/Run")+std::to_string(i+1)+std::string(".ogg"),false,1);
+		stepSound[1][0][i] = Sound::getSound(std::string("SFX/Step/StepMetal")+std::to_string(i+1)+std::string(".ogg"),false,1);
+		stepSound[1][1][i] = Sound::getSound(std::string("SFX/Step/RunMetal")+std::to_string(i+1)+std::string(".ogg"),false,1);
 		if (i<3) {
-			stepSound[2][0][i] = Sound::getSound(std::string("SFX/StepPD")+std::to_string(i+1)+std::string(".ogg"),false,1);
-			stepSound[3][0][i] = Sound::getSound(std::string("SFX/StepForest")+std::to_string(i+1)+std::string(".ogg"),false,1);
+			stepSound[2][0][i] = Sound::getSound(std::string("SFX/Step/StepPD")+std::to_string(i+1)+std::string(".ogg"),false,1);
+			stepSound[3][0][i] = Sound::getSound(std::string("SFX/Step/StepForest")+std::to_string(i+1)+std::string(".ogg"),false,1);
 		}
 	}
 
@@ -247,7 +247,7 @@ void Player::update() {
             shakeFactor = sqrt(walkSpeed/13.f)*7.f;
             //std::cout<<"::: "<<shakeFactor<<"\n";
             if ((prevShake<=270.f && shake>270.f) || (prevShake<=630.f && shake>630.f)) {
-                unsigned char chosen = rand()%4;
+                unsigned char chosen = rand()%8;
                 stepSound[owner->pickPlayerTriangle()][walkSpeed>13.f][chosen]->playSound(false,std::min(walkSpeed/13.f,1.f));
             }
         } else {

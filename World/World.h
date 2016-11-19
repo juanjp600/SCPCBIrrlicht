@@ -191,6 +191,10 @@ class World : public GameObject {
         irr::video::ITexture* blinkMeterIMG;
         irr::video::ITexture* staminaMeterIMG;
 
+		irr::video::ITexture* blinkIconIMG;
+		irr::video::ITexture* staminaIconIMG;
+		irr::video::ITexture* sneakIconIMG;
+
         irr::u32 prevTime = 0;
         //float fpsFactor = 1;
 

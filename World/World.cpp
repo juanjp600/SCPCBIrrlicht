@@ -251,6 +251,10 @@ World::World(unsigned int width,unsigned int height,bool fullscreen) {
     blinkMeterIMG = irrDriver->getTexture("GFX/BlinkMeter.jpg");
     staminaMeterIMG = irrDriver->getTexture("GFX/staminaMeter.jpg");
 
+	blinkIconIMG = irrDriver->getTexture("GFX/BlinkIcon.png");
+	staminaIconIMG = irrDriver->getTexture("GFX/sprinticon.png");
+	sneakIconIMG = irrDriver->getTexture("GFX/sneakicon.png");
+
 	//Add test model
 
 	irr::scene::IMeshSceneNode* node = nullptr;
@@ -1436,6 +1440,12 @@ void World::drawHUD() {
         irrDriver->draw2DImage(blinkMeterIMG,irr::core::recti((83+i*10)*scale2Db,mainHeight-92*scale2Db,(91+i*10)*scale2Db,mainHeight-78*scale2Db),irr::core::recti(0,0,8,14));
     }
 
+	irrDriver->draw2DLine(irr::core::position2d<irr::s32>(19*scale2Db,mainHeight-95*scale2Db),irr::core::position2d<irr::s32>(51*scale2Db,mainHeight-95*scale2Db),irr::video::SColor(255,255,255,255));
+	irrDriver->draw2DLine(irr::core::position2d<irr::s32>(19*scale2Db,mainHeight-63*scale2Db),irr::core::position2d<irr::s32>(51*scale2Db,mainHeight-63*scale2Db),irr::video::SColor(255,255,255,255));
+	irrDriver->draw2DLine(irr::core::position2d<irr::s32>(19*scale2Db,mainHeight-95*scale2Db),irr::core::position2d<irr::s32>(19*scale2Db,mainHeight-63*scale2Db),irr::video::SColor(255,255,255,255));
+	irrDriver->draw2DLine(irr::core::position2d<irr::s32>(51*scale2Db,mainHeight-95*scale2Db),irr::core::position2d<irr::s32>(51*scale2Db,mainHeight-63*scale2Db),irr::video::SColor(255,255,255,255));
+	irrDriver->draw2DImage(blinkIconIMG, irr::core::recti(20 * scale2Db, mainHeight - 94 * scale2Db, 50 * scale2Db, mainHeight - 64 * scale2Db), irr::core::recti(0, 0, 30, 30));
+
     //stamina meter
     irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-55*scale2Db),irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-55*scale2Db),irr::video::SColor(255,255,255,255));
     irrDriver->draw2DLine(irr::core::position2d<irr::s32>(80*scale2Db,mainHeight-35*scale2Db),irr::core::position2d<irr::s32>(284*scale2Db,mainHeight-35*scale2Db),irr::video::SColor(255,255,255,255));
@@ -1445,6 +1455,17 @@ void World::drawHUD() {
     for (int i=0;i<mainPlayer->stamina/100*20;i++) {
         irrDriver->draw2DImage(staminaMeterIMG,irr::core::recti((83+i*10)*scale2Db,mainHeight-52*scale2Db,(91+i*10)*scale2Db,mainHeight-38*scale2Db),irr::core::recti(0,0,8,14));
     }
+
+	irrDriver->draw2DLine(irr::core::position2d<irr::s32>(19*scale2Db,mainHeight-55*scale2Db),irr::core::position2d<irr::s32>(51*scale2Db,mainHeight-55*scale2Db),irr::video::SColor(255,255,255,255));
+	irrDriver->draw2DLine(irr::core::position2d<irr::s32>(19*scale2Db,mainHeight-23*scale2Db),irr::core::position2d<irr::s32>(51*scale2Db,mainHeight-23*scale2Db),irr::video::SColor(255,255,255,255));
+	irrDriver->draw2DLine(irr::core::position2d<irr::s32>(19*scale2Db,mainHeight-55*scale2Db),irr::core::position2d<irr::s32>(19*scale2Db,mainHeight-23*scale2Db),irr::video::SColor(255,255,255,255));
+	irrDriver->draw2DLine(irr::core::position2d<irr::s32>(51*scale2Db,mainHeight-55*scale2Db),irr::core::position2d<irr::s32>(51*scale2Db,mainHeight-23*scale2Db),irr::video::SColor(255,255,255,255));
+	if (mainPlayer->crouched) {
+		irrDriver->draw2DImage(sneakIconIMG, irr::core::recti(20 * scale2Db, mainHeight - 54 * scale2Db, 50 * scale2Db, mainHeight - 24 * scale2Db), irr::core::recti(0, 0, 30, 30));
+	}
+	else {
+		irrDriver->draw2DImage(staminaIconIMG, irr::core::recti(20 * scale2Db, mainHeight - 54 * scale2Db, 50 * scale2Db, mainHeight - 24 * scale2Db), irr::core::recti(0, 0, 30, 30));
+	}
 
     blurAlpha = 100;
 }

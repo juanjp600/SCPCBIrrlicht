@@ -33,7 +33,6 @@ class Player : public GameObject {
 		float height,radius;
 
         float crouchState = 0.f;
-        bool crouched = false;
 
         bool dead = false;
         irr::core::vector3df forceDir; float playerControl = 1.f;
@@ -42,7 +41,7 @@ class Player : public GameObject {
 
         Sound* breathSound[5][2];
         unsigned char currBreathSound = 4;
-        Sound* stepSound[4][2][4]; //(normal/metal/pocket dimension/forest, walk/run, id)
+        Sound* stepSound[4][2][8]; //(normal/metal/pocket dimension/forest, walk/run, id)
         float shakeFactor = 0.f;
 
         float shake = 0.f;
@@ -113,6 +112,9 @@ class Player : public GameObject {
 		void selectPrevItem();
 
 		bool noclip = false;
+
+		//Moved this to the public part so it can be used by "World.cpp" - ENDSHN
+		bool crouched = false;
 
 		void forceWalk(irr::core::vector3df inForcedDir,float inPlayerControl);
 };
